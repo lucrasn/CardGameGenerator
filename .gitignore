@@ -1,0 +1,65 @@
+# ==========================================
+# Artefatos de Compilação (Maven / Java)
+# ==========================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Exceção estrita: Preservar o executor do Maven Wrapper
+!.mvn/wrapper/maven-wrapper.jar
+
+# ==========================================
+# Logs e Despejos da JVM (Runtime)
+# ==========================================
+*.log
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# ==========================================
+# Metadados de IDEs (Isolamento de Ambiente)
+# ==========================================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# ==========================================
+# Metadados de Sistemas Operacionais
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
