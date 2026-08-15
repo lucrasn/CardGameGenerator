@@ -16,7 +16,7 @@ A modelagem da infraestrutura será orientada pelos seguintes requisitos formais
 * **Robustez e Qualidade de Código:** Encapsulamento rigoroso das coleções internas de dados, tratamento formal de exceções de domínio e suíte de testes automatizados para validação dos componentes.
 
 ## 3. Tecnologias e Ferramentas
-* **Linguagem Primária:** Java (Versão 17+)
+* **Linguagem Primária:** Java 26
 * **Gerenciador de Build e Dependências:** Apache Maven
 * **Suíte de Testes Automatizados:** JUnit 5
 * **Controle de Versão:** Git / GitHub
