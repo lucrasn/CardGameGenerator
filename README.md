@@ -63,6 +63,7 @@ Para validar também a documentação da API:
 - `docs/padroes-de-projeto.md`: padrões, SOLID e GRASP;
 - `docs/divisao-responsabilidades.md`: fronteiras entre as trilhas;
 - `docs/diagrama-classes.puml`: diagrama do estado atual, incluindo pendências.
+- `docs/relatorio-tecnico-trilha-a.md`: decisões, evidências e limitações do motor.
 
 Trinca e Blackjack serão clientes de validação, não fontes de regras codificadas no
 framework. Um mecanismo só entra no núcleo quando for reutilizável entre jogos com
