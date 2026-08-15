@@ -1,8 +1,10 @@
 @startuml
 title CardGame Framework — diagrama simplificado da main (15/08/2026)
 
-' Usa o motor de layout Java embutido para não depender de uma instalação externa do Graphviz.
-!pragma layout elk
+' Smetana é o motor de layout Java embutido no próprio plantuml.jar: renderiza sem exigir
+' Graphviz instalado. Não trocar por "elk": o Eclipse Layout Kernel vem em jars separados
+' (licença EPL) e falta no plugin do IDE, o que resulta em ClassNotFoundException.
+!pragma layout smetana
 top to bottom direction
 
 skinparam classAttributeIconSize 0
