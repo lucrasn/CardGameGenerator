@@ -30,7 +30,7 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
         +cartas(): List<C>
     }
 
-    class "BaralhoPadrao<C>" as BaralhoPadrao <<public>>
+    class "BaralhoPadrao<C>" as BaralhoPadrao <<public, final>>
 
     interface "BaralhoFactory<C>" as BaralhoFactory <<public, Factory Method>> {
         +criar(): Baralho<C>
@@ -46,7 +46,7 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
         +cartas(): List<C>
     }
 
-    class "MaoDeCartasPadrao<C>" as MaoDeCartasPadrao <<public>>
+    class "MaoDeCartasPadrao<C>" as MaoDeCartasPadrao <<public, final>>
 
     interface "ContextoDeDistribuicao<C>" as ContextoDeDistribuicao <<public>> {
         +jogadores(): List<Jogador>
@@ -58,7 +58,7 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
         +distribuir(contexto: ContextoDeDistribuicao<C>): void
     }
 
-    class "DistribuicaoAlternada<C>" as DistribuicaoAlternada <<public>>
+    class "DistribuicaoAlternada<C>" as DistribuicaoAlternada <<public, final>>
 
     interface Jogador <<public>> {
         +id(): UUID
@@ -68,7 +68,7 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
 
     class JogadorPadrao <<public, final>> {
         +JogadorPadrao(nome: String, estrategia: EstrategiaDeDecisao)
-        +alterarEstrategiaDeDecisao(nova: EstrategiaDeDecisao): void
+        +alterarEstrategiaDeDecisao(novaEstrategia: EstrategiaDeDecisao): void
     }
 
     interface EstrategiaDeDecisao <<public, Strategy>> {
@@ -114,7 +114,7 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
     interface "ContextoDePartida<C>" as ContextoDePartida <<public>> {
         +comprarDoBaralho(): C
         +adicionarNaMao(jogador: Jogador, carta: C): void
-        +removerDaMao(jogador: Jogador, id: UUID): C
+        +removerDaMao(jogador: Jogador, cartaId: UUID): C
         +adicionarAoBaralho(cartas: Collection<? extends C>): void
         +embaralharBaralho(): void
     }
@@ -128,10 +128,10 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
     }
 
     class "PartidaConfig.Builder<C>" as PartidaConfigBuilder <<public, final>> {
-        +jogadores(lista: List<Jogador>): Builder<C>
-        +baralhoFactory(factory: BaralhoFactory<C>): Builder<C>
-        +distribuicao(strategy: EstrategiaDeDistribuicao<C>): Builder<C>
-        +primeiroJogador(indice: int): Builder<C>
+        +jogadores(jogadores: List<Jogador>): Builder<C>
+        +baralhoFactory(baralhoFactory: BaralhoFactory<C>): Builder<C>
+        +distribuicao(distribuicao: EstrategiaDeDistribuicao<C>): Builder<C>
+        +primeiroJogador(primeiroJogador: int): Builder<C>
         +build(): PartidaConfig<C>
     }
 
@@ -183,13 +183,13 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
 package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
     abstract class "MotorDePartida<C extends Carta>" as MotorDePartida <<public, Template Method>> {
         +executar(): ResultadoDePartida {final}
-        +estado(): EstadoPartida
+        +estado(): EstadoPartida {final}
         #preparar(contexto: ContextoDePartida<C>): void
         #aposDistribuir(contexto: ContextoDePartida<C>): void
         #executarTurno(contexto: ContextoDePartida<C>): ResultadoDoTurno {abstract}
-        #avaliarDesfecho(visao: VisaoDaPartida<C>): Optional<DesfechoDePartida> {abstract}
-        #calcularPontuacao(visao: VisaoDaPartida<C>, desfecho: DesfechoDePartida): Map<Jogador, Integer>
-        #aoEncerrar(visao: VisaoDaPartida<C>, resultado: ResultadoDePartida): void
+        #avaliarDesfecho(contexto: VisaoDaPartida<C>): Optional<DesfechoDePartida> {abstract}
+        #calcularPontuacao(contexto: VisaoDaPartida<C>, desfecho: DesfechoDePartida): Map<Jogador, Integer>
+        #aoEncerrar(contexto: VisaoDaPartida<C>, resultado: ResultadoDePartida): void
     }
 
     class "PartidaEmExecucao<C>" as PartidaEmExecucao <<package-private, final>>
@@ -200,8 +200,8 @@ package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
 }
 
 package "br.edu.uepb.map.cardgame.core" as core #F2F3F4 {
-    class "ContextoDeDistribuicaoPadrao<C>" as ContextoDeDistribuicaoPadrao <<package-private, outra trilha>>
-    class "estrategia.ContextoDeDecisaoPadrao" as ContextoDeDecisaoPadrao <<public, record, outra trilha>>
+    class "ContextoDeDistribuicaoPadrao<C>" as ContextoDeDistribuicaoPadrao <<package-private, final, outra trilha>>
+    class "estrategia.ContextoDeDecisaoPadrao" as ContextoDeDecisaoPadrao <<public, final, record, outra trilha>>
     class BaralhoBase <<public, placeholder legado>>
     class "MaoDeCartas" as MaoDeCartasLegada <<public, placeholder legado>>
     class Mesa <<public, placeholder legado>>
@@ -213,7 +213,7 @@ MaoDeCartasPadrao ..|> MaoDeCartas
 DistribuicaoAlternada ..|> EstrategiaDeDistribuicao
 EstrategiaDeDistribuicao ..> ContextoDeDistribuicao : usa
 JogadorPadrao ..|> Jogador
-JogadorPadrao "1" o-- "1" EstrategiaDeDecisao
+JogadorPadrao "0..*" o-- "1" EstrategiaDeDecisao
 EstrategiaDeDecisao ..> ContextoDeDecisao
 EstrategiaDeDecisao ..> Jogada
 ContextoDeDecisao ..> EtapaDeTurno
@@ -229,10 +229,10 @@ MotivoPadrao ..|> MotivoDeEncerramento
 DesfechoDePartida --> "0..*" Jogador : vencedores
 DesfechoDePartida --> "1" MotivoDeEncerramento
 ResultadoDePartida --> "0..*" Jogador : vencedores
-ResultadoDePartida --> "2..*" Jogador : chaves do placar
+ResultadoDePartida --> "0..*" Jogador : chaves do placar
 ResultadoDePartida --> "1" MotivoDeEncerramento
 
-PartidaConfig "1" o-- "2..*" Jogador
+PartidaConfig "0..*" o-- "2..*" Jogador
 PartidaConfig --> "1" BaralhoFactory
 PartidaConfig --> "1" EstrategiaDeDistribuicao
 PartidaConfig ..> PartidaConfigBuilder : builder()
@@ -258,7 +258,12 @@ ContextoDeDistribuicaoInterno ..|> ContextoDeDistribuicao
 ContextoDeDistribuicaoInterno --> "1" PartidaEmExecucao
 
 ContextoDeDistribuicaoPadrao ..|> ContextoDeDistribuicao
+ContextoDeDistribuicaoPadrao --> "1" Baralho
+ContextoDeDistribuicaoPadrao --> "0..*" Jogador
+ContextoDeDistribuicaoPadrao --> "0..*" MaoDeCartas
 ContextoDeDecisaoPadrao ..|> ContextoDeDecisao
+ContextoDeDecisaoPadrao --> "1" EtapaDeTurno
+ContextoDeDecisaoPadrao --> "0..*" Jogada
 
 BaralhoVazioException --|> PartidaException
 JogadaInvalidaException --|> PartidaException
