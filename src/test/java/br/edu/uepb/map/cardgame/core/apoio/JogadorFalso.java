@@ -1,0 +1,33 @@
+package br.edu.uepb.map.cardgame.core.apoio;
+
+import br.edu.uepb.map.cardgame.api.Jogador;
+
+/**
+ * Dublê de teste para {@link Jogador}, usado pelos testes do {@code core}.
+ *
+ * <p>Existe para que a Trilha A consiga testar o motor e o gerenciador de turnos sem
+ * depender da implementação real de jogador, que pertence a outra trilha. Fica em
+ * {@code src/test}, portanto não entra no artefato de produção.
+ *
+ * <p>Escrito à mão em vez de gerado por biblioteca de <em>mock</em>: evita mais uma
+ * dependência no {@code pom.xml} e é mais simples de explicar na defesa.
+ *
+ * <p>Não sobrescreve {@code equals}/{@code hashCode} de propósito — a igualdade por
+ * identidade é justamente o que os testes de ordem de turnos precisam verificar.
+ */
+public final class JogadorFalso implements Jogador {
+
+    private final String nome;
+
+    /**
+     * @param nome rótulo usado apenas para tornar as falhas de teste legíveis
+     */
+    public JogadorFalso(String nome) {
+        this.nome = nome;
+    }
+
+    @Override
+    public String toString() {
+        return nome;
+    }
+}
