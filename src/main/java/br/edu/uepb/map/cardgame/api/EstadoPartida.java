@@ -1,4 +1,4 @@
-package br.edu.uepb.map.cardgame.core;
+package br.edu.uepb.map.cardgame.api;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -8,14 +8,14 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Estados pelos quais uma partida passa, do momento em que é montada até o
+ * Estados pelos quais uma partida passa, do momento em que é configurada até o
  * encerramento, junto com as transições consideradas legais entre eles.
  *
- * <p>O conhecimento sobre <em>qual estado pode suceder qual</em> mora aqui dentro,
- * e não no {@link MotorDePartida}: é a aplicação do princípio GRASP de
- * <strong>Especialista na Informação</strong> a um tipo de valor. O motor guarda
- * apenas o estado corrente e consulta este enum antes de mudar; a regra de
- * transição em si é responsabilidade do próprio estado.
+ * <p>O conhecimento sobre <em>qual estado pode suceder qual</em> mora aqui dentro, e
+ * não em quem controla o ciclo de vida: é o princípio GRASP de
+ * <strong>Especialista na Informação</strong> aplicado a um tipo de valor. O engine
+ * guarda apenas o estado corrente e consulta este enum antes de mudar; a regra de
+ * transição em si pertence ao próprio estado.
  *
  * <p><strong>Decisão de projeto.</strong> Optamos por um {@code enum} com tabela de
  * transições em vez do padrão GoF <em>State</em>. O padrão State compensa quando cada
@@ -26,13 +26,11 @@ import java.util.Set;
  *
  * <p>Grafo de transições legais:
  * <pre>
- * AGUARDANDO_JOGADORES → DISTRIBUINDO_CARTAS
- * DISTRIBUINDO_CARTAS  → TURNO_EM_ANDAMENTO
- * TURNO_EM_ANDAMENTO   → TURNO_EM_ANDAMENTO | FINALIZADO
- * FINALIZADO           → (terminal)
+ * CONFIGURADA  → PREPARANDO
+ * PREPARANDO   → EM_ANDAMENTO
+ * EM_ANDAMENTO → FINALIZADA
+ * FINALIZADA   → (terminal)
  * </pre>
- *
- * @see MotorDePartida
  *
  * @author Lucas N. de Araújo
  * @version 0.0.1
@@ -40,36 +38,36 @@ import java.util.Set;
  */
 public enum EstadoPartida {
 
-    /** Partida montada, jogadores definidos, nenhuma carta criada ainda. Estado inicial. */
-    AGUARDANDO_JOGADORES,
+    /** Configuração aceita; a execução ainda não começou. Estado inicial. */
+    CONFIGURADA,
 
-    /** Baralho criado e cartas sendo entregues às mãos dos jogadores. */
-    DISTRIBUINDO_CARTAS,
+    /** Baralho, mãos e distribuição inicial estão sendo preparados. */
+    PREPARANDO,
 
-    /** Laço de turnos em execução; permanece neste estado a cada novo turno. */
-    TURNO_EM_ANDAMENTO,
+    /** Turnos podem ser executados e regras podem encerrar a partida. */
+    EM_ANDAMENTO,
 
-    /** Resultado apurado e partida encerrada. Estado terminal: não transita para nenhum outro. */
-    FINALIZADO;
+    /** Resultado criado; nenhuma mutação de cartas ou turnos é permitida. Terminal. */
+    FINALIZADA;
 
     /**
      * Tabela de transições legais.
      *
      * <p>Precisa ser montada em bloco {@code static}, e não no construtor do enum:
-     * durante a construção das constantes elas ainda não estão todas inicializadas,
-     * e referenciar umas às outras ali dentro resultaria em {@code null}.
+     * durante a construção das constantes elas ainda não estão todas inicializadas, e
+     * referenciar umas às outras ali dentro resultaria em {@code null}.
      */
     private static final Map<EstadoPartida, Set<EstadoPartida>> TRANSICOES_LEGAIS;
 
     static {
         Map<EstadoPartida, Set<EstadoPartida>> tabela = new EnumMap<>(EstadoPartida.class);
-        tabela.put(AGUARDANDO_JOGADORES, EnumSet.of(DISTRIBUINDO_CARTAS));
-        tabela.put(DISTRIBUINDO_CARTAS, EnumSet.of(TURNO_EM_ANDAMENTO));
-        tabela.put(TURNO_EM_ANDAMENTO, EnumSet.of(TURNO_EM_ANDAMENTO, FINALIZADO));
-        tabela.put(FINALIZADO, EnumSet.noneOf(EstadoPartida.class));
+        tabela.put(CONFIGURADA, EnumSet.of(PREPARANDO));
+        tabela.put(PREPARANDO, EnumSet.of(EM_ANDAMENTO));
+        tabela.put(EM_ANDAMENTO, EnumSet.of(FINALIZADA));
+        tabela.put(FINALIZADA, EnumSet.noneOf(EstadoPartida.class));
 
-        // Congela cada conjunto individualmente antes de congelar a tabela: sem isso
-        // um cliente conseguiria alterar as regras de transição por fora (requisito 7).
+        // Congela cada conjunto individualmente antes de congelar a tabela: sem isso um
+        // cliente conseguiria alterar as regras de transição por fora (requisito 7).
         tabela.replaceAll((estado, destinos) -> Collections.unmodifiableSet(destinos));
         TRANSICOES_LEGAIS = Collections.unmodifiableMap(tabela);
     }
@@ -77,7 +75,7 @@ public enum EstadoPartida {
     /**
      * Indica se a partida pode migrar deste estado para o estado informado.
      *
-     * @param destino estado de destino pretendido; não pode ser {@code null}
+     * @param destino estado de destino pretendido
      * @return {@code true} se a transição é legal, {@code false} caso contrário
      * @throws NullPointerException se {@code destino} for {@code null}
      */
@@ -87,16 +85,16 @@ public enum EstadoPartida {
     }
 
     /**
-     * Indica se este é um estado terminal, do qual a partida não sai mais.
+     * Indica se este é o estado terminal, do qual a partida não sai mais.
      *
-     * @return {@code true} se nenhuma transição parte deste estado
+     * @return {@code true} somente para {@link #FINALIZADA}
      */
     public boolean ehTerminal() {
         return TRANSICOES_LEGAIS.get(this).isEmpty();
     }
 
     /**
-     * Devolve os estados alcançáveis a partir deste, em coleção imutável.
+     * Estados alcançáveis a partir deste.
      *
      * @return conjunto imutável de destinos legais; vazio se este estado for terminal
      */
