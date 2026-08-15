@@ -471,8 +471,9 @@ pelo do colega (ver seção 6 de `divisao-responsabilidades.md`).
 
 1. **Regras do Blackjack.** A equipe escolheu a versão completa, mas ainda precisa
    congelar a regra de mesa para fechar validações e decidir o Decorator (2.5).
-2. **Assinaturas da API.** A proposta está em `requisitos-api-trinca.md`; deve ser
-   aprovada por A-D antes de o UML ou novos imports se consolidarem.
+2. **Assinaturas da API.** Elas serão derivadas de
+   `modelo-conceitual-framework.md` e aprovadas por A-D antes de o UML ou novos
+   imports se consolidarem.
 3. **Decidir se o MVC (aula 02.1) entra no relatório** como leitura arquitetural
    (ver 2.4). Custo: meio parágrafo. Retorno: mostra composição de padrões, que é a tese
    daquela aula.

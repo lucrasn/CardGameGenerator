@@ -1,6 +1,6 @@
 # Especificação arquitetural - CardGame Framework
 
-**Status:** rascunho estrutural; API candidata a congelamento.
+**Status:** rascunho estrutural; API ainda não congelada.
 **Clientes de validação:** Trinca (principal) e Blackjack (extensibilidade).
 
 ## 1. Fontes de verdade
@@ -8,11 +8,13 @@
 Em caso de divergência, usar esta ordem:
 
 1. enunciado `Projeto Final (MAP) - 2026.1.pdf`;
-2. `docs/requisitos-api-trinca.md` para contratos e fronteira pública;
+2. `docs/modelo-conceitual-framework.md` para responsabilidades, variações e fronteira pública;
 3. `docs/padroes-de-projeto.md` para padrões, SOLID, GRASP e UML;
 4. `docs/regras-trinca.md` para comportamento da aplicação Trinca;
-5. `docs/regras-blackjack.md` para a regra de mesa do segundo cliente;
-6. `docs/divisao-responsabilidades.md` para donos e cronograma.
+5. `docs/divisao-responsabilidades.md` para donos e cronograma.
+
+As regras de Trinca e Blackjack são especificações das aplicações clientes. Elas não
+definem contratos do framework e podem ser consultadas somente para validar a API.
 
 ## 2. Visão geral
 
@@ -34,13 +36,15 @@ Strategy; baralhos são criados por Factory Method; eventos usam Observer.
 
 ## 3. Fronteira pública
 
-A relação normativa de tipos, assinaturas, responsabilidades, contextos controlados
-e testes de contrato está em [requisitos-api-trinca.md](requisitos-api-trinca.md).
+A relação conceitual de responsabilidades, variações e fronteira pública está em
+[modelo-conceitual-framework.md](modelo-conceitual-framework.md). As assinaturas Java
+só serão definidas depois da validação com os dois jogos clientes.
 
 Decisões centrais:
 
 - `MotorDePartida`, `EstadoPartida` e `ResultadoDePartida` são públicos em `api`;
-- `GerenciadorDeTurnos`, mesa e estado mutável permanecem em `core`;
+- `GerenciadorDeTurnos` e o estado mutável permanecem em `core`; o framework não
+  define uma mesa ou pilha de descarte até haver necessidade reutilizável comprovada;
 - `BaralhoPadrao`, `MaoDeCartasPadrao` e `JogadorPadrao` são componentes públicos
   reutilizáveis, evitando duplicação nos jogos clientes;
 - clientes acessam estado apenas por contextos públicos, com coleções imutáveis ou
@@ -71,7 +75,7 @@ validação, vitória, pontuação, eventos/listeners e execução do turno conc
 
 | Requisito | Evidência planejada | Estado atual |
 |---|---|---|
-| API pública definida | catálogo e assinaturas em `requisitos-api-trinca.md` | candidata a aprovação |
+| API pública definida | modelo conceitual independente + assinaturas posteriores | em revisão |
 | Pelo menos 5 pontos de extensão | 10 hot-spots catalogados | definido em documento |
 | Separação framework/clientes | pacotes separados + teste de imports | definido; teste pendente |
 | Aplicação cliente | Trinca | regras prontas; código pendente |
@@ -99,7 +103,7 @@ assinaturas que mudem durante a implementação.
 1. aprovação conjunta da API por A-D;
 2. migração dos tipos públicos já implementados em `core`;
 3. implementação de contextos, eventos e exceções;
-4. aprovação da regra de mesa proposta em `regras-blackjack.md`;
+4. aprovação das regras mínimas do Blackjack básico;
 5. stubs de Trinca e Blackjack compilando somente contra `api`;
 6. decisão operacional entre instalar JDK 26 em todas as máquinas ou fixar Java 21;
 7. UML, relatório final de até 8 páginas e roteiro da defesa.

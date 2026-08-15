@@ -2,7 +2,7 @@
 
 **Equipe (5 integrantes):** Lucas · Allan · Raffael · Lívia · Júlio
 **Jogo cliente principal:** Trinca
-**Segundo jogo de extensibilidade (defesa):** Blackjack com regra de mesa proposta em `regras-blackjack.md`
+**Segundo jogo de extensibilidade (defesa):** Blackjack básico
 **Status deste documento:** trilhas **definidas** — ver alocação na seção 3.
 
 ---
@@ -36,16 +36,16 @@ diagrama UML com multiplicidades, relatório de **até 8 páginas**, e
 [...] e mostrar na defesa do projeto que é possível criar outro jogo utilizando a
 mesma biblioteca. Os jogos devem possuir diferenças suficientes para demonstrar
 extensibilidade."_ A equipe optou por **Trinca completa + Blackjack**. A regra exata
-da mesa de Blackjack ainda precisa ser escrita; seu papel arquitetural é provar em
+de Blackjack será definida no escopo básico; seu papel arquitetural é provar em
 tela que o framework se estende **sem alterar uma linha do `core`**. A diferença
 entre os dois é o argumento da defesa — Trinca é jogo de formação de conjunto entre
 jogadores, Blackjack é jogo de acumulação contra limite fixo com dealer; eles exercitam
 hot-spots diferentes (regra de vitória, regra de pontuação, condição de parada de turno).
 
 **(b) Regras da Trinca — CONCLUÍDO.** A variante de nove cartas está definida em
-`docs/regras-trinca.md`. Os contratos derivados estão em
-`docs/requisitos-api-trinca.md` e ainda precisam de aprovação conjunta antes de serem
-considerados congelados.
+`docs/regras-trinca.md`. Ela é cenário de validação, não origem dos contratos: a
+fronteira da API será definida primeiro no
+`docs/modelo-conceitual-framework.md` e aprovada conjuntamente.
 
 ---
 
@@ -297,7 +297,7 @@ como apoio, sem entrar na contagem da disciplina.
 
 | Fase | O quê                                                                                     | Quem                             | Bloqueia |
 | ---- | ----------------------------------------------------------------------------------------- | -------------------------------- | -------- |
-| 0    | Regras da Trinca escritas + contratos de `requisitos-api-trinca.md` congelados em reunião | **todos, juntos, em uma sessão** | tudo     |
+| 0    | Modelo conceitual do framework aprovado + contratos da API definidos em reunião | **todos, juntos, em uma sessão** | tudo     |
 | 1    | Implementação paralela de A, B, C, D                                                      | A, B, C, D                       | Fase 2   |
 | 2    | Integração: primeira partida rodando end-to-end                                           | A + E                            | Fase 3   |
 | 3    | Trinca completa + jogo-prova + testes de integração                                       | E                                | Fase 4   |
@@ -326,7 +326,7 @@ Encontrados no estado atual do repositório:
 3. **`docs/especificacao_arquitetural.md` ainda precisa ser consolidado** e o UML
    precisa ser produzido após o congelamento da API.
 4. **Exceções, eventos e contextos públicos ainda não existem no código.**
-5. **A proposta de `docs/regras-blackjack.md` ainda precisa de aprovação da equipe.**
+5. **As regras mínimas do Blackjack básico ainda precisam de aprovação da equipe.**
 
 ---
 
