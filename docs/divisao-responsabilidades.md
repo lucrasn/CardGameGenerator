@@ -74,7 +74,7 @@ Três regras que valem para **todas** as trilhas, sem exceção:
 **Dono do fluxo de execução do framework: a Inversão de Controle mora aqui.**
 
 Arquivos: `core/MotorDePartida`, `core/GerenciadorDeTurnos`, `core/EstadoPartida`
-(hoje `EstadoPartid` — corrigir o typo), e a classe/builder de configuração da partida.
+(hoje `EstadoPartida` — corrigir o typo), e a classe/builder de configuração da partida.
 
 Responsabilidades:
 
@@ -248,22 +248,32 @@ Nenhum requisito pode ficar sem dono. Confira contra a tabela da seção 0:
 
 ## 5. Padrões GoF e pontos de extensão (mapa anti-duplicação)
 
-O PDF exige **≥ 4 padrões** e **≥ 5 pontos de extensão**. Este mapa existe para
-ninguém aplicar o mesmo padrão em dois lugares por acidente — e para ninguém
-enfiar padrão a mais só para "encher", o que o enunciado penaliza como
-*overengineering*.
+> **Detalhamento completo em `docs/padroes-de-projeto.md`** — intenção de cada padrão
+> na definição dos slides, participantes na nomenclatura da professora, alternativas
+> rejeitadas, mapa GRASP/SOLID e guia do diagrama. Em caso de divergência, aquele
+> documento prevalece sobre este.
 
-**Padrões (4 obrigatórios já cobertos):**
+O PDF exige **≥ 4 padrões GoF _dentre os estudados na disciplina_** e **≥ 5 pontos de
+extensão**. Os únicos GoF dados em aula (`MATERIAL_DA_AULA/`, aulas 03.1 a 07.1) são
+**Observer, Strategy, Decorator, Template Method e Factory Method** — padrão de fora
+**não conta para o mínimo**.
+
+**Padrões:**
 
 | Padrão | Onde | Trilha | Problema que resolve |
 |---|---|---|---|
 | Template Method | `MotorDePartida` | A | fluxo da partida é invariante, os passos variam por jogo |
+| Strategy | regras de validação/pontuação/vitória e decisão do jogador | C, D | variar algoritmo sem herança e sem `if/else` por tipo de jogo |
 | Factory Method | `BaralhoFactory` | B | criar baralhos de composições diferentes sem o motor saber qual |
-| Strategy | regras de validação/pontuação/vitória e decisão do jogador | C, D | variar algoritmo em tempo de execução, sem herança |
 | Observer | `PartidaListener` | D | notificar eventos sem acoplar o motor ao console |
+| Decorator *(condicional)* | composição de `RegraDeValidacaoStrategy` | D | evitar explosão de subclasses na combinação de validações |
 
-*Opcionais, só se a Trinca exigir de fato:* State (A), Chain of Responsibility (D),
-Iterator (B), Adapter (C).
+O Decorator só entra se houver **≥ 3 validações independentes** que se combinem de
+formas diferentes entre Trinca e Blackjack — critério definido na seção 2.5 do catálogo.
+Sem isso, ficam 4 padrões, que já é o mínimo exigido.
+
+*Avaliados e rejeitados com justificativa (seção 3 do catálogo):* State, Chain of
+Responsibility, Iterator, Adapter, Singleton, Abstract Factory, Builder.
 
 **Pontos de extensão (5 obrigatórios, 6 mapeados):**
 
