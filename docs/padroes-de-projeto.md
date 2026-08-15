@@ -113,8 +113,8 @@ a garantia mecânica de que nenhum jogo cliente pode subverter a ordem da partid
 extensão do framework; `MotorDeTrinca` e `MotorDeBlackjack` ficam nos pacotes dos
 jogos clientes e a estendem. As operações primitivas recebem apenas um
 `ContextoDePartida` público e controlado. Assim, a subclasse não importa
-`BaralhoBase`, `MaoDeCartas` ou `Mesa` de `core`, preservando a separação exigida no
-enunciado sem esconder o Template Method atrás de uma fachada.
+implementações internas como `ContextoDeDistribuicaoPadrao` de `core`, preservando
+a separação exigida no enunciado sem esconder o Template Method atrás de uma fachada.
 
 **Alternativa rejeitada.** Strategy para o fluxo inteiro. Descartada porque a sequência
 da partida **não** deve variar em tempo de execução nem ser substituível pelo cliente;
@@ -415,7 +415,7 @@ O enunciado exige **multiplicidades** nominalmente; é item de checagem.
 | Herança | linha cheia, triângulo vazado | `MotorDeTrinca → MotorDePartida` |
 | Realização (implementação) | linha **tracejada**, triângulo vazado | `ValidacaoTrinca ⇢ RegraDeValidacaoStrategy` |
 | Composição (o todo destrói a parte) | losango **cheio** | `Baralho ◆— Carta`, `ContextoDePartida ◆— MaoDeCartas` |
-| Agregação (parte sobrevive ao todo) | losango **vazado** | `MotorDePartida ◇— PartidaListener`, `Mesa ◇— Carta` |
+| Agregação (parte sobrevive ao todo) | losango **vazado** | `MotorDePartida ◇— PartidaListener`, `PilhaDeDescarte ◇— Carta` |
 | Associação direcionada | seta simples | `MotorDePartida → RegraDeVitoriaStrategy` |
 
 **Multiplicidades a desenhar:**
@@ -433,7 +433,9 @@ Jogador           1  ——  1..*  MaoDeCartas      (Blackjack pode dividir a m�
 Jogador           1  ——  1     EstrategiaDeDecisao
 MaoDeCartas       1  ——  0..*  Carta
 Baralho           1  ——  0..*  Carta
-Mesa              1  ——  0..*  Carta
+ContextoDeDistribuicao 1 —— 1  Baralho
+ContextoDeDistribuicao 1 —— 2..* Jogador
+PilhaDeDescarte   1  ——  0..*  Carta             (somente no cliente Trinca)
 ```
 
 **Convenções visuais:**
