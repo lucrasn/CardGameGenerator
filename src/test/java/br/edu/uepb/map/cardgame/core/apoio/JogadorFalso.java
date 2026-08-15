@@ -1,6 +1,9 @@
 package br.edu.uepb.map.cardgame.core.apoio;
 
 import br.edu.uepb.map.cardgame.api.Jogador;
+import br.edu.uepb.map.cardgame.api.EstrategiaDeDecisao;
+
+import java.util.UUID;
 
 /**
  * Dublê de teste para {@link Jogador}, usado pelos testes do {@code core}.
@@ -17,6 +20,11 @@ import br.edu.uepb.map.cardgame.api.Jogador;
  */
 public final class JogadorFalso implements Jogador {
 
+    private static final EstrategiaDeDecisao SEM_DECISAO = contexto -> {
+        throw new UnsupportedOperationException("dublê não toma decisões");
+    };
+
+    private final UUID id = UUID.randomUUID();
     private final String nome;
 
     /**
@@ -24,6 +32,21 @@ public final class JogadorFalso implements Jogador {
      */
     public JogadorFalso(String nome) {
         this.nome = nome;
+    }
+
+    @Override
+    public UUID id() {
+        return id;
+    }
+
+    @Override
+    public String nome() {
+        return nome;
+    }
+
+    @Override
+    public EstrategiaDeDecisao estrategiaDeDecisao() {
+        return SEM_DECISAO;
     }
 
     @Override

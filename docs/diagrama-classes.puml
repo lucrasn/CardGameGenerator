@@ -1,0 +1,200 @@
+@startuml CardGameFramework
+
+!pragma layout smetana
+
+title CardGame Framework — diagrama de classes da baseline
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+hide empty fields
+hide empty methods
+
+package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
+    interface Carta <<public>> {
+        +id(): UUID
+    }
+
+    interface Baralho <<public>> {
+        +quantidadeDeCartas(): int
+        +estaVazio(): boolean
+        +contem(cartaId: UUID): boolean
+        +comprar(): Carta
+        +adicionar(cartas: Collection): void
+        +embaralhar(): void
+    }
+
+    class BaralhoPadrao <<public, final>>
+    interface BaralhoFactory <<public, Strategy>> {
+        +criarBaralho(): Baralho
+    }
+
+    interface Jogador <<public>> {
+        +id(): UUID
+        +nome(): String
+    }
+
+    class JogadorPadrao <<public, final>>
+
+    interface MaoDeCartas <<public, read-only>> {
+        +quantidadeDeCartas(): int
+        +estaVazia(): boolean
+        +cartas(): List
+        +contem(cartaId: UUID): boolean
+    }
+
+    interface VisaoDaPartida <<public, read-only>>
+    interface ContextoDePartida <<public>>
+    interface ContextoDeDistribuicao <<public>>
+    class ContextoDeValidacao <<public, record>>
+
+    class PartidaConfig <<public, final>>
+    class "PartidaConfig.Builder" as PartidaConfigBuilder <<public, Builder>>
+    enum EstadoPartida <<public>>
+    class ResultadoDoTurno <<public, record>>
+    class DesfechoDePartida <<public, record>>
+    class ResultadoDePartida <<public, record>>
+
+    interface Jogada <<public>>
+    interface ContextoDeDecisao <<public>>
+    interface "EstrategiaDeDecisao<C,J>" as EstrategiaDeDecisao <<public, Strategy>>
+    interface EstrategiaDeDistribuicao <<public, Strategy>>
+    interface RegraDeValidacaoStrategy <<public, Strategy>>
+    interface RegraDeVitoriaStrategy <<public, Strategy>>
+    interface RegraDePontuacaoStrategy <<public, Strategy>>
+
+    interface MotivoDeEncerramento <<public>> {
+        +ehVitoria(): boolean
+        +ehEmpate(): boolean
+    }
+    enum MotivoPadrao <<public>>
+
+    interface EventoDePartida <<public>>
+    interface PartidaListener <<public, Observer>> {
+        +aoOcorrer(evento: EventoDePartida): void
+    }
+}
+
+package "br.edu.uepb.map.cardgame.api.evento" as eventos #EAF2F8 {
+    class PartidaIniciada <<public, record>>
+    class TurnoIniciado <<public, record>>
+    class JogadaRejeitada <<public, record>>
+    class TurnoEncerrado <<public, record>>
+    class PartidaFinalizada <<public, record>>
+}
+
+package "br.edu.uepb.map.cardgame.api.excecao" as excecoes #EAF2F8 {
+    abstract class PartidaException <<public>>
+    class BaralhoVazioException <<public, final>>
+    class EstadoDePartidaInvalidoException <<public, final>>
+    class JogadaInvalidaException <<public, final>>
+}
+
+package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
+    abstract class MotorDePartida <<public, Template Method>> {
+        +executar(): ResultadoDePartida
+        +adicionarListener(listener: PartidaListener): void
+        +removerListener(listener: PartidaListener): boolean
+        +estado(): EstadoPartida
+        #preparar(contexto: ContextoDePartida): void
+        {abstract} #executarTurno(contexto: ContextoDePartida): ResultadoDoTurno
+        #aoEncerrar(visao: VisaoDaPartida, resultado: ResultadoDePartida): void
+    }
+
+    class GerenciadorDeTurnos <<package-private>>
+    enum SentidoDeRotacao <<package-private>>
+    class CicloDeVidaDaPartida <<package-private>>
+    class PartidaEmExecucao <<package-private>>
+    class ContextoDeDistribuicaoInterno <<package-private>>
+    class MaoInterna <<private, nested>>
+}
+
+package "clientes-stub (src/test)" as clientes #E8F8F5 {
+    class MotorDeTrincaStub <<client>>
+    class MotorDeBlackjackStub <<client>>
+    class CartaTrinca <<client, record>>
+    class CartaBlackjack <<client, record>>
+    enum AcaoTrinca <<client>>
+    enum AcaoBlackjack <<client>>
+}
+
+BaralhoPadrao ..|> Baralho
+BaralhoPadrao "1" *-- "0..*" Carta
+BaralhoFactory ..> Baralho : cria
+
+JogadorPadrao ..|> Jogador
+ContextoDePartida --|> VisaoDaPartida
+ContextoDeValidacao --> VisaoDaPartida
+ContextoDeValidacao --> Jogada
+EstrategiaDeDecisao ..> ContextoDeDecisao
+EstrategiaDeDecisao ..> Jogada
+EstrategiaDeDistribuicao ..> ContextoDeDistribuicao
+RegraDeValidacaoStrategy ..> ContextoDeValidacao
+RegraDeVitoriaStrategy ..> VisaoDaPartida
+RegraDeVitoriaStrategy ..> DesfechoDePartida
+RegraDePontuacaoStrategy ..> VisaoDaPartida
+RegraDePontuacaoStrategy ..> DesfechoDePartida
+
+PartidaConfigBuilder ..> PartidaConfig : build()
+PartidaConfig "1" o-- "2..*" Jogador
+PartidaConfig --> BaralhoFactory
+PartidaConfig --> EstrategiaDeDistribuicao
+PartidaConfig --> RegraDeVitoriaStrategy
+PartidaConfig --> RegraDePontuacaoStrategy
+
+MotivoPadrao ..|> MotivoDeEncerramento
+DesfechoDePartida "1" o-- "0..*" Jogador : vencedores
+DesfechoDePartida --> MotivoDeEncerramento
+ResultadoDePartida "1" o-- "0..*" Jogador : vencedores / placar
+ResultadoDePartida --> MotivoDeEncerramento
+
+PartidaIniciada ..|> EventoDePartida
+TurnoIniciado ..|> EventoDePartida
+JogadaRejeitada ..|> EventoDePartida
+TurnoEncerrado ..|> EventoDePartida
+PartidaFinalizada ..|> EventoDePartida
+PartidaFinalizada --> ResultadoDePartida
+
+BaralhoVazioException --|> PartidaException
+EstadoDePartidaInvalidoException --|> PartidaException
+JogadaInvalidaException --|> PartidaException
+
+MotorDePartida --> PartidaConfig
+MotorDePartida "1" o-- "0..*" PartidaListener
+MotorDePartida "1" *-- "1" CicloDeVidaDaPartida
+MotorDePartida ..> PartidaEmExecucao : cria durante executar()
+MotorDePartida ..> ResultadoDoTurno : aplica
+MotorDePartida ..> EventoDePartida : publica
+
+PartidaEmExecucao ..|> ContextoDePartida
+PartidaEmExecucao "1" *-- "1" Baralho
+PartidaEmExecucao "1" --> "2..*" Jogador
+PartidaEmExecucao "1" *-- "2..*" MaoInterna
+PartidaEmExecucao --> GerenciadorDeTurnos
+PartidaEmExecucao --> CicloDeVidaDaPartida
+MaoInterna ..|> MaoDeCartas
+MaoInterna "1" *-- "0..*" Carta
+GerenciadorDeTurnos "1" --> "2..*" Jogador
+GerenciadorDeTurnos --> SentidoDeRotacao
+ContextoDeDistribuicaoInterno ..|> ContextoDeDistribuicao
+ContextoDeDistribuicaoInterno --> PartidaEmExecucao
+
+MotorDeTrincaStub --|> MotorDePartida
+MotorDeBlackjackStub --|> MotorDePartida
+CartaTrinca ..|> Carta
+CartaBlackjack ..|> Carta
+AcaoTrinca ..|> Jogada
+AcaoBlackjack ..|> Jogada
+
+note right of MotorDePartida
+  Único tipo público de engine.
+  executar() é final no código.
+end note
+
+note bottom of PartidaEmExecucao
+  O agregado é criado por execução;
+  não é armazenado como associação
+  permanente no motor.
+end note
+
+@enduml

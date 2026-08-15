@@ -70,3 +70,4 @@ $RECYCLE.BIN/
 
 # Observação: .DS_Store, .AppleDouble e .LSOverride (macOS) também já são
 # cobertos pela regra ".*" no topo deste arquivo.
+/AGENT.md
