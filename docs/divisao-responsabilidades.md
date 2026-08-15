@@ -96,31 +96,40 @@ Entrega de defesa: "por que o framework chama o jogo e não o contrário".
 
 ---
 
-### Trilha B — Domínio de Cartas, Baralho e Mesa
+### Trilha B — Domínio de Cartas, Baralho e Distribuição
 
-**Dono dos dados do jogo e do encapsulamento das coleções (requisito 7).**
+**Dono dos dados de cartas e do encapsulamento das coleções (requisito 7).**
 
 Arquivos: `api/Carta`, `api/Baralho`, `api/BaralhoPadrao`, `api/BaralhoFactory`,
 `api/MaoDeCartas`, `api/MaoDeCartasPadrao`, estratégia/contexto de distribuição e
-a implementação interna da mesa.
+a implementação interna do contexto de distribuição.
 
 Responsabilidades:
 
 - Modelar `Carta` como abstração aberta o suficiente para carta francesa (naipe +
   valor), carta de Uno (cor + símbolo) e carta de atributos (Super Trunfo) — sem
-  que o `core` saiba de nenhuma delas.
+  que o `core` saiba de nenhuma delas. Toda carta possui `UUID` único e estável,
+  permitindo distinguir cópias visualmente iguais de baralhos diferentes.
 - **Criação de baralho como ponto de extensão** (`BaralhoFactory`): baralho de 52,
   de 40 (truco), com/sem coringa. Padrão **Factory Method** / **Abstract Factory**.
 - Embaralhamento e **formas diferentes de distribuir cartas** como estratégia
   substituível (o PDF cita isso explicitamente na p. 1).
-- **Encapsulamento rigoroso:** `MaoDeCartasPadrao`, `BaralhoPadrao` e a mesa nunca devolvem
-  a `List` interna. Cópia defensiva ou `Collections.unmodifiableList`. Este é um
-  requisito literal do enunciado e um item fácil de perder na correção.
+- **Encapsulamento rigoroso:** `MaoDeCartasPadrao` e `BaralhoPadrao` nunca devolvem
+  a coleção interna. As consultas devolvem snapshots com `List.copyOf`, que são
+  imutáveis e não acompanham alterações posteriores. Este é um requisito literal
+  do enunciado e um item fácil de perder na correção.
+- A distribuição recebe um `ContextoDeDistribuicao` com operações controladas, sem
+  expor o baralho ou as mãos mutáveis. Quantidade, ordem e destinatários pertencem
+  à estratégia concreta.
+- O framework não possui uma `Mesa` genérica. `PilhaDeDescarte` pertence à Trinca;
+  estados públicos do Blackjack pertencem ao Blackjack. Uma abstração só será
+  promovida ao framework se houver reuso real entre jogos independentes.
 
 Padrões: **Factory Method/Abstract Factory**, opcionalmente **Iterator** e
 **Prototype** (avaliar necessidade real).
 
 Entrega de defesa: "mostre que eu não consigo corromper a mão de um jogador por fora".
+Rascunho da justificativa: `docs/trilha-b-dominio-cartas.md`.
 
 ---
 
@@ -220,7 +229,7 @@ cedo — mas o **UML não migra**, ele precisa ficar com quem monta os jogos.
 | Trilha                        | Integrante  | Pacotes de que é dono                                                       |
 | ----------------------------- | ----------- | --------------------------------------------------------------------------- |
 | A — Motor e Ciclo de Vida     | **Lucas**   | `api` (motor, contexto, configuração, estado e resultado) + `core` (turnos) |
-| B — Cartas, Baralho, Mesa     | **Júlio**   | `api` (carta, baralho, mão, distribuição) + implementação da mesa           |
+| B — Cartas, Baralho, Distribuição | **Júlio** | `api` (carta, baralho, mão, distribuição) + contexto interno de distribuição |
 | C — Jogadores e Estratégias   | **Allan**   | `api/Jogador`, jogadores, I/O de console                                    |
 | D — Regras, Exceções, Eventos | **Lívia**   | `api/Regra*`, `api/PartidaListener`, exceções                               |
 | E — Jogo, UML e Relatório     | **Raffael** | `br.edu.uepb.map.trinca`, `br.edu.uepb.map.blackjack`, `docs/`              |
@@ -321,8 +330,10 @@ Encontrados no estado atual do repositório:
 1. **Migração pública necessária:** `EstadoPartida` e `ResultadoDePartida` já possuem
    implementação/testes, mas precisam sair de `core` e entrar em `api` junto com
    `MotorDePartida`, conforme o contrato público.
-2. **Substituição necessária:** `core/BaralhoBase` deve virar o componente público
-   reutilizável `api/BaralhoPadrao`.
+2. **Concluído na Trilha B:** `core/BaralhoBase` e `core/MaoDeCartas` foram
+   substituídos pelos componentes públicos genéricos `api/BaralhoPadrao` e
+   `api/MaoDeCartasPadrao`; o esqueleto `core/Mesa` foi removido por não representar
+   uma abstração reutilizável comprovada.
 3. **`docs/especificacao_arquitetural.md` ainda precisa ser consolidado** e o UML
    precisa ser produzido após o congelamento da API.
 4. **Exceções, eventos e contextos públicos ainda não existem no código.**
