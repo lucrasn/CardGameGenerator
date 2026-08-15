@@ -15,6 +15,7 @@ import java.util.UUID;
  * operações; isso preserva a propriedade dos contratos entre as trilhas.
  *
  * @param <C> tipo de carta usado pela partida
+ *
  * @author Lucas N. de Araújo
  * @version 0.0.1
  * @since 2026-06-15
@@ -67,27 +68,47 @@ public final class PartidaConfig<C extends Carta> {
         return new Builder<>();
     }
 
-    /** @return participantes em lista imutável */
+    /**
+     * Consulta os participantes na ordem configurada.
+     *
+     * @return participantes em lista imutável
+     */
     public List<Jogador> jogadores() {
         return jogadores;
     }
 
-    /** @return fábrica de baralho configurada */
+    /**
+     * Consulta a fábrica que criará um novo baralho para a execução.
+     *
+     * @return fábrica de baralho configurada
+     */
     public BaralhoFactory<C> baralhoFactory() {
         return baralhoFactory;
     }
 
-    /** @return estratégia de distribuição configurada */
+    /**
+     * Consulta o algoritmo de distribuição inicial.
+     *
+     * @return estratégia de distribuição configurada
+     */
     public EstrategiaDeDistribuicao<C> distribuicao() {
         return distribuicao;
     }
 
-    /** @return índice do primeiro participante na lista */
+    /**
+     * Consulta a posição de quem começará a partida.
+     *
+     * @return índice do primeiro participante na lista
+     */
     public int primeiroJogador() {
         return primeiroJogador;
     }
 
-    /** Construtor fluente da configuração imutável. */
+    /**
+     * Construtor fluente da configuração imutável.
+     *
+     * @param <C> tipo de carta usado pela partida configurada
+     */
     public static final class Builder<C extends Carta> {
 
         private List<Jogador> jogadores;
@@ -99,6 +120,8 @@ public final class PartidaConfig<C extends Carta> {
         }
 
         /**
+         * Define os participantes e sua ordem de turnos.
+         *
          * @param jogadores participantes em ordem de turnos
          * @return este Builder
          */
@@ -108,6 +131,8 @@ public final class PartidaConfig<C extends Carta> {
         }
 
         /**
+         * Define como o baralho da execução será criado.
+         *
          * @param baralhoFactory fábrica da composição de cartas
          * @return este Builder
          */
@@ -117,6 +142,8 @@ public final class PartidaConfig<C extends Carta> {
         }
 
         /**
+         * Define como as cartas iniciais serão entregues.
+         *
          * @param distribuicao estratégia de distribuição inicial
          * @return este Builder
          */
@@ -126,6 +153,8 @@ public final class PartidaConfig<C extends Carta> {
         }
 
         /**
+         * Define quem começa a partida.
+         *
          * @param primeiroJogador índice inicial, zero por padrão
          * @return este Builder
          */
@@ -138,6 +167,10 @@ public final class PartidaConfig<C extends Carta> {
          * Valida e cria a configuração.
          *
          * @return configuração imutável
+         * @throws NullPointerException se jogadores, fábrica, distribuição, algum
+         *         jogador ou alguma identidade forem nulos
+         * @throws IllegalArgumentException se houver menos de dois jogadores,
+         *         identidades repetidas ou índice inicial fora da lista
          */
         public PartidaConfig<C> build() {
             return new PartidaConfig<>(this);

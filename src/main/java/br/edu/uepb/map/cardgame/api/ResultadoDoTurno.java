@@ -17,7 +17,12 @@ public record ResultadoDoTurno(boolean repetirJogador,
                                boolean inverterSentido,
                                int jogadoresAPular) {
 
-    /** Valida combinações incompatíveis. */
+    /**
+     * Cria uma diretiva e rejeita combinações incompatíveis.
+     *
+     * @throws IllegalArgumentException se a quantidade for negativa ou se a diretiva
+     *         tentar repetir o participante e pular outros ao mesmo tempo
+     */
     public ResultadoDoTurno {
         if (jogadoresAPular < 0) {
             throw new IllegalArgumentException("A quantidade de jogadores a pular não pode ser negativa.");
@@ -27,24 +32,39 @@ public record ResultadoDoTurno(boolean repetirJogador,
         }
     }
 
-    /** @return diretiva de avanço normal */
+    /**
+     * Cria uma diretiva de avanço simples.
+     *
+     * @return diretiva de avanço normal
+     */
     public static ResultadoDoTurno avancar() {
         return new ResultadoDoTurno(false, false, 0);
     }
 
-    /** @return diretiva que mantém o mesmo participante */
+    /**
+     * Cria uma diretiva que conserva a vez atual.
+     *
+     * @return diretiva que mantém o mesmo participante
+     */
     public static ResultadoDoTurno repetir() {
         return new ResultadoDoTurno(true, false, 0);
     }
 
-    /** @return diretiva que inverte o sentido e avança */
+    /**
+     * Cria uma diretiva que inverte a rotação antes de avançar.
+     *
+     * @return diretiva que inverte o sentido e avança
+     */
     public static ResultadoDoTurno inverter() {
         return new ResultadoDoTurno(false, true, 0);
     }
 
     /**
+     * Cria uma diretiva que salta participantes antes do próximo turno.
+     *
      * @param quantidade participantes a saltar
      * @return diretiva de pulo e avanço
+     * @throws IllegalArgumentException se a quantidade for negativa
      */
     public static ResultadoDoTurno pular(int quantidade) {
         return new ResultadoDoTurno(false, false, quantidade);

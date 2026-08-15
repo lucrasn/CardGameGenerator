@@ -14,12 +14,22 @@ import br.edu.uepb.map.cardgame.api.Jogador;
  * baralho nem as mãos mutáveis mantidas pelo engine.
  *
  * @param <C> tipo de carta distribuído
+ *
+ * @author Lucas N. de Araújo
+ * @version 0.0.1
+ * @since 2026-06-15
  */
 final class ContextoDeDistribuicaoInterno<C extends Carta>
         implements ContextoDeDistribuicao<C> {
 
     private final PartidaEmExecucao<C> partida;
 
+    /**
+     * Cria o adaptador para uma execução em andamento.
+     *
+     * @param partida execução que receberá as cartas distribuídas
+     * @throws NullPointerException se {@code partida} for nula
+     */
     ContextoDeDistribuicaoInterno(PartidaEmExecucao<C> partida) {
         this.partida = Objects.requireNonNull(partida, "A partida não pode ser nula.");
     }

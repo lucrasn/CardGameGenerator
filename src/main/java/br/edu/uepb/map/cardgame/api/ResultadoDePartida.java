@@ -25,7 +25,15 @@ public record ResultadoDePartida(List<Jogador> vencedores,
                                  Map<Jogador, Integer> placar,
                                  MotivoDeEncerramento motivo) {
 
-    /** Faz cópias defensivas e valida as invariantes do resultado. */
+    /**
+     * Cria um resultado por cópia defensiva e valida suas invariantes.
+     *
+     * @throws NullPointerException se algum componente, jogador, identidade ou
+     *         pontuação forem nulos
+     * @throws IllegalArgumentException se uma identidade se repetir, um vencedor não
+     *         constar do placar, uma vitória não indicar vencedor ou o motivo
+     *         representar vitória e empate ao mesmo tempo
+     */
     public ResultadoDePartida {
         Objects.requireNonNull(vencedores, "A lista de vencedores não pode ser nula.");
         Objects.requireNonNull(placar, "O placar não pode ser nulo.");
@@ -69,12 +77,18 @@ public record ResultadoDePartida(List<Jogador> vencedores,
         }
     }
 
-    /** @return {@code true} somente quando o motivo declara empate */
+    /**
+     * Informa se o motivo classificou o encerramento como empate.
+     *
+     * @return {@code true} somente quando o motivo declara empate
+     */
     public boolean houveEmpate() {
         return motivo.ehEmpate();
     }
 
     /**
+     * Consulta o vencedor quando o resultado possui exatamente um e não é empate.
+     *
      * @return vencedor único quando há exatamente um e o motivo não é empate
      */
     public Optional<Jogador> vencedorUnico() {
@@ -88,6 +102,7 @@ public record ResultadoDePartida(List<Jogador> vencedores,
      *
      * @param jogador participante consultado
      * @return pontuação registrada, se existir
+     * @throws NullPointerException se o jogador ou sua identidade forem nulos
      */
     public Optional<Integer> pontuacaoDe(Jogador jogador) {
         Objects.requireNonNull(jogador, "O jogador consultado não pode ser nulo.");

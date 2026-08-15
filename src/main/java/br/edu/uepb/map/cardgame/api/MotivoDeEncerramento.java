@@ -19,6 +19,8 @@ package br.edu.uepb.map.cardgame.api;
 public interface MotivoDeEncerramento {
 
     /**
+     * Indica se o motivo representa uma condição de vitória.
+     *
      * @return {@code true} quando o motivo representa uma vitória e exige vencedor
      */
     default boolean ehVitoria() {
@@ -26,6 +28,8 @@ public interface MotivoDeEncerramento {
     }
 
     /**
+     * Indica se o motivo representa um empate explícito.
+     *
      * @return {@code true} quando o motivo representa um empate explícito
      */
     default boolean ehEmpate() {

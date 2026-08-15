@@ -33,6 +33,10 @@ import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
  * {@link #calcularPontuacao(VisaoDaPartida, DesfechoDePartida)} mantêm o motor
  * executável sem assumir assinaturas que pertencem a outra trilha.
  *
+ * <p>Uma instância representa uma única execução e não é segura para acesso
+ * concorrente. Se um hook propagar uma falha inesperada, o motor conserva o estado
+ * alcançado e não pode ser reiniciado; uma nova partida exige uma nova instância.
+ *
  * @param <C> tipo de carta usado pela partida
  * @author Lucas N. de Araújo
  * @version 0.0.1
@@ -49,6 +53,7 @@ public abstract class MotorDePartida<C extends Carta> {
      * Cria um motor configurado, ainda não executado.
      *
      * @param configuracao participantes, baralho e distribuição
+     * @throws NullPointerException se a configuração for nula
      */
     protected MotorDePartida(PartidaConfig<C> configuracao) {
         this.configuracao = Objects.requireNonNull(
@@ -60,6 +65,9 @@ public abstract class MotorDePartida<C extends Carta> {
      *
      * @return resultado imutável
      * @throws EstadoDePartidaInvalidoException se chamado mais de uma vez
+     * @throws IllegalStateException se um participante não produzir um turno válido
+     *         após o limite interno de tentativas ou se os hooks violarem as
+     *         invariantes de vencedor e placar
      */
     public final ResultadoDePartida executar() {
         ciclo.exigir(EstadoPartida.CONFIGURADA);
@@ -99,17 +107,35 @@ public abstract class MotorDePartida<C extends Carta> {
         }
     }
 
-    /** @return estado público atual do ciclo de vida */
+    /**
+     * Consulta o estado alcançado pelo ciclo de vida.
+     *
+     * @return estado público atual
+     */
     public final EstadoPartida estado() {
         return ciclo.estado();
     }
 
-    /** Hook opcional chamado antes da distribuição inicial. */
+    /**
+     * Prepara zonas e dados específicos antes da distribuição inicial.
+     *
+     * <p>O contexto está em {@link EstadoPartida#PREPARANDO}; mãos vazias e baralho
+     * embaralhado já existem.
+     *
+     * @param contexto operações controladas da execução em preparação
+     */
     protected void preparar(ContextoDePartida<C> contexto) {
         // Hook deliberadamente vazio.
     }
 
-    /** Hook opcional chamado após a distribuição e antes do primeiro turno. */
+    /**
+     * Completa a preparação depois da distribuição e antes do primeiro turno.
+     *
+     * <p>O contexto ainda está em {@link EstadoPartida#PREPARANDO}. Este hook atende
+     * montagens que dependem das mãos iniciais já formadas.
+     *
+     * @param contexto operações controladas após a distribuição inicial
+     */
     protected void aposDistribuir(ContextoDePartida<C> contexto) {
         // Hook deliberadamente vazio.
     }
@@ -117,8 +143,14 @@ public abstract class MotorDePartida<C extends Carta> {
     /**
      * Executa um turno completo sem avançar ou finalizar diretamente.
      *
+     * <p>Quando uma ação for inválida, a implementação deve lançar
+     * {@link JogadaInvalidaException} antes de realizar mutações irreversíveis. O
+     * engine repete o hook com o mesmo jogador e número de turno, mas não executa
+     * rollback do estado do cliente.
+     *
      * @param contexto operações genéricas controladas
-     * @return diretiva de controle a ser aplicada pelo engine
+     * @return diretiva de controle não nula a ser aplicada pelo engine
+     * @throws JogadaInvalidaException se a ação puder ser corrigida repetindo o turno
      */
     protected abstract ResultadoDoTurno executarTurno(ContextoDePartida<C> contexto);
 
@@ -126,17 +158,24 @@ public abstract class MotorDePartida<C extends Carta> {
      * Avalia se o estado corrente encerra a partida.
      *
      * @param contexto visão somente leitura
-     * @return desfecho quando a partida terminou; vazio caso contrário
+     * @return {@link Optional} não nulo contendo o desfecho quando a partida terminou;
+     *         vazio caso contrário
      */
     protected abstract Optional<DesfechoDePartida> avaliarDesfecho(
             VisaoDaPartida<C> contexto);
 
     /**
-     * Calcula o placar final. A implementação padrão atribui zero a todos.
+     * Calcula o placar que será incorporado ao resultado final.
      *
-     * @param contexto visão final da partida
+     * <p>A chamada ocorre enquanto o contexto ainda está em
+     * {@link EstadoPartida#EM_ANDAMENTO}; a transição para
+     * {@link EstadoPartida#FINALIZADA} acontece somente depois que o placar é validado
+     * e o resultado é criado. A implementação padrão atribui zero a todos.
+     *
+     * @param contexto visão somente leitura imediatamente antes da finalização
      * @param desfecho desfecho já validado
-     * @return placar contendo exatamente todos os participantes
+     * @return mapa não nulo contendo exatamente todos os participantes, sem chaves ou
+     *         pontuações nulas
      */
     protected Map<Jogador, Integer> calcularPontuacao(
             VisaoDaPartida<C> contexto, DesfechoDePartida desfecho) {
@@ -145,7 +184,14 @@ public abstract class MotorDePartida<C extends Carta> {
         return placar;
     }
 
-    /** Hook opcional chamado depois da transição para o estado final. */
+    /**
+     * Reage ao encerramento depois que o resultado e o estado final existem.
+     *
+     * <p>O contexto está em {@link EstadoPartida#FINALIZADA} e rejeita mutações.
+     *
+     * @param contexto visão somente leitura da partida finalizada
+     * @param resultado resultado imutável produzido pelo engine
+     */
     protected void aoEncerrar(VisaoDaPartida<C> contexto, ResultadoDePartida resultado) {
         // Hook deliberadamente vazio.
     }

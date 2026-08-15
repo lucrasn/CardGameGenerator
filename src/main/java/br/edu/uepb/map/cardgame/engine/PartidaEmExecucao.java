@@ -26,6 +26,10 @@ import br.edu.uepb.map.cardgame.api.excecao.EstadoDePartidaInvalidoException;
  * usada para armazenar baralho, mãos, turnos e ciclo de vida.
  *
  * @param <C> tipo de carta usado pela partida
+ *
+ * @author Lucas N. de Araújo
+ * @version 0.0.1
+ * @since 2026-06-15
  */
 final class PartidaEmExecucao<C extends Carta> implements ContextoDePartida<C> {
 
@@ -36,6 +40,16 @@ final class PartidaEmExecucao<C extends Carta> implements ContextoDePartida<C> {
     private final CicloDeVidaDaPartida ciclo;
     private long numeroDoTurno;
 
+    /**
+     * Monta o estado mutável de uma execução e cria uma mão vazia por jogador.
+     *
+     * @param jogadores participantes da partida
+     * @param baralho baralho exclusivo da execução
+     * @param turnos gerenciador de ordem e rotação dos jogadores
+     * @param ciclo controlador do estado do ciclo de vida
+     * @throws NullPointerException se algum argumento, jogador ou identificador for nulo
+     * @throws IllegalArgumentException se dois jogadores tiverem o mesmo identificador
+     */
     PartidaEmExecucao(List<Jogador> jogadores,
                       Baralho<C> baralho,
                       GerenciadorDeTurnos turnos,
@@ -134,6 +148,15 @@ final class PartidaEmExecucao<C extends Carta> implements ContextoDePartida<C> {
         baralho.embaralhar();
     }
 
+    /**
+     * Compra a próxima carta e a entrega diretamente à mão indicada.
+     *
+     * @param jogador destinatário da carta
+     * @throws br.edu.uepb.map.cardgame.api.excecao.BaralhoVazioException se o baralho estiver vazio
+     * @throws EstadoDePartidaInvalidoException se o estado atual não permitir mutação
+     * @throws NullPointerException se {@code jogador} ou seu identificador for nulo
+     * @throws IllegalArgumentException se o jogador não pertencer à partida
+     */
     void entregarProximaCarta(Jogador jogador) {
         exigirMutavel();
         MaoDeCartas<C> mao = localizarMao(jogador);
@@ -141,6 +164,12 @@ final class PartidaEmExecucao<C extends Carta> implements ContextoDePartida<C> {
         mao.adicionar(carta);
     }
 
+    /**
+     * Atualiza o número ordinal exposto pela visão da partida.
+     *
+     * @param numeroDoTurno novo ordinal, maior ou igual a zero
+     * @throws IllegalArgumentException se o valor for negativo
+     */
     void definirNumeroDoTurno(long numeroDoTurno) {
         if (numeroDoTurno < 0) {
             throw new IllegalArgumentException("O número do turno não pode ser negativo.");

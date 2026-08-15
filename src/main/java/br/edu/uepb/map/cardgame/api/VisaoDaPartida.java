@@ -10,19 +10,32 @@ import java.util.List;
  * operações capazes de alterá-la. As coleções devolvidas são snapshots imutáveis.
  *
  * @param <C> tipo de carta usado pela partida
+ *
  * @author Lucas N. de Araújo
  * @version 0.0.1
  * @since 2026-06-15
  */
 public interface VisaoDaPartida<C extends Carta> {
 
-    /** @return estado atual do ciclo de vida */
+    /**
+     * Informa a etapa atual do ciclo de vida.
+     *
+     * @return estado atual do ciclo de vida
+     */
     EstadoPartida estado();
 
-    /** @return participantes em lista imutável e na ordem de turnos */
+    /**
+     * Consulta os participantes na ordem configurada para os turnos.
+     *
+     * @return snapshot imutável dos participantes
+     */
     List<Jogador> jogadores();
 
-    /** @return participante de quem é a vez */
+    /**
+     * Consulta o participante de quem é a vez.
+     *
+     * @return jogador atual, nunca {@code null}
+     */
     Jogador jogadorAtual();
 
     /**
@@ -30,12 +43,23 @@ public interface VisaoDaPartida<C extends Carta> {
      *
      * @param jogador participante da partida
      * @return snapshot imutável das cartas da mão
+     * @throws NullPointerException se o jogador ou sua identidade forem nulos
+     * @throws IllegalArgumentException se o jogador não pertencer à partida
      */
     List<C> maoDe(Jogador jogador);
 
-    /** @return número de cartas restantes no baralho compartilhado */
+    /**
+     * Consulta o tamanho atual do baralho compartilhado.
+     *
+     * @return número de cartas restantes no baralho
+     */
     int quantidadeNoBaralho();
 
-    /** @return número do turno corrente, começando em um; zero durante a preparação */
+    /**
+     * Consulta o número lógico do turno.
+     *
+     * @return número do turno corrente, começando em um; zero enquanto nenhum
+     *         turno tiver sido iniciado
+     */
     long numeroDoTurno();
 }

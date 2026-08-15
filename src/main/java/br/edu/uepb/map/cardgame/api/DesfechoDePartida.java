@@ -18,7 +18,14 @@ import java.util.UUID;
  */
 public record DesfechoDePartida(List<Jogador> vencedores, MotivoDeEncerramento motivo) {
 
-    /** Copia as coleções e rejeita combinações evidentemente incoerentes. */
+    /**
+     * Cria um desfecho por cópia defensiva e valida suas invariantes.
+     *
+     * @throws NullPointerException se a lista, o motivo, algum vencedor ou sua
+     *         identidade forem nulos
+     * @throws IllegalArgumentException se uma identidade se repetir, uma vitória não
+     *         indicar vencedor ou o motivo representar vitória e empate ao mesmo tempo
+     */
     public DesfechoDePartida {
         Objects.requireNonNull(vencedores, "A lista de vencedores não pode ser nula.");
         Objects.requireNonNull(motivo, "O motivo de encerramento não pode ser nulo.");
