@@ -89,9 +89,9 @@ da subclasse"*.
 
 | Participante (slide) | Nossa classe |
 |---|---|
-| `AbstractTemplate` | `MotorDePartida` (abstrata) |
+| `AbstractTemplate` | `api.MotorDePartida` (abstrata) |
 | Template Method (marcado `final`) | `MotorDePartida.executar()` |
-| Operações primitivas (abstratas, obrigatórias) | `distribuirCartasIniciais()`, `executarTurno()`, `partidaTerminou()` |
+| Operações primitivas (abstratas, obrigatórias) | `distribuirCartasIniciais(ContextoDePartida)`, `executarTurno(ContextoDePartida)`, `partidaTerminou(ContextoDePartida)` |
 | Hooks / métodos gancho (com implementação padrão) | `aoIniciarPartida()`, `aoEncerrarTurno()`, `permiteDescarte()` |
 | `ImplementationA`, `ImplementationB` | `MotorDeTrinca`, `MotorDeBlackjack` |
 
@@ -108,6 +108,13 @@ diz literalmente que o padrão se aplica *"em frameworks e bibliotecas"* e que
 *"o framework ou a superclasse controla o fluxo"*. Marcar `executar()` como `final` é
 a garantia mecânica de que nenhum jogo cliente pode subverter a ordem da partida —
 é o **frozen-spot** da arquitetura.
+
+**Fronteira pública.** `MotorDePartida` pertence à API pública como a abstração de
+extensão do framework; `MotorDeTrinca` e `MotorDeBlackjack` ficam nos pacotes dos
+jogos clientes e a estendem. As operações primitivas recebem apenas um
+`ContextoDePartida` público e controlado. Assim, a subclasse não importa
+`BaralhoBase`, `MaoDeCartas` ou `Mesa` de `core`, preservando a separação exigida no
+enunciado sem esconder o Template Method atrás de uma fachada.
 
 **Alternativa rejeitada.** Strategy para o fluxo inteiro. Descartada porque a sequência
 da partida **não** deve variar em tempo de execução nem ser substituível pelo cliente;
@@ -181,8 +188,8 @@ criar um objeto, mas deixa as subclasses decidirem qual classe instanciar."*
 
 | Participante (slide) | Nossas classes |
 |---|---|
-| `Product` | `Carta` |
-| `ConcreteProduct` | `CartaFrancesa`, `CartaDeTrinca` |
+| `Product` | `Baralho` |
+| `ConcreteProduct` | `BaralhoDeTrinca`, `BaralhoDeBlackjack` |
 | `Creator` | `BaralhoFactory` |
 | `ConcreteCreator` | `BaralhoFrancesFactory` (52), `BaralhoDeTrincaFactory` |
 
@@ -193,7 +200,7 @@ criar personagens, é **decidir qual criar**. Quem deveria ter essa responsabili
 
 **Justificativa para a defesa.** É a resposta ao *"Provê ganchos para subclasses"* do
 slide 07.1 — a criação do baralho é o primeiro hot-spot que um jogo novo precisa
-preencher, e é o que permite ao `core` trabalhar apenas contra a interface `Carta`
+preencher, e é o que permite ao `core` trabalhar apenas contra a interface `Baralho`
 (*"o código só lida com a interface Produto"*, slide 07.1).
 
 **Distinção que provavelmente será cobrada na defesa.** Não é Abstract Factory. Abstract
@@ -322,7 +329,7 @@ mostrar o que foi descartado e por quê é a prova de que a escolha foi delibera
 | **Adapter** | camada de console | Não há interface incompatível a adaptar — o console é código nosso, escrito já no formato certo. |
 | **Singleton** | `BaralhoFactory` | Não foi dado em aula, introduz estado global e quebra o isolamento dos testes. Rejeição fácil de defender. |
 | **Abstract Factory** | criação de baralho | Há um único produto variável, não uma família. Ver 2.3. |
-| **Builder** | `ConfiguracaoDePartida` | Reavaliar **só se** a configuração passar de 4 parâmetros. Hoje não passa. |
+| **Builder** | `PartidaConfig` | **Adotado como decisão auxiliar:** a configuração agora tem jogadores, fábrica de baralho, distribuição, três regras, primeiro jogador e listeners. O Builder evita um construtor longo e posicional. Não conta entre os quatro padrões GoF da disciplina, pois não foi estudado; será descrito como apoio de construção, sem inflar a contagem. |
 
 ---
 
