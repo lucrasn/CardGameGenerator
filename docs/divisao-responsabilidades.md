@@ -1,11 +1,9 @@
 # Divisão de Responsabilidades — Projeto Final MAP (CPT01091)
 
 **Equipe (5 integrantes):** Lucas · Allan · Raffael · Lívia · Júlio
-**Jogo cliente escolhido:** Trinca
-**Status deste documento:** proposta para votação — as trilhas estão **anônimas** (A–E) de propósito.
-
-> Como usar: leiam as cinco trilhas, votem, e só depois preencham a tabela de
-> alocação da seção 3. Nada aqui pressupõe quem fica com o quê.
+**Jogo cliente principal:** Trinca
+**Jogo-prova de extensibilidade (defesa):** Blackjack mínimo
+**Status deste documento:** trilhas **definidas** — ver alocação na seção 3.
 
 ---
 
@@ -32,17 +30,17 @@ Além disso (p. 2): **no mínimo 4 padrões GoF**, justificativa de **SOLID** e 
 diagrama UML com multiplicidades, relatório de **até 8 páginas**, e
 **todos os 5 integrantes apresentam** o design para a professora.
 
-### ⚠ Dois pontos de atenção que a equipe precisa decidir agora
+### ⚠ Dois pontos de atenção (um decidido, um pendente)
 
-**(a) Segundo jogo.** A p. 2 diz: *"criar pelo menos uma aplicação cliente [...] e
-mostrar na defesa do projeto que é possível criar outro jogo utilizando a mesma
-biblioteca. Os jogos devem possuir diferenças suficientes para demonstrar
-extensibilidade."* Ou seja: **um jogo completo é o mínimo obrigatório, mas a defesa
-exige demonstrar um segundo.** A recomendação desta proposta é implementar a Trinca
-por inteiro **+ um "jogo-prova" mínimo** (ex.: Blackjack em ~150 linhas, sem
-polimento de console), cujo único papel é provar em tela que o framework se estende
-sem alterar o `core`. É barato e elimina o maior risco de nota da defesa.
-Se a equipe discordar, **confirmem com a professora antes**, não depois.
+**(a) Segundo jogo — DECIDIDO.** A p. 2 diz: *"criar pelo menos uma aplicação cliente
+[...] e mostrar na defesa do projeto que é possível criar outro jogo utilizando a
+mesma biblioteca. Os jogos devem possuir diferenças suficientes para demonstrar
+extensibilidade."* A equipe optou por **Trinca completa + Blackjack mínimo** como
+jogo-prova. O Blackjack não precisa de polimento de console: seu único papel é provar
+em tela que o framework se estende **sem alterar uma linha do `core`**. A diferença
+entre os dois é o argumento da defesa — Trinca é jogo de formação de conjunto entre
+jogadores, Blackjack é jogo de acumulação contra limite fixo com dealer; eles exercitam
+hot-spots diferentes (regra de vitória, regra de pontuação, condição de parada de turno).
 
 **(b) Regras da Trinca.** As regras exatas (nº de cartas na mão, condição de vitória,
 compra/descarte, empate) **não estão no PDF** e precisam ser escritas pela equipe
@@ -209,21 +207,21 @@ fecham, esta vira a mais pesada em implementação. A carga total empata; ela s�
 distribuída em ordem invertida no tempo.
 
 **Risco desta trilha:** é a única que concentra dois entregáveis distintos (código +
-documento). Se a votação apontar que ficou pesada, a saída é passar o **relatório**
-para a Trilha A (que também tem folga na fase final, já que o motor congela cedo) —
-mas **não** passar o UML, que precisa ficar com quem monta o jogo.
+documento). Válvula de escape acordada: se na Fase 3 ficar pesada, o **relatório**
+migra para a Trilha A (Lucas), que tem folga na fase final porque o motor congela
+cedo — mas o **UML não migra**, ele precisa ficar com quem monta os jogos.
 
 ---
 
-## 3. Tabela de alocação (preencher após a votação)
+## 3. Tabela de alocação (definida)
 
 | Trilha | Integrante | Pacotes de que é dono |
 |---|---|---|
-| A — Motor e Ciclo de Vida | | `core` (motor, turnos, estado) |
-| B — Cartas, Baralho, Mesa | | `api/Carta`, `api/BaralhoFactory`, `core` (baralho, mão, mesa) |
-| C — Jogadores e Estratégias | | `api/Jogador`, jogadores, I/O de console |
-| D — Regras, Exceções, Eventos | | `api/Regra*`, `api/PartidaListener`, exceções |
-| E — Jogo, UML e Relatório | | `br.edu.uepb.map.trinca`, `docs/` |
+| A — Motor e Ciclo de Vida | **Lucas** | `core` (motor, turnos, estado) |
+| B — Cartas, Baralho, Mesa | **Júlio** | `api/Carta`, `api/BaralhoFactory`, `core` (baralho, mão, mesa) |
+| C — Jogadores e Estratégias | **Allan** | `api/Jogador`, jogadores, I/O de console |
+| D — Regras, Exceções, Eventos | **Lívia** | `api/Regra*`, `api/PartidaListener`, exceções |
+| E — Jogo, UML e Relatório | **Raffael** | `br.edu.uepb.map.trinca`, `br.edu.uepb.map.blackjack`, `docs/` |
 
 ---
 
