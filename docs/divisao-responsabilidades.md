@@ -2,7 +2,7 @@
 
 **Equipe (5 integrantes):** Lucas · Allan · Raffael · Lívia · Júlio
 **Jogo cliente principal:** Trinca
-**Jogo-prova de extensibilidade (defesa):** Blackjack mínimo
+**Segundo jogo de extensibilidade (defesa):** Blackjack com regra de mesa proposta em `regras-blackjack.md`
 **Status deste documento:** trilhas **definidas** — ver alocação na seção 3.
 
 ---
@@ -11,41 +11,41 @@
 
 Resumo dos itens que a divisão precisa cobrir, para servir de checklist:
 
-| # | Requisito obrigatório (p. 3 do PDF) |
-|---|---|
-| 1 | API pública claramente definida |
-| 2 | Pelo menos **cinco** pontos de extensão |
-| 3 | Separação entre código da solução e código das aplicações clientes |
-| 4 | Pelo menos uma aplicação cliente (jogo) |
-| 5 | Uso de interfaces e classes abstratas |
-| 6 | Tratamento adequado de exceções |
-| 7 | Encapsulamento das coleções internas |
-| 8 | Testes automatizados |
-| 9 | Javadoc da API pública |
-| 10 | Diagrama de classes simplificado (especificação escrita) |
-| 11 | Exemplos de utilização (na apresentação) |
-| 12 | Justificativa das decisões de projeto (especificação escrita) |
+| #   | Requisito obrigatório (p. 3 do PDF)                                |
+| --- | ------------------------------------------------------------------ |
+| 1   | API pública claramente definida                                    |
+| 2   | Pelo menos **cinco** pontos de extensão                            |
+| 3   | Separação entre código da solução e código das aplicações clientes |
+| 4   | Pelo menos uma aplicação cliente (jogo)                            |
+| 5   | Uso de interfaces e classes abstratas                              |
+| 6   | Tratamento adequado de exceções                                    |
+| 7   | Encapsulamento das coleções internas                               |
+| 8   | Testes automatizados                                               |
+| 9   | Javadoc da API pública                                             |
+| 10  | Diagrama de classes simplificado (especificação escrita)           |
+| 11  | Exemplos de utilização (na apresentação)                           |
+| 12  | Justificativa das decisões de projeto (especificação escrita)      |
 
 Além disso (p. 2): **no mínimo 4 padrões GoF**, justificativa de **SOLID** e **GRASP**,
 diagrama UML com multiplicidades, relatório de **até 8 páginas**, e
 **todos os 5 integrantes apresentam** o design para a professora.
 
-### ⚠ Dois pontos de atenção (um decidido, um pendente)
+### ⚠ Dois pontos de atenção
 
-**(a) Segundo jogo — DECIDIDO.** A p. 2 diz: *"criar pelo menos uma aplicação cliente
+**(a) Segundo jogo — DECIDIDO.** A p. 2 diz: _"criar pelo menos uma aplicação cliente
 [...] e mostrar na defesa do projeto que é possível criar outro jogo utilizando a
 mesma biblioteca. Os jogos devem possuir diferenças suficientes para demonstrar
-extensibilidade."* A equipe optou por **Trinca completa + Blackjack mínimo** como
-jogo-prova. O Blackjack não precisa de polimento de console: seu único papel é provar
-em tela que o framework se estende **sem alterar uma linha do `core`**. A diferença
+extensibilidade."_ A equipe optou por **Trinca completa + Blackjack**. A regra exata
+da mesa de Blackjack ainda precisa ser escrita; seu papel arquitetural é provar em
+tela que o framework se estende **sem alterar uma linha do `core`**. A diferença
 entre os dois é o argumento da defesa — Trinca é jogo de formação de conjunto entre
 jogadores, Blackjack é jogo de acumulação contra limite fixo com dealer; eles exercitam
 hot-spots diferentes (regra de vitória, regra de pontuação, condição de parada de turno).
 
-**(b) Regras da Trinca.** As regras exatas (nº de cartas na mão, condição de vitória,
-compra/descarte, empate) **não estão no PDF** e precisam ser escritas pela equipe
-antes da Fase 1 — elas definem quais hot-spots o framework precisa expor. Enquanto o
-documento de regras não existir, a Trilha E fica bloqueada.
+**(b) Regras da Trinca — CONCLUÍDO.** A variante de nove cartas está definida em
+`docs/regras-trinca.md`. Os contratos derivados estão em
+`docs/requisitos-api-trinca.md` e ainda precisam de aprovação conjunta antes de serem
+considerados congelados.
 
 ---
 
@@ -73,8 +73,9 @@ Três regras que valem para **todas** as trilhas, sem exceção:
 
 **Dono do fluxo de execução do framework: a Inversão de Controle mora aqui.**
 
-Arquivos: `core/MotorDePartida`, `core/GerenciadorDeTurnos`, `core/EstadoPartida`
-(hoje `EstadoPartida` — corrigir o typo), e a classe/builder de configuração da partida.
+Arquivos: `api/MotorDePartida`, `api/EstadoPartida`, `api/ResultadoDePartida`,
+`api/ContextoDePartida`, `api/PartidaConfig`, `core/GerenciadorDeTurnos` e
+`core/SentidoDeRotacao`.
 
 Responsabilidades:
 
@@ -87,9 +88,9 @@ Responsabilidades:
 - Garantir que o `core` **não importa nada** de pacote de jogo concreto — essa é a
   prova mecânica do requisito 3.
 
-Padrões que esta trilha justifica no relatório: **Template Method** (obrigatório),
-**State** ou **Builder** (opcionais — avaliar contra *overengineering*; o PDF
-penaliza excesso explicitamente).
+Padrões que esta trilha justifica no relatório: **Template Method** (obrigatório) e
+**Builder** como apoio para `PartidaConfig` (não entra na contagem dos quatro padrões
+estudados). State foi rejeitado por excesso para quatro estados sem comportamento.
 
 Entrega de defesa: "por que o framework chama o jogo e não o contrário".
 
@@ -99,8 +100,9 @@ Entrega de defesa: "por que o framework chama o jogo e não o contrário".
 
 **Dono dos dados do jogo e do encapsulamento das coleções (requisito 7).**
 
-Arquivos: `api/Carta`, `api/BaralhoFactory`, `core/BaralhoBase`, `core/MaoDeCartas`,
-`core/Mesa`.
+Arquivos: `api/Carta`, `api/Baralho`, `api/BaralhoPadrao`, `api/BaralhoFactory`,
+`api/MaoDeCartas`, `api/MaoDeCartasPadrao`, estratégia/contexto de distribuição e
+a implementação interna da mesa.
 
 Responsabilidades:
 
@@ -111,7 +113,7 @@ Responsabilidades:
   de 40 (truco), com/sem coringa. Padrão **Factory Method** / **Abstract Factory**.
 - Embaralhamento e **formas diferentes de distribuir cartas** como estratégia
   substituível (o PDF cita isso explicitamente na p. 1).
-- **Encapsulamento rigoroso:** `MaoDeCartas`, `BaralhoBase` e `Mesa` nunca devolvem
+- **Encapsulamento rigoroso:** `MaoDeCartasPadrao`, `BaralhoPadrao` e a mesa nunca devolvem
   a `List` interna. Cópia defensiva ou `Collections.unmodifiableList`. Este é um
   requisito literal do enunciado e um item fácil de perder na correção.
 
@@ -200,7 +202,7 @@ Responsabilidades:
   nominalmente — é item de checklist da correção).
 - Consolidar o relatório de 8 páginas a partir dos rascunhos das outras trilhas.
 
-**Por que a carga faz sentido:** nas primeiras semanas esta trilha está *bloqueada*
+**Por que a carga faz sentido:** nas primeiras semanas esta trilha está _bloqueada_
 para código (o framework ainda não existe) — é exatamente o tempo em que ela produz
 regras, UML e esqueleto do relatório. Depois inverte: quando as outras trilhas
 fecham, esta vira a mais pesada em implementação. A carga total empata; ela só está
@@ -215,13 +217,13 @@ cedo — mas o **UML não migra**, ele precisa ficar com quem monta os jogos.
 
 ## 3. Tabela de alocação (definida)
 
-| Trilha | Integrante | Pacotes de que é dono |
-|---|---|---|
-| A — Motor e Ciclo de Vida | **Lucas** | `core` (motor, turnos, estado) |
-| B — Cartas, Baralho, Mesa | **Júlio** | `api/Carta`, `api/BaralhoFactory`, `core` (baralho, mão, mesa) |
-| C — Jogadores e Estratégias | **Allan** | `api/Jogador`, jogadores, I/O de console |
-| D — Regras, Exceções, Eventos | **Lívia** | `api/Regra*`, `api/PartidaListener`, exceções |
-| E — Jogo, UML e Relatório | **Raffael** | `br.edu.uepb.map.trinca`, `br.edu.uepb.map.blackjack`, `docs/` |
+| Trilha                        | Integrante  | Pacotes de que é dono                                                       |
+| ----------------------------- | ----------- | --------------------------------------------------------------------------- |
+| A — Motor e Ciclo de Vida     | **Lucas**   | `api` (motor, contexto, configuração, estado e resultado) + `core` (turnos) |
+| B — Cartas, Baralho, Mesa     | **Júlio**   | `api` (carta, baralho, mão, distribuição) + implementação da mesa           |
+| C — Jogadores e Estratégias   | **Allan**   | `api/Jogador`, jogadores, I/O de console                                    |
+| D — Regras, Exceções, Eventos | **Lívia**   | `api/Regra*`, `api/PartidaListener`, exceções                               |
+| E — Jogo, UML e Relatório     | **Raffael** | `br.edu.uepb.map.trinca`, `br.edu.uepb.map.blackjack`, `docs/`              |
 
 ---
 
@@ -229,20 +231,20 @@ cedo — mas o **UML não migra**, ele precisa ficar com quem monta os jogos.
 
 Nenhum requisito pode ficar sem dono. Confira contra a tabela da seção 0:
 
-| Req. | Descrição | Dono |
-|---|---|---|
-| 1 | API pública definida | A (fronteira) + B, C, D (conteúdo) |
-| 2 | ≥ 5 pontos de extensão | B (2) + C (1) + D (3) — ver seção 5 |
-| 3 | Separação framework/cliente | A garante no `core`; E prova ao consumir |
-| 4 | Aplicação cliente | E |
-| 5 | Interfaces e classes abstratas | todas |
-| 6 | Tratamento de exceções | **D** |
-| 7 | Encapsulamento de coleções | **B** |
-| 8 | Testes automatizados | cada trilha testa o que escreve; E faz o de integração |
-| 9 | Javadoc da API pública | cada trilha documenta o que escreve |
-| 10 | Diagrama de classes | **E** |
-| 11 | Exemplos de utilização | **E** |
-| 12 | Justificativa das decisões | rascunho por trilha, consolidação em E |
+| Req. | Descrição                      | Dono                                                   |
+| ---- | ------------------------------ | ------------------------------------------------------ |
+| 1    | API pública definida           | A (fronteira) + B, C, D (conteúdo)                     |
+| 2    | ≥ 5 pontos de extensão         | B (2) + C (1) + D (3) — ver seção 5                    |
+| 3    | Separação framework/cliente    | A garante no `core`; E prova ao consumir               |
+| 4    | Aplicação cliente              | E                                                      |
+| 5    | Interfaces e classes abstratas | todas                                                  |
+| 6    | Tratamento de exceções         | **D**                                                  |
+| 7    | Encapsulamento de coleções     | **B**                                                  |
+| 8    | Testes automatizados           | cada trilha testa o que escreve; E faz o de integração |
+| 9    | Javadoc da API pública         | cada trilha documenta o que escreve                    |
+| 10   | Diagrama de classes            | **E**                                                  |
+| 11   | Exemplos de utilização         | **E**                                                  |
+| 12   | Justificativa das decisões     | rascunho por trilha, consolidação em E                 |
 
 ---
 
@@ -260,41 +262,46 @@ extensão**. Os únicos GoF dados em aula (`MATERIAL_DA_AULA/`, aulas 03.1 a 07.
 
 **Padrões:**
 
-| Padrão | Onde | Trilha | Problema que resolve |
-|---|---|---|---|
-| Template Method | `MotorDePartida` | A | fluxo da partida é invariante, os passos variam por jogo |
-| Strategy | regras de validação/pontuação/vitória e decisão do jogador | C, D | variar algoritmo sem herança e sem `if/else` por tipo de jogo |
-| Factory Method | `BaralhoFactory` | B | criar baralhos de composições diferentes sem o motor saber qual |
-| Observer | `PartidaListener` | D | notificar eventos sem acoplar o motor ao console |
-| Decorator *(condicional)* | composição de `RegraDeValidacaoStrategy` | D | evitar explosão de subclasses na combinação de validações |
+| Padrão                    | Onde                                                       | Trilha | Problema que resolve                                            |
+| ------------------------- | ---------------------------------------------------------- | ------ | --------------------------------------------------------------- |
+| Template Method           | `MotorDePartida`                                           | A      | fluxo da partida é invariante, os passos variam por jogo        |
+| Strategy                  | regras de validação/pontuação/vitória e decisão do jogador | C, D   | variar algoritmo sem herança e sem `if/else` por tipo de jogo   |
+| Factory Method            | `BaralhoFactory`                                           | B      | criar baralhos de composições diferentes sem o motor saber qual |
+| Observer                  | `PartidaListener`                                          | D      | notificar eventos sem acoplar o motor ao console                |
+| Decorator _(condicional)_ | composição de `RegraDeValidacaoStrategy`                   | D      | evitar explosão de subclasses na combinação de validações       |
 
 O Decorator só entra se houver **≥ 3 validações independentes** que se combinem de
 formas diferentes entre Trinca e Blackjack — critério definido na seção 2.5 do catálogo.
 Sem isso, ficam 4 padrões, que já é o mínimo exigido.
 
-*Avaliados e rejeitados com justificativa (seção 3 do catálogo):* State, Chain of
-Responsibility, Iterator, Adapter, Singleton, Abstract Factory, Builder.
+_Avaliados e rejeitados com justificativa (seção 3 do catálogo):_ State, Chain of
+Responsibility, Iterator, Adapter, Singleton e Abstract Factory. Builder foi adotado
+como apoio, sem entrar na contagem da disciplina.
 
-**Pontos de extensão (5 obrigatórios, 6 mapeados):**
+**Pontos de extensão (5 obrigatórios, 10 mapeados):**
 
 1. `Carta` — novos tipos de carta (B)
 2. `BaralhoFactory` — novas composições de baralho (B)
 3. Estratégia de distribuição — novas formas de distribuir (B)
 4. Estratégia de decisão do jogador — novos bots e jogador humano (C)
-5. `RegraDeValidacao` / `RegraDePontuacao` / `RegraDeVitoria` — novas regras (D)
-6. `PartidaListener` — novos observadores de evento (D)
+5. `RegraDeValidacaoStrategy` — novas validações (D)
+6. `RegraDeVitoriaStrategy` — novas condições de vitória (D)
+7. `RegraDePontuacaoStrategy` — novos cálculos de pontos (D)
+8. `Jogada` / `EtapaDeTurno` — novas ações e fases (C/E)
+9. `EventoDePartida` / `PartidaListener` — novos eventos e observadores (D/E)
+10. `MotorDePartida.executarTurno()` — especialização do turno (A/E)
 
 ---
 
 ## 6. Faseamento e dependências
 
-| Fase | O quê | Quem | Bloqueia |
-|---|---|---|---|
-| 0 | Regras da Trinca escritas + assinaturas das interfaces congeladas em reunião | **todos, juntos, em uma sessão** | tudo |
-| 1 | Implementação paralela de A, B, C, D | A, B, C, D | Fase 2 |
-| 2 | Integração: primeira partida rodando end-to-end | A + E | Fase 3 |
-| 3 | Trinca completa + jogo-prova + testes de integração | E | Fase 4 |
-| 4 | UML final, relatório consolidado, ensaio da defesa | **todos** | — |
+| Fase | O quê                                                                                     | Quem                             | Bloqueia |
+| ---- | ----------------------------------------------------------------------------------------- | -------------------------------- | -------- |
+| 0    | Regras da Trinca escritas + contratos de `requisitos-api-trinca.md` congelados em reunião | **todos, juntos, em uma sessão** | tudo     |
+| 1    | Implementação paralela de A, B, C, D                                                      | A, B, C, D                       | Fase 2   |
+| 2    | Integração: primeira partida rodando end-to-end                                           | A + E                            | Fase 3   |
+| 3    | Trinca completa + jogo-prova + testes de integração                                       | E                                | Fase 4   |
+| 4    | UML final, relatório consolidado, ensaio da defesa                                        | **todos**                        | —        |
 
 **A Fase 0 é inegociável e presencial.** Se as assinaturas das interfaces não forem
 acordadas antes de alguém escrever código, as quatro trilhas divergem e a Fase 2 vira
@@ -307,20 +314,19 @@ perceber na hora.
 
 ---
 
-## 7. Débitos técnicos a resolver na Fase 0
+## 7. Estado técnico e débitos da Fase 0
 
 Encontrados no estado atual do repositório:
 
-1. **`pom.xml` sem JUnit 5.** Não há dependência de teste nem `maven-surefire-plugin`.
-   O requisito 8 está literalmente impossível hoje. Primeira tarefa da Fase 0.
-2. **`pom.xml` declara `maven.compiler.source/target = 26`, o `README.md` diz
-   "Java 17+".** Divergência real: os cinco precisam compilar na mesma versão, ou
-   quem tiver JDK mais antigo não builda. Decidam uma e alinhem os dois arquivos.
-3. **`core/EstadoPartid.java` — nome truncado**, deveria ser `EstadoPartida`.
-   Renomear antes de qualquer import apontar para ele.
-4. **`docs/especificacao_arquitetural.md` está vazio** (0 bytes).
-5. **Nenhuma classe de exceção existe ainda** — o pacote da Trilha D é criado do zero.
-6. **`src/test/` não existe.** Criar a árvore junto com o item 1.
+1. **Migração pública necessária:** `EstadoPartida` e `ResultadoDePartida` já possuem
+   implementação/testes, mas precisam sair de `core` e entrar em `api` junto com
+   `MotorDePartida`, conforme o contrato público.
+2. **Substituição necessária:** `core/BaralhoBase` deve virar o componente público
+   reutilizável `api/BaralhoPadrao`.
+3. **`docs/especificacao_arquitetural.md` ainda precisa ser consolidado** e o UML
+   precisa ser produzido após o congelamento da API.
+4. **Exceções, eventos e contextos públicos ainda não existem no código.**
+5. **A proposta de `docs/regras-blackjack.md` ainda precisa de aprovação da equipe.**
 
 ---
 
@@ -338,6 +344,6 @@ Encontrados no estado atual do repositório:
 
 ---
 
-*Documento gerado a partir de `PROJETOS/AtividadeProposta.pdf` e do estado do
-repositório em 15/08/2026. As regras da Trinca e a distribuição nominal das trilhas
-ainda não foram definidas pela equipe.*
+_Documento atualizado a partir do enunciado e do estado do repositório em
+15/08/2026. Regras da Trinca e responsáveis estão definidos; API e regras do
+Blackjack ainda aguardam congelamento._

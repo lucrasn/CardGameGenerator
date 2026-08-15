@@ -1,16 +1,36 @@
-# Contratos públicos necessários para a Trinca
+# API pública do CardGame Framework - contrato para congelamento
 
-**Destinatários:** Trilhas A, B, C e D  
-**Origem:** [regras-trinca.md](regras-trinca.md)  
-**Status:** proposta revisada para aprovação na Fase 0.
+**Destinatários:** Trilhas A, B, C e D
+**Clientes de validação:** Trinca e Blackjack
+**Origem funcional:** [regras-trinca.md](regras-trinca.md)
+**Status:** candidata a congelamento na reunião da Fase 0.
 
-## 1. Decisão arquitetural que orienta os contratos
+Este documento define a fronteira que as outras trilhas podem implementar em
+paralelo. Nomes e responsabilidades abaixo deixam de ser sugestões depois da
+aprovação do checklist final. Alterações posteriores exigem comunicação ao grupo e
+teste de compatibilidade com os dois jogos clientes.
 
-O projeto é um framework, não uma fábrica automática de jogos. A Trinca e o
-Blackjack são aplicações clientes que especializam o fluxo reutilizável da partida.
+## 1. Decisões arquiteturais
 
-Para manter coerência com o **Template Method** já adotado no projeto, a equipe deve
-usar este modelo:
+### 1.1 Framework e aplicações clientes
+
+O framework fornece o fluxo, componentes reutilizáveis e contratos de extensão. A
+Trinca e o Blackjack fornecem apenas regras, cartas, ações, estratégias, console e
+especializações do motor.
+
+```text
+br.edu.uepb.map.cardgame.api       contratos e implementações públicas reutilizáveis
+br.edu.uepb.map.cardgame.core      implementação interna do framework
+br.edu.uepb.map.trinca             aplicação cliente Trinca
+br.edu.uepb.map.blackjack          aplicação cliente Blackjack
+```
+
+Regra mecânica: código de `trinca` e `blackjack` pode importar `api`, Java padrão e
+seus próprios tipos, mas nunca `cardgame.core`. O `core` nunca importa os jogos.
+
+### 1.2 Template Method público
+
+Para preservar o Template Method definido em `padroes-de-projeto.md`, o contrato é:
 
 ```text
 api.MotorDePartida (classe abstrata; executar() final)
@@ -18,38 +38,50 @@ api.MotorDePartida (classe abstrata; executar() final)
 └── blackjack.MotorDeBlackjack
 ```
 
-`MotorDePartida` é uma abstração pública do framework, apesar de sua implementação
-usar serviços internos de `core`. O cliente pode estendê-la e importar somente `api`;
-ele não pode importar `BaralhoBase`, `MaoDeCartas`, `Mesa` ou outro tipo interno.
+`MotorDePartida` pertence à API e recebe somente contratos públicos. Estado mutável,
+mesa e gerenciador de turnos continuam internos, acessíveis às subclasses apenas por
+`ContextoDePartida`, que oferece operações controladas.
 
-Uma fachada `Partidas` não será usada nesta versão, pois esconderia exatamente o
-ponto de extensão por herança que justifica o Template Method no relatório.
+Não haverá uma fachada `Partidas` nesta versão: ela esconderia o ponto de extensão
+por herança usado para justificar Template Method.
 
-## 2. Tipos públicos e fronteira de pacotes
+## 2. Catálogo da API por responsável
 
-| Pacote | Tipos públicos propostos | Responsável |
-|---|---|---|
-| `api` | `Carta`, `Baralho`, `BaralhoFactory`, `EstrategiaDistribuicao`, `ContextoDeDistribuicao` | B |
-| `api` | `Jogador`, `Jogada`, `EstrategiaDeDecisao`, `ContextoDeDecisao` | C |
-| `api` | `MotorDePartida`, `PartidaConfig`, `EstadoPartida`, `ResultadoPartida`, `ContextoDePartida` | A |
-| `api` | `RegraDeValidacaoStrategy`, `RegraDePontuacaoStrategy`, `RegraDeVitoriaStrategy`, seus contextos, `PartidaListener`, eventos e exceções | D |
-| `core` | `BaralhoBase`, `MaoDeCartas`, `Mesa`, `GerenciadorDeTurnos` e infraestrutura do motor | donos das respectivas trilhas |
-| `trinca` / `blackjack` | cartas, regras, ações, estratégias, listeners e motores concretos dos jogos | E, com apoio das demais trilhas |
+| Dono | Tipos públicos obrigatórios |
+|---|---|
+| A | `MotorDePartida`, `PartidaConfig`, `ContextoDePartida`, `EstadoPartida`, `ResultadoDePartida`, `MotivoDeEncerramento` |
+| B | `Carta`, `Baralho`, `BaralhoPadrao`, `BaralhoFactory`, `MaoDeCartas`, `MaoDeCartasPadrao`, `EstrategiaDeDistribuicao`, `ContextoDeDistribuicao` |
+| C | `Jogador`, `JogadorPadrao`, `Jogada`, `EstrategiaDeDecisao`, `ContextoDeDecisao`, `EtapaDeTurno` |
+| D | `RegraDeValidacaoStrategy`, `RegraDeVitoriaStrategy`, `RegraDePontuacaoStrategy`, `ContextoDeValidacao`, `ContextoDeVitoria`, `ContextoDePontuacao`, `AvaliacaoDeVitoria`, `PartidaListener`, `EventoDePartida` e exceções |
 
-O requisito de separação será verificado mecanicamente: nenhum arquivo nos pacotes
-de jogos concretos pode importar `br.edu.uepb.map.cardgame.core`.
+Eventos podem ficar em `api.evento` e exceções em `api.excecao`. Os demais tipos
+podem permanecer diretamente em `api` para evitar uma hierarquia prematura de
+pacotes.
 
-## 3. Baralho e distribuição - B
+## 3. Cartas, baralho e mão - Trilha B
 
-### 3.1 `Baralho` é um contrato público
+### 3.1 Carta
 
-`BaralhoFactory` precisa retornar um tipo público. A proposta é:
+`Carta` não expõe `naipe`, `valor`, `cor` ou `símbolo`: esses atributos não existem em
+todos os jogos. O framework exige somente identidade estável.
+
+```java
+public interface Carta {
+    UUID id();
+}
+```
+
+Cada carta concreta inclui o identificador na sua igualdade. Isso distingue as duas
+cartas de mesmo valor e naipe presentes nos dois baralhos da Trinca.
+
+### 3.2 Baralho público e implementação reutilizável
 
 ```java
 public interface Baralho {
-    boolean estaVazio();
     int quantidadeDeCartas();
+    boolean estaVazio();
     Carta comprar();
+    void adicionar(Collection<? extends Carta> cartas);
     void embaralhar();
 }
 
@@ -58,105 +90,297 @@ public interface BaralhoFactory {
 }
 ```
 
-`BaralhoBase` implementa `Baralho` em `core`. O cliente recebe e configura um
-`Baralho` pela fábrica, mas nunca vê a lista interna nem depende da implementação.
-
-Como a Trinca usa dois baralhos, uma carta deve possuir identidade única e estável
-(por exemplo, `UUID id()`), além dos atributos específicos de carta francesa. Isso
-evita ambiguidade entre duas cartas com mesmo valor e naipe.
-
-### 3.2 Distribuição por contexto controlado
-
-Uma estratégia pública não pode receber `BaralhoBase` e `MaoDeCartas`. Ela recebe um
-contexto que expõe apenas operações autorizadas:
+`BaralhoPadrao` é uma classe pública final que implementa `Baralho`. Seu construtor
+recebe uma coleção, faz cópia defensiva e nunca devolve a coleção interna.
+`adicionar` existe para o motor reciclar descartes; também copia a coleção recebida.
+`comprar` lança `BaralhoVazioException` quando usado sem carta disponível.
 
 ```java
-public interface EstrategiaDistribuicao {
+public final class BaralhoDeTrincaFactory implements BaralhoFactory {
+    @Override
+    public Baralho criarBaralho() {
+        return new BaralhoPadrao(cartasDaTrinca());
+    }
+}
+```
+
+`BaralhoBase` deixa de fazer parte da arquitetura. A Trilha B deve transformar o
+arquivo atual em `api.BaralhoPadrao`; não deve haver duas implementações padrão com
+nomes diferentes.
+
+### 3.3 Mão pública e reutilizável
+
+O enunciado exige mão de cartas como abstração. Ela não pode existir apenas como uma
+lista dentro de `core`, pois Trinca e Blackjack precisam consultar mãos e o Blackjack
+precisa criar outra mão ao dividir um par.
+
+```java
+public interface MaoDeCartas {
+    int quantidadeDeCartas();
+    List<Carta> cartas();              // cópia/visão imutável
+    boolean contem(UUID cartaId);
+}
+```
+
+`MaoDeCartasPadrao` é pública, final e reutilizável. Ela oferece operações controladas
+`adicionar(Carta)` e `remover(UUID)` sem permitir acesso à lista mutável. Um jogador
+pode possuir `1..*` mãos: Trinca usa uma; Blackjack pode usar várias após `split`.
+
+### 3.4 Distribuição sem tipos internos
+
+```java
+public interface EstrategiaDeDistribuicao {
     void distribuir(ContextoDeDistribuicao contexto);
 }
 
 public interface ContextoDeDistribuicao {
-    List<Jogador> jogadores();             // visão imutável
+    List<Jogador> jogadores();                // imutável
     Carta comprarDoBaralho();
-    void entregarCarta(Jogador jogador, Carta carta);
+    MaoDeCartas maoPrincipalDe(Jogador jogador);
+    void entregarCarta(Jogador jogador, MaoDeCartas mao, Carta carta);
 }
 ```
 
-A implementação `DistribuicaoAlternada` da Trinca chama essas operações para entregar
-9 cartas, uma por vez, a cada jogador. O contexto verifica pré-condições e mantém a
-posse das coleções internas.
+O contexto valida se jogador, mão e carta pertencem à partida. A distribuição da
+Trinca entrega nove cartas alternadamente; a do Blackjack entrega duas.
 
-## 4. Ações e decisão - C
+## 4. Jogadores, ações e decisões - Trilha C
 
-`Jogada` é uma interface pública **não selada** e imutável por convenção. Cada jogo
-define seus próprios `record`s de ação no respectivo pacote cliente:
+### 4.1 Identidade separada da decisão
 
 ```java
-// trinca
-public record Comprar(OrigemCompra origem) implements Jogada {}
-public record Descartar(Carta carta) implements Jogada {}
+public interface Jogador {
+    UUID id();
+    String nome();
+    EstrategiaDeDecisao estrategiaDeDecisao();
+}
 
-// blackjack
-public record PedirCarta() implements Jogada {}
-public record Parar() implements Jogada {}
-public record DobrarAposta() implements Jogada {}
-public record DividirMao() implements Jogada {}
-```
-
-Assim, a Trinca mantém compra e descarte como decisões separadas, e o Blackjack pode
-introduzir `Parar`, `DobrarAposta`, `DividirMao` ou outra ação sem editar o framework.
-
-```java
 public interface EstrategiaDeDecisao {
     Jogada decidir(ContextoDeDecisao contexto);
 }
 ```
 
-`ContextoDeDecisao` é imutável e inclui somente informações que o jogador atual pode
-conhecer: identificador/nome próprio, mão própria como lista imutável, informações
-públicas de mesa, quantidade de cartas no monte e as ações permitidas naquele ponto
-do turno. Nunca inclui mão de adversário, ordem do monte ou coleções mutáveis.
+`JogadorPadrao` é uma implementação pública reutilizável que recebe nome e estratégia
+por composição. Humano, bot e dealer diferem pela estratégia, não por subclasses de
+jogador. As mãos e a pontuação pertencem ao estado da partida, consultado por
+contextos; isso permite várias mãos no Blackjack.
 
-## 5. Contextos de regras - D
+### 4.2 Ações abertas para novos jogos
 
-As regras concretas não recebem `MaoDeCartas`, `Mesa` ou `BaralhoBase`. Cada contrato
-de regra recebe seu próprio contexto público, somente para leitura:
+```java
+public interface Jogada {}
+public interface EtapaDeTurno {}
+```
 
-| Estratégia | Contexto mínimo | Responsabilidade |
-|---|---|---|
-| `RegraDeValidacaoStrategy` | jogador atual, `Jogada`, estado/fase, mão do jogador atual, informações públicas de mesa e quantidade do monte | Aceitar ou rejeitar a ação atual. |
-| `RegraDeVitoriaStrategy` | jogadores, jogador atual, mãos como visões imutáveis, estado da partida e resultado parcial | Indicar vencedor ou informar que a partida continua. |
-| `RegraDePontuacaoStrategy` | jogadores, vencedor/empate e dados finais da partida | Calcular o placar final. |
+Ambas são interfaces não seladas. Cada cliente define seus tipos imutáveis:
 
-Nomes sugeridos: `ContextoDeValidacao`, `ContextoDeVitoria` e
-`ContextoDePontuacao`. A regra de validação lança `JogadaInvalidaException`; as regras
-de vitória e pontuação retornam um resultado de domínio, sem alterar o estado.
+```java
+// Trinca
+record Comprar(OrigemCompra origem) implements Jogada {}
+record Descartar(UUID cartaId) implements Jogada {}
+enum EtapaTrinca implements EtapaDeTurno { COMPRAR, DESCARTAR }
 
-**Limite de responsabilidade:** reciclar a pilha de descarte é uma operação da mesa,
-coordenada pelo fluxo do motor antes da compra. Não pertence a
-`RegraDeVitoriaStrategy`; esta apenas inspeciona se uma mão ou estado venceu.
+// Blackjack
+record PedirCarta(UUID maoId) implements Jogada {}
+record Parar(UUID maoId) implements Jogada {}
+record Dobrar(UUID maoId) implements Jogada {}
+record Dividir(UUID maoId) implements Jogada {}
+```
 
-## 6. Eventos e privacidade - D
+O framework não usa `instanceof` contra ações concretas dos jogos. `MotorDeTrinca` e
+`MotorDeBlackjack` interpretam suas ações e pedem validação pela Strategy configurada.
 
-`PartidaListener` observa eventos tipados e imutáveis. A proposta de dados é:
+### 4.3 Contexto privado de decisão
 
-| Evento | Dados expostos |
-|---|---|
-| `PartidaIniciada` | jogadores e quantidade distribuída; nunca mãos completas |
-| `TurnoIniciado` | jogador atual e número do turno |
-| `CartaComprada` | jogador e origem; não a carta comprada |
-| `CartaDescartada` | jogador e carta descartada, pois é pública |
-| `JogadaRejeitada` | jogador, ação e mensagem segura da exceção |
-| `TurnoEncerrado` | jogador |
-| `PartidaFinalizada` | vencedor opcional, empate e placar |
+```java
+public interface ContextoDeDecisao {
+    Jogador jogadorAtual();
+    List<MaoDeCartas> maosDoJogadorAtual();  // imutável
+    Map<Jogador, Integer> quantidadesDeCartasDosDemais();
+    List<Carta> cartasPublicas();
+    int quantidadeNoBaralho();
+    EtapaDeTurno etapa();
+}
+```
 
-O console recebe a própria mão através do `ContextoDeDecisao`, nunca por evento
-global. Isso preserva o encapsulamento e evita vazamento de informação para o outro
-jogador ou para futuras interfaces.
+Esse contexto nunca fornece mãos adversárias nem a ordem do baralho. Para dois
+humanos no mesmo terminal, a interface de console limpa/separa a tela antes de mostrar
+a mão do jogador atual.
 
-## 7. Exceções - D
+## 5. Regras e seus contextos - Trilha D
 
-Todas as exceções de domínio são não verificadas:
+As três estratégias são independentes e recebem apenas snapshots públicos. Nenhuma
+delas recebe `Mesa`, `GerenciadorDeTurnos` ou coleção mutável.
+
+```java
+public interface RegraDeValidacaoStrategy {
+    void validar(ContextoDeValidacao contexto);
+}
+
+public interface RegraDeVitoriaStrategy {
+    AvaliacaoDeVitoria avaliar(ContextoDeVitoria contexto);
+}
+
+public interface RegraDePontuacaoStrategy {
+    Map<Jogador, Integer> calcular(ContextoDePontuacao contexto);
+}
+```
+
+### 5.1 Contexto de validação
+
+```java
+public interface ContextoDeValidacao {
+    Jogador jogadorAtual();
+    Jogada jogada();
+    EtapaDeTurno etapa();
+    List<MaoDeCartas> maosDoJogadorAtual();
+    List<Carta> cartasPublicas();
+    int quantidadeNoBaralho();
+    EstadoPartida estado();
+}
+```
+
+`validar` não altera o estado. Em falha, lança `JogadaInvalidaException` com mensagem
+segura para apresentação no console.
+
+### 5.2 Contexto e resultado de vitória
+
+```java
+public interface ContextoDeVitoria {
+    List<Jogador> jogadores();
+    Map<Jogador, List<MaoDeCartas>> maosPorJogador();
+    Jogador jogadorAtual();
+    List<Carta> cartasPublicas();
+    EstadoPartida estado();
+}
+
+public record AvaliacaoDeVitoria(
+        boolean encerrada,
+        List<Jogador> vencedores,
+        MotivoDeEncerramento motivo) {
+    // construtor faz cópia defensiva e valida combinações incoerentes
+}
+```
+
+A regra de vitória apenas inspeciona a situação. Reciclar descarte, comprar carta,
+alterar mão ou avançar turno são responsabilidades do contexto/motor.
+
+### 5.3 Contexto de pontuação
+
+```java
+public interface ContextoDePontuacao {
+    List<Jogador> jogadores();
+    Map<Jogador, List<MaoDeCartas>> maosPorJogador();
+    AvaliacaoDeVitoria avaliacaoFinal();
+}
+```
+
+A pontuação retorna um mapa novo. O motor copia o mapa antes de colocá-lo em
+`ResultadoDePartida`.
+
+## 6. Motor, configuração e resultado - Trilha A
+
+### 6.1 Template Method
+
+```java
+public abstract class MotorDePartida {
+    protected MotorDePartida(PartidaConfig configuracao);
+
+    public final ResultadoDePartida executar();
+
+    protected void preparar(ContextoDePartida contexto) {}
+    protected abstract void executarTurno(ContextoDePartida contexto);
+    protected void aoEncerrar(ContextoDePartida contexto,
+                              ResultadoDePartida resultado) {}
+}
+```
+
+O método final controla: validar configuração, criar/embaralhar baralho, distribuir,
+executar turnos, avaliar vitória, pontuar, criar resultado, publicar eventos e
+finalizar. A distribuição e as regras são Strategies; `executarTurno` é o passo
+específico do jogo.
+
+### 6.2 Contexto mutável controlado
+
+`ContextoDePartida` é a porta de operações para o motor concreto. Ele não devolve
+objetos internos nem listas mutáveis.
+
+```java
+public interface ContextoDePartida {
+    EstadoPartida estado();
+    List<Jogador> jogadores();
+    Jogador jogadorAtual();
+    List<MaoDeCartas> maosDe(Jogador jogador);
+    MaoDeCartas criarMaoPara(Jogador jogador);
+    Carta comprarDoBaralho();
+    void entregarCarta(Jogador jogador, MaoDeCartas mao, Carta carta);
+    Carta removerDaMao(Jogador jogador, MaoDeCartas mao, UUID cartaId);
+    List<Carta> cartasPublicas();
+    void publicarCarta(Carta carta);
+    void recolherCartaPublica(UUID cartaId);
+    void devolverAoBaralho(Collection<UUID> cartasIds, boolean embaralhar);
+    void avancarTurno();
+    void publicar(EventoDePartida evento);
+}
+```
+
+Trinca usa a área de cartas públicas como descarte e devolve ao baralho todas menos o
+topo quando precisa reciclar. A operação permanece genérica: o contexto recebe os IDs
+escolhidos pelo motor concreto e não contém uma regra chamada "preservar topo".
+Blackjack usa a mesma visão para as cartas expostas do dealer e pode manter
+aposta/seguro como estado específico em `MotorDeBlackjack`, sem contaminar o
+framework.
+
+### 6.3 Builder
+
+`PartidaConfig` é imutável e criado por Builder porque possui mais de quatro
+dependências obrigatórias/opcionais:
+
+```java
+PartidaConfig config = PartidaConfig.builder()
+    .jogadores(jogadores)
+    .baralhoFactory(factory)
+    .estrategiaDeDistribuicao(distribuicao)
+    .regraDeValidacao(validacao)
+    .regraDeVitoria(vitoria)
+    .regraDePontuacao(pontuacao)
+    .primeiroJogador(indice)
+    .listeners(listeners)
+    .build();
+```
+
+O Builder valida: dois ou mais jogadores, referências não nulas, jogadores distintos,
+índice inicial válido e coleções copiadas defensivamente.
+
+### 6.4 Tipos públicos já implementados no lugar errado
+
+`EstadoPartida` e `ResultadoDePartida` são retornados ou consumidos pela API; portanto,
+devem migrar de `core` para `api`. `MotorDePartida` também deve migrar para `api` antes
+que outros imports se consolidem. `GerenciadorDeTurnos` e `SentidoDeRotacao`
+permanecem em `core`.
+
+`ResultadoDePartida.houveEmpate()` deve consultar o motivo explícito de encerramento,
+e não inferir empate pela quantidade de vencedores. Vários vencedores podem ser
+co-vencedores em jogos futuros, sem que isso represente empate.
+
+## 7. Eventos e exceções - Trilha D
+
+### 7.1 Observer extensível
+
+```java
+public interface EventoDePartida {}
+
+public interface PartidaListener {
+    void aoOcorrer(EventoDePartida evento);
+}
+```
+
+`EventoDePartida` não é selada: jogos podem criar eventos próprios. O framework
+fornece eventos comuns imutáveis para partida iniciada, turno iniciado/encerrado,
+jogada rejeitada e partida finalizada. Eventos de compra não revelam a carta; eventos
+de descarte podem revelá-la porque ela se tornou pública.
+
+### 7.2 Exceções
 
 ```text
 PartidaException extends RuntimeException
@@ -165,53 +389,54 @@ PartidaException extends RuntimeException
 `- BaralhoVazioException
 ```
 
-O motor captura `JogadaInvalidaException`, publica `JogadaRejeitada` e solicita outra
-ação ao mesmo jogador. `EstadoDePartidaInvalidoException` sinaliza uso incorreto do
-ciclo de vida. `BaralhoVazioException` é uma proteção de baixo nível: antes de ela
-interromper a Trinca, o motor coordena a reciclagem do descarte pela mesa.
+- `JogadaInvalidaException`: recuperável; publica evento e repete a decisão.
+- `EstadoDePartidaInvalidoException`: erro de ciclo de vida; propaga ao chamador.
+- `BaralhoVazioException`: falha da operação de compra; o motor pode reciclar antes
+  de tentar novamente ou encerrar conforme a regra do jogo.
 
-## 8. Configuração, Builder e turnos - A
+## 8. Pontos de extensão e componentes reutilizáveis
 
-`PartidaConfig` passou a ter jogadores, fábrica de baralho, estratégia de
-distribuição, três regras, primeiro jogador e listeners. Portanto, um **Builder** é
-justificável por legibilidade e para impedir construtores longos e posicionais:
+| # | Hot-spot público | Como o cliente estende |
+|---|---|---|
+| 1 | `Carta` | cria novos tipos de carta |
+| 2 | `BaralhoFactory` | define a composição do baralho |
+| 3 | `EstrategiaDeDistribuicao` | define quantidade e ordem de entrega |
+| 4 | `EstrategiaDeDecisao` | implementa humano, bot ou dealer |
+| 5 | `Jogada` / `EtapaDeTurno` | cria ações e fases próprias |
+| 6 | `RegraDeValidacaoStrategy` | cria validações do jogo |
+| 7 | `RegraDeVitoriaStrategy` | cria condições de vitória |
+| 8 | `RegraDePontuacaoStrategy` | cria cálculo de pontos |
+| 9 | `EventoDePartida` / `PartidaListener` | cria eventos e observadores |
+| 10 | operações protegidas de `MotorDePartida` | especializa o turno do jogo |
 
-```java
-PartidaConfig config = PartidaConfig.builder()
-    .jogadores(jogadores)
-    .baralhoFactory(factory)
-    .estrategiaDistribuicao(distribuicao)
-    .regraValidacao(validacao)
-    .regraVitoria(vitoria)
-    .regraPontuacao(pontuacao)
-    .primeiroJogador(indice)
-    .listeners(listeners)
-    .build();
-```
+Componentes reutilizáveis: `BaralhoPadrao`, `MaoDeCartasPadrao`, `JogadorPadrao`,
+`MotorDePartida.executar()`, `PartidaConfig`, infraestrutura de contexto,
+`GerenciadorDeTurnos`, notificação e exceções.
 
-Para a Trinca, a configuração concreta é: 2 jogadores, 9 cartas iniciais,
-`DistribuicaoAlternada`, primeiro jogador no índice 0 e turnos em ciclo circular na
-ordem da lista. A ordem circular é responsabilidade interna de
-`GerenciadorDeTurnos`; distribuição continua um ponto público de extensão.
+## 9. Testes de contrato que liberam as trilhas
 
-## 9. Critérios de aceite da API
+Antes de declarar a API congelada, cada dono implementa ao menos estes testes:
 
-A API estará pronta para a Trilha E quando for possível, usando apenas `api`:
+1. `BaralhoPadrao` e `MaoDeCartasPadrao` não expõem coleções mutáveis.
+2. `BaralhoDeTrincaFactory` cria 104 cartas e identidades distintas.
+3. `ContextoDeDistribuicao` distribui 9 cartas sem expor mão interna.
+4. `ContextoDeDecisao` não revela mãos adversárias.
+5. Uma ação nova `Parar implements Jogada` compila sem editar o framework.
+6. Regras da Trinca compilam usando apenas os três contextos públicos.
+7. `MotorDeTrinca` compila importando apenas `api`.
+8. Um listener recebe eventos sem o motor conhecer o console.
+9. Jogada inválida não altera o estado e permite nova tentativa.
+10. Nenhum arquivo do framework importa `trinca` ou `blackjack`.
 
-1. criar um `Baralho` de dois baralhos franceses por uma `BaralhoFactory`;
-2. especializar `MotorDePartida` em `MotorDeTrinca` sem importar `core`;
-3. distribuir nove cartas alternadamente por `ContextoDeDistribuicao`;
-4. criar ações próprias da Trinca e do Blackjack sem editar `Jogada`;
-5. implementar validação, vitória e pontuação usando apenas seus contextos públicos;
-6. reciclar o descarte no fluxo da mesa/motor, sem colocá-lo na regra de vitória;
-7. apresentar eventos de console sem revelar cartas privadas;
-8. tratar jogada inválida sem corromper ou encerrar a partida.
+## 10. Critério de congelamento
 
-## 10. Decisões que a reunião precisa aprovar
+- [ ] A confirma `MotorDePartida`, contextos, Builder, estados e resultado.
+- [ ] B confirma `Carta`, `BaralhoPadrao`, `MaoDeCartasPadrao` e distribuição.
+- [ ] C confirma jogador por composição, ações abertas e contexto privado.
+- [ ] D confirma assinaturas das três regras, eventos e exceções.
+- [ ] E implementa pequenos stubs de Trinca e `Parar` do Blackjack usando somente a
+      API, comprovando que nenhum tipo interno está faltando.
+- [ ] Todos aprovam que mudanças posteriores na API exigem revisão cruzada.
 
-- [ ] `Baralho`, `ContextoDeDistribuicao` e os três contextos de regra entram na API.
-- [ ] O modelo de Template Method com motores concretos por jogo substitui a fachada
-      `Partidas` nesta versão.
-- [ ] `Jogada` é extensível e ações concretas pertencem aos pacotes dos jogos.
-- [ ] O Builder de `PartidaConfig` é adotado e registrado como decisão de projeto.
-- [ ] A reciclagem do descarte pertence a mesa/motor, não à regra de vitória.
+Após os seis itens, as assinaturas são congeladas e A-D podem implementar em
+paralelo. O UML deve ser gerado somente depois desse ponto.

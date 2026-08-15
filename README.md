@@ -10,7 +10,7 @@ Proposta desenvolvida para a disciplina de **Métodos Avançados de Programaçã
 ## 2. Diretrizes Arquiteturais do Projeto
 A modelagem da infraestrutura será orientada pelos seguintes requisitos formais de design orientado a objetos:
 
-* **Inversão de Controle (IoC):** O motor interno do framework reterá o fluxo de execução principal da aplicação, invocando o código específico do jogo por meio das abstrações fornecidas.
+* **Inversão de Controle (IoC):** O motor abstrato público do framework reterá o fluxo de execução principal da aplicação, invocando o código específico do jogo por meio de operações protegidas e abstrações públicas.
 * **Segregação de Responsabilidades:** Separação estrita entre o código de produção do framework, as abstrações públicas de extensão e as aplicações clientes demonstrativas.
 * **Aplicação de Padrões de Projeto:** Emprego sistemático de padrões GoF (*Gang of Four*) e princípios GRASP para garantir alta coesão, baixo acoplamento e estrito cumprimento do Princípio do Aberto/Fechado (*Open-Closed Principle*).
 * **Robustez e Qualidade de Código:** Encapsulamento rigoroso das coleções internas de dados, tratamento formal de exceções de domínio e suíte de testes automatizados para validação dos componentes.

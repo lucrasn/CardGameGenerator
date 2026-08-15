@@ -140,13 +140,12 @@ tempo limite, pontuação acumulada em várias rodadas e regras regionais altern
 
 - [x] a variante de nove cartas com trincas e sequências é a Trinca oficial;
 - [x] a primeira demonstração será humano x humano;
-- [x] o segundo jogo de demonstração será Blackjack com regras completas da mesa
-      escolhida pela equipe;
+- [x] o segundo jogo de demonstração será Blackjack; a regra de mesa proposta está
+      em [regras-blackjack.md](regras-blackjack.md);
 - [ ] os contratos públicos serão congelados com base na seção 9.
 
 ### Regra ainda necessária para fechar o Blackjack
 
-"Blackjack normal" não é um regulamento único: cassinos variam, por exemplo, em
-`dealer hits/stands on soft 17`, número de baralhos, seguro, divisão e pagamento do
-blackjack natural. Antes da implementação do segundo cliente, a equipe precisa
-escolher e registrar uma mesa de regras específica.
+"Blackjack normal" não é um regulamento único. A proposta em
+[regras-blackjack.md](regras-blackjack.md) fixa baralho, soft 17, seguro, divisão, dobro, rendição e
+pagamentos; ela precisa ser aprovada antes da implementação do segundo cliente.
