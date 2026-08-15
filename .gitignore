@@ -9,10 +9,15 @@
 # caso contrário a regra acima deixa de existir para os outros integrantes.
 !.gitignore
 
+# Exceção do Maven Wrapper: sem estas linhas o `.*` acima engole o diretório `.mvn/`
+# e os outros integrantes clonam um repositório em que `./mvnw` não funciona.
+# Usamos a distribuição "only-script" do wrapper, que NÃO tem `maven-wrapper.jar` —
+# o próprio `./mvnw` baixa o Maven na primeira execução. Por isso basta liberar o
+# diretório: `wrapper` e `maven-wrapper.properties` não começam com ponto.
+!.mvn/
+
 # Exceções opcionais — descomente SE/QUANDO o projeto passar a usar:
 # !.gitattributes                    # normalização de fim de linha (CRLF/LF) entre Windows e Linux
-# !.mvn/                             # diretório do Maven Wrapper
-# !.mvn/wrapper/maven-wrapper.jar    # executor do Maven Wrapper (necessário junto com a linha acima)
 # !.github/                          # workflows de CI (GitHub Actions)
 
 # ==========================================
