@@ -1,4 +1,21 @@
 # ==========================================
+# Arquivos e Diretórios Ocultos (dotfiles)
+# ==========================================
+# Regra geral: ignorar TUDO que comece com "." em qualquer nível do repositório.
+# (.idea/, .vscode/, .DS_Store, .env, .classpath, .settings/, .claudecode.md, etc.)
+.*
+
+# Exceção obrigatória: o próprio .gitignore precisa ser versionado,
+# caso contrário a regra acima deixa de existir para os outros integrantes.
+!.gitignore
+
+# Exceções opcionais — descomente SE/QUANDO o projeto passar a usar:
+# !.gitattributes                    # normalização de fim de linha (CRLF/LF) entre Windows e Linux
+# !.mvn/                             # diretório do Maven Wrapper
+# !.mvn/wrapper/maven-wrapper.jar    # executor do Maven Wrapper (necessário junto com a linha acima)
+# !.github/                          # workflows de CI (GitHub Actions)
+
+# ==========================================
 # Artefatos de Compilação (Maven / Java)
 # ==========================================
 target/
@@ -7,9 +24,9 @@ target/
 *.war
 *.ear
 *.nar
-
-# Exceção estrita: Preservar o executor do Maven Wrapper
-!.mvn/wrapper/maven-wrapper.jar
+out/
+bin/
+build/
 
 # ==========================================
 # Logs e Despejos da JVM (Runtime)
@@ -23,43 +40,28 @@ replay_pid*
 # Metadados de IDEs (Isolamento de Ambiente)
 # ==========================================
 # IntelliJ IDEA
-.idea/
 *.iml
 *.iws
 *.ipr
-out/
-
-# Eclipse
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings/
-.springBeans
-.sts4-cache
-bin/
-
-# VS Code
-.vscode/
 
 # NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
-/.nb-gradle/
-build/
+
+# Observação: os metadados ocultos de IDE (.idea/, .vscode/, .settings/,
+# .classpath, .project, .factorypath, .apt_generated, .springBeans, .sts4-cache,
+# .nb-gradle/) já são cobertos pela regra ".*" no topo deste arquivo.
 
 # ==========================================
 # Metadados de Sistemas Operacionais
 # ==========================================
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-
 # Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
+
+# Observação: .DS_Store, .AppleDouble e .LSOverride (macOS) também já são
+# cobertos pela regra ".*" no topo deste arquivo.
