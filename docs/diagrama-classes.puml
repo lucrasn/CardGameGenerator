@@ -1,33 +1,54 @@
-@startuml CardGameFramework
-
-!pragma layout smetana
-
-title CardGame Framework — baseline integrada
+@startuml
+title CardGame Framework — baseline atual da main (15/08/2026)
 
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
 skinparam packageStyle rectangle
+skinparam shadowing false
 hide empty fields
-hide empty methods
 
 package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
-    interface Carta <<public, extensão>> {
+    interface Carta <<public>> {
         +id(): UUID
     }
 
-    interface Baralho <<public>> {
-        +quantidadeDeCartas(): int
+    interface "Baralho<C extends Carta>" as Baralho <<public>> {
+        +quantidade(): int
         +estaVazio(): boolean
-        +contem(cartaId: UUID): boolean
-        +comprar(): Carta
-        +adicionar(cartas: Collection): void
+        +topo(): Optional<C>
+        +comprar(): C
+        +colocarNoTopo(carta: C): void
+        +colocarNaBase(carta: C): void
         +embaralhar(): void
+        +cartas(): List<C>
     }
 
-    class BaralhoPadrao <<public, final>>
-    interface BaralhoFactory <<public, Factory Method, extensão>> {
-        +criarBaralho(): Baralho
+    class "BaralhoPadrao<C>" as BaralhoPadrao <<public>>
+
+    interface "BaralhoFactory<C>" as BaralhoFactory <<public, Factory Method>> {
+        +criar(): Baralho<C>
     }
+
+    interface "MaoDeCartas<C>" as MaoDeCartas <<public>> {
+        +quantidade(): int
+        +adicionar(carta: C): void
+        +buscar(id: UUID): Optional<C>
+        +remover(id: UUID): C
+        +cartas(): List<C>
+    }
+
+    class "MaoDeCartasPadrao<C>" as MaoDeCartasPadrao <<public>>
+
+    interface "ContextoDeDistribuicao<C>" as ContextoDeDistribuicao <<public>> {
+        +jogadores(): List<Jogador>
+        +cartasDisponiveis(): int
+        +entregarProximaCarta(jogador: Jogador): void
+    }
+
+    interface "EstrategiaDeDistribuicao<C>" as EstrategiaDeDistribuicao <<public, Strategy>> {
+        +distribuir(contexto: ContextoDeDistribuicao<C>): void
+    }
+
+    class "DistribuicaoAlternada<C>" as DistribuicaoAlternada <<public>>
 
     interface Jogador <<public>> {
         +id(): UUID
@@ -35,223 +56,174 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
         +estrategiaDeDecisao(): EstrategiaDeDecisao
     }
 
-    class JogadorPadrao <<public, final>> {
-        +alterarEstrategiaDeDecisao(estrategia): void
-    }
+    class JogadorPadrao <<public>>
 
-    interface MaoDeCartas <<public, read-only>> {
-        +quantidadeDeCartas(): int
-        +estaVazia(): boolean
-        +cartas(): List
-        +contem(cartaId: UUID): boolean
-    }
-
-    interface Jogada <<public, extensão>>
-    interface EtapaDeTurno <<public, extensão>>
-    interface ContextoDeDecisao <<public, read-only>> {
-        +etapa(): EtapaDeTurno
-        +jogadasPermitidas(): List
-    }
-    class ContextoDeDecisaoPadrao <<public, record>>
-    interface EstrategiaDeDecisao <<public, Strategy, extensão>> {
+    interface EstrategiaDeDecisao <<public, Strategy>> {
         +decidir(contexto: ContextoDeDecisao): Jogada
     }
 
-    interface EntradaSaida <<public>> {
-        +exibir(mensagem: String): void
-        +solicitarOpcao(mensagem: String, opcoes: List): int
+    interface ContextoDeDecisao <<public>>
+    interface Jogada <<public>>
+
+    enum EstadoPartida <<public>> {
+        CONFIGURADA
+        PREPARANDO
+        EM_ANDAMENTO
+        FINALIZADA
+        +podeTransitarPara(destino): boolean
     }
 
-    interface VisaoDaPartida <<public, read-only>> {
+    interface "VisaoDaPartida<C>" as VisaoDaPartida <<public, read-only>> {
         +estado(): EstadoPartida
-        +jogadores(): List
+        +jogadores(): List<Jogador>
         +jogadorAtual(): Jogador
-        +maoDe(jogador: Jogador): MaoDeCartas
+        +maoDe(jogador: Jogador): List<C>
         +quantidadeNoBaralho(): int
+        +numeroDoTurno(): long
     }
 
-    interface ContextoDePartida <<public>> {
-        +comprarDoBaralho(): Carta
-        +adicionarNaMao(jogador, carta): void
-        +removerDaMao(jogador, cartaId): Carta
-        +adicionarAoBaralho(cartas): void
+    interface "ContextoDePartida<C>" as ContextoDePartida <<public>> {
+        +comprarDoBaralho(): C
+        +adicionarNaMao(jogador: Jogador, carta: C): void
+        +removerDaMao(jogador: Jogador, id: UUID): C
+        +adicionarAoBaralho(cartas: Collection<C>): void
         +embaralharBaralho(): void
-        +validarJogada(jogada): void
-        +publicar(evento): void
     }
 
-    interface ContextoDeDistribuicao <<public>>
-    class ContextoDeValidacao <<public, record>>
+    class "PartidaConfig<C>" as PartidaConfig <<public, immutable>> {
+        +builder(): Builder<C>
+        +jogadores(): List<Jogador>
+        +baralhoFactory(): BaralhoFactory<C>
+        +distribuicao(): EstrategiaDeDistribuicao<C>
+        +primeiroJogador(): int
+    }
 
-    interface EstrategiaDeDistribuicao <<public, Strategy, extensão>>
-    interface RegraDeValidacaoStrategy <<public, Strategy, extensão>>
-    interface RegraDeVitoriaStrategy <<public, Strategy, extensão>>
-    interface RegraDePontuacaoStrategy <<public, Strategy, extensão>>
+    class "PartidaConfig.Builder<C>" as PartidaConfigBuilder <<public>> {
+        +jogadores(lista): Builder<C>
+        +baralhoFactory(factory): Builder<C>
+        +distribuicao(strategy): Builder<C>
+        +primeiroJogador(indice): Builder<C>
+        +build(): PartidaConfig<C>
+    }
 
-    class PartidaConfig <<public, final>>
-    class "PartidaConfig.Builder" as PartidaConfigBuilder <<public, Builder>>
-    enum EstadoPartida <<public>>
-    class ResultadoDoTurno <<public, record>>
-    class DesfechoDePartida <<public, record>>
-    class ResultadoDePartida <<public, record>>
+    class ResultadoDoTurno <<public, record>> {
+        +repetirJogador(): boolean
+        +inverterSentido(): boolean
+        +jogadoresAPular(): int
+    }
 
-    interface MotivoDeEncerramento <<public, extensão>>
+    interface MotivoDeEncerramento <<public, extensão>> {
+        +ehVitoria(): boolean
+        +ehEmpate(): boolean
+    }
+
     enum MotivoPadrao <<public>>
+    class DesfechoDePartida <<public, record, immutable>>
+    class ResultadoDePartida <<public, record, immutable>>
 
-    interface EventoDePartida <<public, extensão>>
-    interface PartidaListener <<public, Observer, extensão>> {
-        +aoOcorrer(evento: EventoDePartida): void
-    }
-}
+    interface RegraDeValidacaoStrategy <<public, placeholder vazio>>
+    interface RegraDeVitoriaStrategy <<public, placeholder vazio>>
+    interface RegraDePontuacaoStrategy <<public, placeholder vazio>>
+    interface PartidaListener <<public, placeholder vazio>>
 
-package "br.edu.uepb.map.cardgame.api.estrategia" as estrategias #D6EAF8 {
-    class DecisaoAleatoria <<public, final>>
-    class DecisaoGulosa <<public, final>>
-    class DecisaoHumanaConsole <<public, final>>
-}
-
-package "br.edu.uepb.map.cardgame.api.io" as io #D6EAF8 {
-    class ControleEntradaSaida <<public, final>>
-}
-
-package "br.edu.uepb.map.cardgame.api.evento" as eventos #D6EAF8 {
-    class PartidaIniciada <<public, record>>
-    class TurnoIniciado <<public, record>>
-    class JogadaRejeitada <<public, record>>
-    class TurnoEncerrado <<public, record>>
-    class PartidaFinalizada <<public, record>>
-}
-
-package "br.edu.uepb.map.cardgame.api.excecao" as excecoes #D6EAF8 {
     abstract class PartidaException <<public>>
-    class BaralhoVazioException <<public, final>>
-    class EstadoDePartidaInvalidoException <<public, final>>
-    class JogadaInvalidaException <<public, final>>
+    class BaralhoVazioException <<public>>
+    class JogadaInvalidaException <<public>>
+    class EstadoDePartidaInvalidoException <<public>>
 }
 
 package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
-    abstract class MotorDePartida <<public, Template Method, extensão>> {
-        +executar(): ResultadoDePartida
-        +adicionarListener(listener: PartidaListener): void
-        +removerListener(listener: PartidaListener): boolean
+    abstract class "MotorDePartida<C extends Carta>" as MotorDePartida <<public, Template Method>> {
+        +executar(): ResultadoDePartida {final}
         +estado(): EstadoPartida
-        #preparar(contexto: ContextoDePartida): void
-        #aposDistribuir(contexto: ContextoDePartida): void
-        {abstract} #executarTurno(contexto: ContextoDePartida): ResultadoDoTurno
-        #aoEncerrar(visao: VisaoDaPartida, resultado: ResultadoDePartida): void
+        #preparar(contexto: ContextoDePartida<C>): void
+        #aposDistribuir(contexto: ContextoDePartida<C>): void
+        #executarTurno(contexto): ResultadoDoTurno {abstract}
+        #avaliarDesfecho(visao): Optional<DesfechoDePartida> {abstract}
+        #calcularPontuacao(visao, desfecho): Map<Jogador, Integer>
+        #aoEncerrar(visao, resultado): void
     }
 
+    class "PartidaEmExecucao<C>" as PartidaEmExecucao <<package-private>>
     class GerenciadorDeTurnos <<package-private>>
     enum SentidoDeRotacao <<package-private>>
     class CicloDeVidaDaPartida <<package-private>>
-    class PartidaEmExecucao <<package-private>>
-    class ContextoDeDistribuicaoInterno <<package-private>>
-    class MaoInterna <<private, nested>>
+    class "ContextoDeDistribuicaoInterno<C>" as ContextoDeDistribuicaoInterno <<package-private>>
 }
 
-package "clientes-stub (src/test)" as clientes #E8F8F5 {
-    class MotorDeTrincaStub <<client>>
-    class MotorDeBlackjackStub <<client>>
-    class CartaTrinca <<client, record>>
-    class CartaBlackjack <<client, record>>
-    enum AcaoTrinca <<client>>
-    enum AcaoBlackjack <<client>>
-    enum EtapaBlackjack <<client>>
-    class ContextoBlackjack <<client, record>>
+package "br.edu.uepb.map.cardgame.core" as core #F2F3F4 {
+    class ContextoDeDistribuicaoPadrao <<outra trilha>>
+    class ContextoDeDecisaoPadrao <<outra trilha>>
+    class BaralhoBase <<placeholder legado>>
+    class "MaoDeCartas" as MaoDeCartasLegada <<placeholder legado>>
+    class Mesa <<placeholder legado>>
 }
 
 BaralhoPadrao ..|> Baralho
-BaralhoPadrao "1" *-- "0..*" Carta
-BaralhoFactory ..> Baralho : cria
-
+MaoDeCartasPadrao ..|> MaoDeCartas
+DistribuicaoAlternada ..|> EstrategiaDeDistribuicao
 JogadorPadrao ..|> Jogador
-JogadorPadrao "1" --> "0..1" EstrategiaDeDecisao : compõe
-
-ContextoDeDecisaoPadrao ..|> ContextoDeDecisao
-ContextoDeDecisao --> EtapaDeTurno
-ContextoDeDecisao --> "0..*" Jogada
+JogadorPadrao "1" o-- "1" EstrategiaDeDecisao
 EstrategiaDeDecisao ..> ContextoDeDecisao
-EstrategiaDeDecisao ..> Jogada : produz
-
-DecisaoAleatoria ..|> EstrategiaDeDecisao
-DecisaoGulosa ..|> EstrategiaDeDecisao
-DecisaoHumanaConsole ..|> EstrategiaDeDecisao
-DecisaoHumanaConsole --> EntradaSaida
-ControleEntradaSaida ..|> EntradaSaida
+EstrategiaDeDecisao ..> Jogada
 
 ContextoDePartida --|> VisaoDaPartida
-ContextoDeValidacao --> VisaoDaPartida
-ContextoDeValidacao --> Jogada
-EstrategiaDeDistribuicao ..> ContextoDeDistribuicao
-RegraDeValidacaoStrategy ..> ContextoDeValidacao
-RegraDeVitoriaStrategy ..> VisaoDaPartida
-RegraDeVitoriaStrategy ..> DesfechoDePartida
-RegraDePontuacaoStrategy ..> VisaoDaPartida
-RegraDePontuacaoStrategy ..> DesfechoDePartida
+MotivoPadrao ..|> MotivoDeEncerramento
+DesfechoDePartida --> "0..*" Jogador : vencedores
+DesfechoDePartida --> "1" MotivoDeEncerramento
+ResultadoDePartida --> "0..*" Jogador : vencedores/placar
+ResultadoDePartida --> "1" MotivoDeEncerramento
 
-PartidaConfigBuilder ..> PartidaConfig : build()
 PartidaConfig "1" o-- "2..*" Jogador
 PartidaConfig --> "1" BaralhoFactory
 PartidaConfig --> "1" EstrategiaDeDistribuicao
-PartidaConfig --> "1" RegraDeValidacaoStrategy
-PartidaConfig --> "1" RegraDeVitoriaStrategy
-PartidaConfig --> "1" RegraDePontuacaoStrategy
+PartidaConfigBuilder ..> PartidaConfig : cria
 
-MotivoPadrao ..|> MotivoDeEncerramento
-DesfechoDePartida "1" o-- "0..*" Jogador : vencedores
-DesfechoDePartida --> MotivoDeEncerramento
-ResultadoDePartida "1" o-- "0..*" Jogador : vencedores / placar
-ResultadoDePartida --> MotivoDeEncerramento
-
-PartidaIniciada ..|> EventoDePartida
-TurnoIniciado ..|> EventoDePartida
-JogadaRejeitada ..|> EventoDePartida
-TurnoEncerrado ..|> EventoDePartida
-PartidaFinalizada ..|> EventoDePartida
-PartidaFinalizada --> ResultadoDePartida
-
-BaralhoVazioException --|> PartidaException
-EstadoDePartidaInvalidoException --|> PartidaException
-JogadaInvalidaException --|> PartidaException
-
-MotorDePartida --> PartidaConfig
-MotorDePartida "1" o-- "0..*" PartidaListener
+MotorDePartida --> "1" PartidaConfig
 MotorDePartida "1" *-- "1" CicloDeVidaDaPartida
 MotorDePartida ..> PartidaEmExecucao : cria por executar()
 MotorDePartida ..> ResultadoDoTurno : aplica
-MotorDePartida ..> EventoDePartida : publica
+MotorDePartida ..> DesfechoDePartida : valida
+MotorDePartida ..> ResultadoDePartida : cria
 
 PartidaEmExecucao ..|> ContextoDePartida
-PartidaEmExecucao "1" *-- "1" Baralho
-PartidaEmExecucao "1" --> "2..*" Jogador
-PartidaEmExecucao "1" *-- "2..*" MaoInterna
-PartidaEmExecucao --> GerenciadorDeTurnos
-PartidaEmExecucao --> CicloDeVidaDaPartida
-MaoInterna ..|> MaoDeCartas
-MaoInterna "1" *-- "0..*" Carta
-GerenciadorDeTurnos "1" --> "2..*" Jogador
-GerenciadorDeTurnos --> SentidoDeRotacao
+PartidaEmExecucao --> "1" Baralho
+PartidaEmExecucao "1" *-- "2..*" MaoDeCartas : uma por jogador
+PartidaEmExecucao "1" *-- "1" GerenciadorDeTurnos
+PartidaEmExecucao "1" *-- "1" CicloDeVidaDaPartida
+GerenciadorDeTurnos --> "2..*" Jogador
+GerenciadorDeTurnos --> "1" SentidoDeRotacao
 ContextoDeDistribuicaoInterno ..|> ContextoDeDistribuicao
-ContextoDeDistribuicaoInterno --> PartidaEmExecucao
+ContextoDeDistribuicaoInterno --> "1" PartidaEmExecucao
 
-MotorDeTrincaStub --|> MotorDePartida
-MotorDeBlackjackStub --|> MotorDePartida
-CartaTrinca ..|> Carta
-CartaBlackjack ..|> Carta
-AcaoTrinca ..|> Jogada
-AcaoBlackjack ..|> Jogada
-EtapaBlackjack ..|> EtapaDeTurno
-ContextoBlackjack ..|> ContextoDeDecisao
+BaralhoVazioException --|> PartidaException
+JogadaInvalidaException --|> PartidaException
+EstadoDePartidaInvalidoException --|> PartidaException
 
 note right of MotorDePartida
   Único tipo público de engine.
-  executar() é final no código.
+  Não depende das interfaces vazias da Trilha D.
 end note
 
-note bottom of PartidaEmExecucao
-  Agregado transitório de uma execução.
-  O cliente o enxerga somente pelos
-  contextos públicos implementados.
+note right of RegraDeVitoriaStrategy
+  Contratos preservados vazios.
+  Strategy de regras ainda não está implementada.
 end note
+
+note bottom of PartidaListener
+  Observer pendente: EventoDePartida e callbacks
+  ainda não existem na main.
+end note
+
+note bottom of core
+  Pacote transitório preservado porque seus tipos
+  pertencem a outras trilhas. A Trilha A não o importa.
+end note
+
+legend left
+  Azul: API pública
+  Amarelo: runtime da Trilha A
+  Cinza: artefatos transitórios de outras trilhas
+endlegend
 
 @enduml

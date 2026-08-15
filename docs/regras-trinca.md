@@ -1,7 +1,7 @@
 # Regras da Trinca - versão de referência do projeto
 
-**Status:** regras aprovadas; stub arquitetural na branch local `trilha/a-motor` e
-aplicação completa pendente
+**Status:** regras aprovadas; aplicação cliente e testes de aceitação ainda pendentes
+na `main`
 
 **Objetivo:** definir a variante de nove cartas que a equipe adotou como a Trinca
 oficial do projeto.
@@ -55,8 +55,9 @@ carta. A checagem acontece ao fim do turno.
 2. **Ficar com dez cartas na mão:** após a compra, a mão possui dez cartas.
 3. **Descartar uma carta:** escolher exatamente uma das dez cartas da mão e
    colocá-la no topo da pilha de descarte.
-4. **Encerrar o turno:** o motor publica os eventos relevantes, verifica a vitória e
-   passa a vez ao próximo jogador se a partida continuar.
+4. **Encerrar o turno:** o motor avalia o desfecho e passa a vez ao próximo jogador
+   se a partida continuar. A publicação de eventos será integrada após a Trilha D
+   definir o contrato de Observer.
 
 Não é permitido pular compra, comprar duas cartas, descartar carta que não está na
 mão ou encerrar o turno com dez cartas. Essas situações resultam em uma exceção de
@@ -76,8 +77,9 @@ existindo após a reciclagem.
 ## 6. Pontuação
 
 Esta primeira versão é de uma única rodada: vitória concede **1 ponto** ao vencedor;
-empate concede **0 ponto** a ambos. O cálculo fica em uma
-`RegraDePontuacaoStrategy`, e não no console nem no motor.
+empate concede **0 ponto** a ambos. Enquanto `RegraDePontuacaoStrategy` permanecer
+vazia, o cliente implementará esse cálculo no hook protegido de pontuação. Depois da
+integração da Trilha D, ele deverá migrar para a Strategy aprovada.
 
 ## 7. Regras de validação separadas
 
@@ -94,11 +96,11 @@ do turno.
 
 ## 8. Eventos esperados pela aplicação de console
 
-O cliente de console observa a partida; ele não deve ser chamado diretamente pelo
-motor. O framework já publica início/fim da partida e do turno e rejeição de jogada.
-A Trinca pode declarar eventos próprios para cartas distribuídas, compradas e
-descartadas por meio de `ContextoDePartida.publicar`. Esses eventos não devem vazar
-cartas da mão de um jogador ao adversário.
+O cliente de console deverá observar a partida; ele não deve ser chamado diretamente
+pelo motor. Na baseline atual, `PartidaListener` está vazio, não existe
+`EventoDePartida` e `ContextoDePartida` ainda não publica eventos. Início/fim de
+partida, início/fim de turno e rejeição de jogada são eventos planejados da Trilha D.
+Eventos futuros não deverão vazar cartas da mão de um jogador ao adversário.
 
 ## 9. Implicações para a API pública
 
@@ -111,8 +113,9 @@ Esta regra exige que a API permita, sem conhecer classes da Trinca:
    controlado;
 5. representar uma ação de turno tipada: compra por origem e descarte de carta;
 6. escolher a ação por uma estratégia de decisão, humana ou automatizada;
-7. configurar regras de validação, pontuação e vitória separadamente;
-8. receber eventos da partida por listeners;
+7. configurar regras de validação, pontuação e vitória separadamente — pendente da
+   definição dos contratos da Trilha D;
+8. receber eventos da partida por listeners — pendente de Observer;
 9. informar falhas por exceções de domínio.
 
 Se algum item não puder ser atendido apenas pela API pública, a Trilha E deve
@@ -144,7 +147,7 @@ tempo limite, pontuação acumulada em várias rodadas e regras regionais altern
 - [x] a variante de nove cartas com trincas e sequências é a Trinca oficial;
 - [x] a primeira demonstração será humano x humano;
 - [x] o segundo jogo de demonstração será Blackjack básico;
-- [x] a baseline pública atende a seção 9 nos clientes-stub;
+- [ ] a aplicação deve comprovar a seção 9 sem importar internals;
 - [ ] os contratos serão congelados somente depois da Trinca e do Blackjack completos.
 
 ### Escopo usado para validar com Blackjack

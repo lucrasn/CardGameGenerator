@@ -1,326 +1,283 @@
-# Arquitetura normativa — CardGame Framework
+# Arquitetura do CardGame Framework
 
-**Status:** baseline implementada e validada na branch local `trilha/a-motor` em
-15/08/2026; publicação do código na `main` pendente de revisão
+**Documento canônico da arquitetura.**
 
-**Escopo:** framework reutilizável para jogos de cartas com turnos sequenciais
+**Baseline:** `main`, após integração seletiva da Trilha A em 15/08/2026.
 
-**Clientes de validação:** Trinca e Blackjack básico
-
-Este documento é o mapa normativo da arquitetura atual. Ele substitui a versão que
-descrevia apenas uma fase de planejamento e dizia “não implementar código ainda”. O
-código já existe; portanto, as decisões abaixo descrevem o contrato efetivamente
-implementado e coberto por testes.
-
-> **Nota de publicação:** este documento pode chegar à `main` antes do código da
-> Trilha A. As evidências de implementação e os 103 testes referem-se à branch local
-> `trilha/a-motor`, após ela incorporar a `main` no merge `4968e9e`. Até a revisão e a
-> integração dessa feature, a documentação representa a baseline proposta e validada,
-> não o estado compilável da `main` remota.
+**Validação:** 105 testes, zero falhas e zero erros.
 
 ## 1. Objetivo e limite da promessa
 
-O projeto oferece infraestrutura para construir jogos de cartas sem duplicar baralho,
-mãos, participantes, ciclo de vida, turnos, regras, eventos e tratamento de falhas.
-Ele aplica Inversão de Controle: o framework conduz a partida e chama os pontos de
-extensão fornecidos por cada jogo.
+O framework pretende apoiar uma família ampla de jogos de cartas, não garantir
+literalmente todo jogo concebível. Ele generaliza mecanismos que reaparecem em jogos
+independentes:
 
-O framework não “gera automaticamente qualquer jogo de cartas”. A afirmação correta é:
+- identidade de cartas;
+- criação, armazenamento e distribuição;
+- participantes e tomada de decisão;
+- ciclo de vida da partida;
+- ordem e efeitos de turno;
+- estado, desfecho e placar.
 
-> A baseline permite implementar diferentes jogos de cartas baseados em turnos,
-> mantendo as regras e o estado específico fora do framework.
+Regras como “formar uma trinca”, “atingir 21”, pilha de descarte, dealer, apostas ou
+fases específicas pertencem aos clientes. Uma abstração só deve subir ao framework
+quando houver reuso demonstrado por pelo menos dois jogos diferentes.
 
-Trinca e Blackjack são provas de reutilização, não modelos dos quais a API foi
-copiada. Funcionalidades como apostas, tempo real, rede, persistência, múltiplas mesas
-ou várias mãos simultâneas podem exigir extensões futuras.
+Essa fronteira evita dois extremos: um motor codificado para Trinca/Blackjack e um
+“framework universal” composto por abstrações vazias sem comportamento verificável.
 
-## 2. Requisitos arquiteturais atendidos
+## 2. Direção das dependências
 
-| Requisito do enunciado | Evidência atual |
-|---|---|
-| API pública definida | pacote `cardgame.api` e `engine.MotorDePartida` |
-| Pelo menos cinco pontos de extensão | dez hot-spots catalogados na seção 7 |
-| Framework separado dos clientes | dependências verificadas por `ClientesStubTest` |
-| Aplicação cliente | dois clientes-stub executáveis; jogos completos ainda são entregas posteriores |
-| Interfaces e classe abstrata | contratos públicos + `MotorDePartida` abstrato |
-| Exceções | hierarquia `PartidaException` |
-| Coleções encapsuladas | cópias defensivas e visões somente leitura |
-| Testes automatizados | 103 testes na baseline integrada |
-| Javadoc | API pública documentada e validada pelo Maven |
-| UML | `docs/diagrama-classes.puml` |
-| Exemplos | stubs de Trinca e Blackjack em `src/test/java` |
-| Decisões justificadas | este mapa e `padroes-de-projeto.md` |
+```text
+Trinca / Blackjack ─────> cardgame.api
+          │
+          └─────────────> cardgame.engine.MotorDePartida
 
-## 3. Estrutura de pacotes e direção das dependências
+cardgame.engine ────────> cardgame.api
+auxiliares em core ─────> cardgame.api
+```
+
+Regras mecânicas:
+
+1. `api` não importa `engine`, `core` nem jogos;
+2. `engine` não importa Trinca ou Blackjack;
+3. clientes podem estender `MotorDePartida`, mas não acessar seus colaboradores;
+4. estado mutável só é alcançado por contextos públicos estreitos;
+5. um tipo pertencente a outra trilha não é alterado para “fazer o motor compilar”.
+
+## 3. Organização física honesta
 
 ```text
 br.edu.uepb.map.cardgame.api
-  contratos, valores imutáveis e implementações públicas reutilizáveis
-
-br.edu.uepb.map.cardgame.api.evento
-  eventos padrão da partida
-
-br.edu.uepb.map.cardgame.api.excecao
-  exceções de domínio
-
-br.edu.uepb.map.cardgame.api.estrategia
-  decisões humana, aleatória e gulosa
-
-br.edu.uepb.map.cardgame.api.io
-  adaptador de console para a porta EntradaSaida
+  contratos e valores públicos
 
 br.edu.uepb.map.cardgame.engine
-  MotorDePartida público e colaboradores internos sem public
+  MotorDePartida<C>                         public
+  GerenciadorDeTurnos                      package-private
+  SentidoDeRotacao                         package-private
+  CicloDeVidaDaPartida                     package-private
+  PartidaEmExecucao<C>                     package-private
+  ContextoDeDistribuicaoInterno<C>         package-private
 
-br.edu.uepb.map.trinca / br.edu.uepb.map.blackjack
-  aplicações clientes; atualmente stubs arquiteturais em src/test/java
+br.edu.uepb.map.cardgame.core
+  auxiliares e placeholders legados de outras trilhas
 ```
 
-Direção permitida:
+`GerenciadorDeTurnos` fica em `engine`, junto de quem o usa. Isso não é acoplamento
+indevido: ele é parte da implementação do motor. Deixá-lo sem `public` impede que o
+jogo cliente transforme um detalhe interno em dependência.
 
-```text
-trinca / blackjack ──> api
-trinca / blackjack ──> engine.MotorDePartida
-engine              ──> api
-api                 ──> Java
-```
+O pacote `core` ainda existe na baseline porque contém artefatos das Trilhas B/C e
+placeholders antigos. A Trilha A não depende dele. Portanto, a afirmação correta hoje
+é “não existe `core` da Trilha A”, e não “não existe pacote `core` no projeto”.
 
-Direções proibidas:
+## 4. Contratos implementados
 
-- `api → engine`;
-- framework → pacote de jogo concreto;
-- cliente → colaborador interno de `engine`.
+### 4.1 Cartas e distribuição — Trilha B
 
-Não existe pacote de produção `core`. Colocar um “core” fisicamente dentro de `api`
-seria uma fronteira enganosa; manter turnos em outro pacote público exporia detalhes
-internos. Por isso, `MotorDePartida` e seus colaboradores vivem juntos em `engine`,
-mas somente o motor é público.
+| Tipo | Papel |
+|---|---|
+| `Carta` | identidade estável, sem impor naipe/valor/cor |
+| `Baralho<C>` | sequência encapsulada, compra, topo/base e embaralhamento |
+| `BaralhoPadrao<C>` | implementação reutilizável |
+| `BaralhoFactory<C>` | cria uma composição nova por partida |
+| `MaoDeCartas<C>` | operações controladas de mão |
+| `MaoDeCartasPadrao<C>` | implementação encapsulada |
+| `EstrategiaDeDistribuicao<C>` | algoritmo substituível |
+| `ContextoDeDistribuicao<C>` | porta mínima usada pela distribuição |
 
-## 4. Abstrações e responsabilidades
+O contrato real é genérico. O motor chama `BaralhoFactory.criar()`,
+`Baralho.quantidade()` e `ContextoDeDistribuicao.entregarProximaCarta()`; não mantém
+uma API paralela com nomes diferentes.
 
-| Abstração | Responsabilidade | Não conhece |
-|---|---|---|
-| `Carta` | identidade estável de uma carta | naipe, valor ou regra obrigatórios |
-| `Baralho` | armazenar, comprar, adicionar e embaralhar cartas | jogadores, vitória ou descarte |
-| `MaoDeCartas` | visão somente leitura da mão principal | mutação direta ou combinação vencedora |
-| `Jogador` | identidade e porta opcional de decisão | mão mutável, pontuação ou regra concreta |
-| `PartidaConfig` | configuração imutável das colaborações | estado transitório da execução |
-| `VisaoDaPartida` | snapshot público para regras | operações mutáveis |
-| `ContextoDePartida` | operações controladas para o motor concreto | avanço de turno e finalização direta |
-| `MotorDePartida` | ciclo de vida, repetição, turnos, eventos e resultado | regras de Trinca ou Blackjack |
-| `ResultadoDoTurno` | diretiva imutável de repetir, avançar, inverter ou pular | mutação do gerenciador de turnos |
-| `DesfechoDePartida` | vencedores e motivo reconhecidos pela regra | cálculo do placar |
-| `ResultadoDePartida` | resultado final imutável | execução da partida |
+### 4.2 Jogadores e decisão — Trilha C
 
-Estado específico de mesa continua no cliente. Pilha de descarte, cartas abertas do
-dealer, apostas, combinações e valor flexível do Ás não pertencem ao framework.
+`Jogador` contém identidade e uma `EstrategiaDeDecisao` por composição. Mãos e placar
+pertencem à partida, não ao jogador. Isso permite que a mesma identidade participe de
+jogos com modelos de mão diferentes sem herança por “jogador humano”, “bot” ou
+“dealer”.
 
-## 5. Fronteira pública e implementação interna
+### 4.3 Ciclo de vida — Trilha A
 
-### 5.1 API pública
+Tipos públicos:
 
-Um autor de jogo pode depender de:
+- `EstadoPartida`;
+- `PartidaConfig<C>`;
+- `VisaoDaPartida<C>`;
+- `ContextoDePartida<C>`;
+- `ResultadoDoTurno`;
+- `DesfechoDePartida` e `ResultadoDePartida`;
+- `MotivoDeEncerramento` e `MotivoPadrao`;
+- `engine.MotorDePartida<C>`.
 
-- domínio: `Carta`, `Baralho`, `BaralhoPadrao`, `MaoDeCartas`, `Jogador` e
-  `JogadorPadrao`;
-- decisão: `Jogada`, `EtapaDeTurno`, `ContextoDeDecisao`,
-  `ContextoDeDecisaoPadrao`, `EstrategiaDeDecisao` e `EntradaSaida`;
-- partida: `PartidaConfig`, `EstadoPartida`, `VisaoDaPartida`,
-  `ContextoDePartida`, `ContextoDeDistribuicao`, `ResultadoDoTurno`,
-  `DesfechoDePartida` e `ResultadoDePartida`;
-- extensões: fábrica, distribuição, validação, vitória, pontuação e listeners;
-- eventos e exceções dos subpacotes públicos;
-- `engine.MotorDePartida`, único ponto público do runtime.
+`VisaoDaPartida.maoDe()` devolve `List<C>` imutável. A implementação mutável de
+`MaoDeCartas<C>` fica dentro de `PartidaEmExecucao` e não vaza para regras ou clientes.
 
-### 5.2 Engine interno
+### 4.4 Regras, eventos e exceções — Trilha D
 
-Permanecem package-private:
+As exceções de domínio estão implementadas. As interfaces abaixo continuam vazias na
+`main` e devem permanecer assim até a Trilha D aprovar suas assinaturas:
 
-- `GerenciadorDeTurnos`;
-- `SentidoDeRotacao`;
-- `CicloDeVidaDaPartida`;
-- `PartidaEmExecucao` e sua mão interna;
-- `ContextoDeDistribuicaoInterno`.
+- `RegraDeValidacaoStrategy`;
+- `RegraDeVitoriaStrategy`;
+- `RegraDePontuacaoStrategy`;
+- `PartidaListener`.
 
-Esses tipos podem mudar sem recompilar um jogo cliente. A ausência de `public` é a
-garantia mecânica da fronteira, não apenas uma convenção documental.
+`EventoDePartida` e eventos concretos ainda não existem. Portanto, Strategy de regras
+e Observer são arquitetura planejada, não padrões já demonstráveis na baseline.
 
-## 6. Fluxo do Template Method
+## 5. Template Method do motor
 
-`MotorDePartida.executar()` é `final` e só pode ser chamado uma vez:
+`MotorDePartida.executar()` é `public final` e pode ser chamado uma única vez:
 
 ```text
 CONFIGURADA
-   ↓
+    │
+    ▼
 PREPARANDO
-   ├─ criar e embaralhar o baralho
-   ├─ preparar(contexto)                    hook opcional
-   ├─ distribuir(contextoDeDistribuicao)    Strategy
-   └─ aposDistribuir(contexto)              hook opcional
-   ↓
+    ├─ criar e embaralhar baralho
+    ├─ preparar(contexto)
+    ├─ distribuir(contexto estreito)
+    └─ aposDistribuir(contexto)
+    │
+    ▼
 EM_ANDAMENTO
-   ├─ publicar PartidaIniciada
-   ├─ avaliar encerramento inicial
-   └─ para cada turno:
-        publicar TurnoIniciado
-        executarTurno(contexto)             operação primitiva
-          └─ até 100 tentativas se a jogada for rejeitada
-        publicar TurnoEncerrado
-        avaliar vitória
-        aplicar ResultadoDoTurno internamente
-   ↓
+    ├─ avaliar desfecho inicial
+    └─ repetir:
+         executarTurno(contexto)
+         avaliarDesfecho(visão)
+         aplicar ResultadoDoTurno
+    │
+    ▼
 FINALIZADA
-   ├─ calcular placar
-   ├─ publicar PartidaFinalizada
-   └─ aoEncerrar(visao, resultado)          hook opcional
+    ├─ validar vencedores e placar
+    ├─ criar ResultadoDePartida
+    └─ aoEncerrar(visão, resultado)
 ```
 
-O jogo não avança a vez e não finaliza a partida diretamente. Ele devolve uma
-`ResultadoDoTurno`; somente `GerenciadorDeTurnos` interpreta a diretiva. Isso protege
-o frozen-spot do Template Method.
+Hooks obrigatórios enquanto as Strategies da Trilha D estão pendentes:
 
-## 7. Pontos de extensão implementados
+- `executarTurno(ContextoDePartida<C>)`;
+- `avaliarDesfecho(VisaoDaPartida<C>)`.
 
-| # | Hot-spot | Contrato | Variação | Padrão principal |
-|---|---|---|---|---|
-| 1 | tipo de carta | `Carta` | atributos próprios de cada jogo | Factory Method |
-| 2 | criação do baralho | `BaralhoFactory` | composição e implementação do baralho | Factory Method |
-| 3 | distribuição | `EstrategiaDeDistribuicao` | quantidade, ordem e destinatários | Strategy |
-| 4 | decisão | `EstrategiaDeDecisao` | humano, bot, dealer | Strategy |
-| 5 | ações e fases | `Jogada`, `EtapaDeTurno` | vocabulário de cada jogo | interfaces abertas |
-| 6 | validação | `RegraDeValidacaoStrategy` | pré-condições da jogada | Strategy |
-| 7 | vitória | `RegraDeVitoriaStrategy` | encerramento, vencedores e motivo | Strategy |
-| 8 | pontuação | `RegraDePontuacaoStrategy` | cálculo de placar | Strategy |
-| 9 | eventos | `EventoDePartida`, `PartidaListener` | fatos e observadores adicionais | Observer |
-| 10 | turno concreto | `executarTurno` | mecânica específica | Template Method |
+Hooks opcionais:
 
-Os quatro GoF efetivamente usados para o mínimo da disciplina são Template Method,
-Strategy, Factory Method e Observer. Decorator foi analisado, mas não foi forçado na
-baseline porque ainda não existe uma combinação de validações que justifique sua
-estrutura.
+- `preparar`;
+- `aposDistribuir`;
+- `calcularPontuacao` — zero para todos por padrão;
+- `aoEncerrar`.
 
-## 8. Decisão do jogador sem viés de jogo
+Quando as Strategies da Trilha D forem definidas, a equipe deverá escolher uma única
+fonte de variação. Não se deve manter simultaneamente hooks e Strategies duplicando a
+mesma decisão sem uma justificativa explícita.
 
-`ContextoDeDecisao` expõe apenas:
+## 6. Turnos
 
-- uma `EtapaDeTurno` definida pelo cliente;
-- uma lista imutável de `Jogada` permitidas.
+`ResultadoDoTurno` é uma diretiva declarativa. O jogo escolhe o efeito, mas apenas o
+engine altera a ordem:
 
-Um jogo pode implementar uma subinterface com informações públicas adicionais. O
-contexto não revela mãos adversárias, ordem do baralho ou estruturas mutáveis.
+- `avancar()`;
+- `repetir()`;
+- `inverter()`;
+- `pular(int)`.
 
-`JogadorPadrao` aceita construção com ou sem `EstrategiaDeDecisao`. A forma sem
-estratégia atende jogos cuja entrada chega por outra fronteira; solicitar uma decisão
-nesse estado falha explicitamente. A forma com estratégia permite trocar humano, bot
-ou dealer por composição, sem subclasses como `JogadorHumano` e `JogadorBot`.
+`GerenciadorDeTurnos` usa aritmética modular e aceita N participantes. Identidades
+duplicadas, índice inicial inválido e pulos negativos são recusados. O tipo é interno,
+logo um cliente não consegue avançar a vez fora do Template Method.
 
-## 9. Configuração e invariantes
+Uma `JogadaInvalidaException` lançada por `executarTurno` repete o mesmo turno. Após
+100 recusas consecutivas, o motor lança `IllegalStateException` para impedir um laço
+infinito causado por um cliente defeituoso.
 
-`PartidaConfig.Builder` exige:
+## 7. Estado e invariantes
 
-- pelo menos dois jogadores com identificadores distintos;
-- `BaralhoFactory`;
-- `EstrategiaDeDistribuicao`;
-- `RegraDeVitoriaStrategy`.
+Transições válidas:
 
-São opcionais:
-
-- `RegraDePontuacaoStrategy`, com implementação neutra por padrão;
-- `RegraDeValidacaoStrategy`, que aceita qualquer jogada por padrão;
-- índice do primeiro jogador, zero por padrão.
-
-Coleções recebidas são copiadas. O engine também verifica que:
-
-- uma carta não ocupa simultaneamente baralho e mão;
-- somente participantes configurados acessam mãos;
-- vencedores pertencem à partida;
-- o placar contém exatamente uma entrada por identidade participante;
-- transições seguem a tabela de `EstadoPartida`;
-- resultados e desfechos não representam combinações incoerentes.
-
-## 10. Eventos e exceções
-
-Eventos padrão:
-
-- `PartidaIniciada`;
-- `TurnoIniciado`;
-- `JogadaRejeitada`;
-- `TurnoEncerrado`;
-- `PartidaFinalizada`.
-
-Clientes podem criar outros `EventoDePartida` e publicá-los pelo contexto. Cada
-listener é isolado: uma `RuntimeException` de um observador é registrada, e os demais
-continuam recebendo eventos.
-
-Exceções de domínio são não verificadas e descendem de `PartidaException`:
-
-- `BaralhoVazioException`;
-- `EstadoDePartidaInvalidoException`;
-- `JogadaInvalidaException`.
-
-Uma `JogadaInvalidaException` é recuperável durante o turno: o motor notifica a
-rejeição e repete a operação primitiva. Cem recusas consecutivas indicam defeito no
-cliente e resultam em `IllegalStateException`.
-
-## 11. SOLID e GRASP
-
-- **SRP / Alta Coesão:** turnos, ciclo de vida, baralho, regras, decisão e eventos
-  possuem responsáveis distintos.
-- **OCP:** novos jogos adicionam implementações dos hot-spots sem editar o engine.
-- **LSP:** subclasses de `MotorDePartida` preservam o fluxo porque `executar()` é final.
-- **ISP:** validação, vitória e pontuação são interfaces separadas.
-- **DIP / Baixo Acoplamento:** engine depende de contratos em `api`, nunca de jogos.
-- **Especialista na Informação:** `EstadoPartida` conhece transições;
-  `GerenciadorDeTurnos` conhece rotação; `BaralhoPadrao` conhece suas cartas.
-
-As justificativas e alternativas rejeitadas estão detalhadas em
-`docs/padroes-de-projeto.md`.
-
-## 12. Validação por clientes
-
-Os stubs atuais demonstram, sem importar internals:
-
-- Trinca com 104 cartas, nove cartas por jogador, descarte mantido pelo cliente,
-  validação, vitória e pontuação próprias;
-- Blackjack com 52 cartas, duas cartas iniciais, decisões por Strategy e repetição de
-  turno ao pedir carta.
-
-Eles são testes arquiteturais, não implementações completas das regras descritas nos
-documentos de cada jogo.
-
-## 13. Limites conhecidos da baseline
-
-- uma mão principal por participante;
-- turnos sequenciais em uma única thread;
-- um baralho compartilhado por execução;
-- sem persistência, rede ou interface gráfica;
-- sem múltiplas rodadas ou torneio;
-- Trinca e Blackjack completos ainda precisam ser implementados como aplicações.
-
-Esses limites são escopo honesto. Uma necessidade só deve entrar no framework quando
-for reutilizável por jogos independentes e puder ser expressa sem termos de um cliente
-específico.
-
-## 14. Verificação
-
-```bash
-./mvnw clean verify
-./mvnw javadoc:javadoc
+```text
+CONFIGURADA → PREPARANDO → EM_ANDAMENTO → FINALIZADA
 ```
 
-A baseline integrada possui 103 testes. `ClientesStubTest` verifica automaticamente
-que o framework não importa Trinca/Blackjack, que `api` não importa `engine` e que os
-clientes só alcançam o tipo público do runtime.
+Invariantes verificadas:
 
-## 15. Regra para evoluções
+- ao menos dois jogadores;
+- identidades de jogadores únicas;
+- índice inicial dentro da lista;
+- fábrica e distribuição não nulas;
+- fábrica não devolve baralho nulo;
+- cartas não aparecem simultaneamente em baralho/mãos;
+- coleções públicas são snapshots imutáveis;
+- vencedor pertence à partida;
+- placar contém exatamente todos os participantes;
+- não há mutação após `FINALIZADA`;
+- segunda chamada de `executar()` é recusada.
 
-Antes de ampliar a API pública, responder:
+`MotivoDeEncerramento` é interface aberta. `MotivoPadrao` cobre vitória, empate,
+esgotamento e abandono, enquanto jogos podem declarar motivos próprios sem editar o
+framework.
 
-1. a capacidade aparece em mais de um jogo?
-2. o cliente precisa conhecê-la para usar ou estender o framework?
-3. ela preserva a direção `cliente → engine → api`?
-4. pode ser expressa sem vocabulário de Trinca ou Blackjack?
-5. existe teste de cliente demonstrando a lacuna e depois a solução?
+## 8. Pontos de extensão
 
-Mudanças de assinatura pública exigem comunicação entre as trilhas, atualização do
-UML, Javadoc e teste de integração no mesmo commit.
+| # | Ponto | Estado atual |
+|---|---|---|
+| 1 | novas implementações de `Carta` | disponível |
+| 2 | `BaralhoFactory<C>` | disponível |
+| 3 | `EstrategiaDeDistribuicao<C>` | disponível |
+| 4 | `EstrategiaDeDecisao` | disponível |
+| 5 | subclasse de `MotorDePartida<C>` | disponível |
+| 6 | `MotivoDeEncerramento` específico | disponível |
+| 7 | validação por Strategy | contrato pendente |
+| 8 | vitória por Strategy | contrato pendente |
+| 9 | pontuação por Strategy | contrato pendente |
+| 10 | eventos/observadores | pendente |
+
+Mesmo sem contar placeholders, há seis extensões utilizáveis. Para a defesa final,
+os pontos 7–10 só devem ser apresentados como implementados depois que possuírem
+operações, implementações concretas e testes.
+
+## 9. Padrões, SOLID e GRASP
+
+### Implementados e verificáveis
+
+- **Template Method:** `MotorDePartida.executar()` fixa o algoritmo e chama hooks;
+- **Factory Method:** `BaralhoFactory.criar()` decide a composição;
+- **Strategy:** distribuição e decisão são objetos substituíveis;
+- **Builder:** construção validada de `PartidaConfig` (apoio, fora da contagem GoF).
+
+### Planejados
+
+- **Strategy de regras:** interfaces ainda vazias;
+- **Observer:** listener ainda vazio e eventos ausentes;
+- **Decorator:** somente se houver composição real de três ou mais validações.
+
+Evidências de SOLID/GRASP:
+
+- **SRP / Alta Coesão:** ciclo, turnos, cartas, decisão e resultado têm donos distintos;
+- **OCP / Polimorfismo:** cartas, fábrica, distribuição, decisão, motivo e motor variam
+  sem condicionais por jogo;
+- **LSP:** subclasses não substituem o algoritmo `final`;
+- **ISP:** distribuição recebe uma porta estreita; visão somente leitura é separada
+  do contexto mutável;
+- **DIP / Baixo Acoplamento:** engine depende de contratos em `api`;
+- **Especialista:** `EstadoPartida` conhece suas transições e
+  `GerenciadorDeTurnos` conhece a rotação;
+- **Controlador:** `MotorDePartida` recebe o evento sistêmico de executar a partida;
+- **Creator:** o motor cria a execução transitória que agrega seus colaboradores.
+
+## 10. O que ainda falta provar
+
+1. Trilha D definir e testar regras e Observer;
+2. integrar esses contratos sem duplicar os hooks atuais;
+3. implementar Trinca usando apenas API/`MotorDePartida`;
+4. implementar Blackjack com diferenças suficientes;
+5. remover ou realocar placeholders legados de `core` pelos respectivos donos;
+6. executar testes arquiteturais de dependência entre pacotes;
+7. atualizar o UML final após congelar as assinaturas.
+
+## 11. Critério de “caminho certo”
+
+A arquitetura está no caminho certo quando um segundo jogo exige novas classes de
+cliente, não novos `if (jogo == ...)` no framework. Trinca e Blackjack serão a prova:
+se ambos usam o mesmo ciclo, fábrica, distribuição e contexto sem importar internals,
+os frozen-spots e hot-spots estão bem posicionados. Se um deles precisar editar o
+engine, a abstração correspondente deve ser revista — sem generalizar antecipadamente
+uma regra que só existe em um jogo.

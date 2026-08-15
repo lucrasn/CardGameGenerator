@@ -1,236 +1,243 @@
-# Especificação arquitetural — CardGame Framework
+# Especificação arquitetural
 
-**Status:** baseline Java integrada e testada em `trilha/a-motor`; código ainda não
-publicado na `main`
+**Versão:** baseline integrada da `main` em 15/08/2026.
 
-**Plataforma:** Java 26, Maven e JUnit 5
+**Escopo:** contratos existentes no código; itens futuros são marcados como pendentes.
 
-**Clientes de validação:** Trinca e Blackjack básico
+## 1. Visão de módulos
 
-## 1. Fontes de verdade
+| Módulo | Responsabilidade | Visibilidade |
+|---|---|---|
+| `cardgame.api` | contratos, valores e exceções públicas | pública |
+| `cardgame.engine` | runtime e ciclo de vida | somente `MotorDePartida` público |
+| `cardgame.core` | auxiliares/placeholders legados de outras trilhas | transitório |
+| `trinca` / `blackjack` | aplicações clientes | ainda pendentes na `main` |
 
-Em caso de divergência, aplicar esta ordem:
+Dependência permitida do runtime: `engine → api`. O runtime não pode importar um
+pacote de jogo concreto.
 
-1. enunciado em `docs/proposta/AtividadeProposta.pdf`;
-2. decisões normativas em `ARQUITETURA_FRAMEWORK_MAP.md`;
-3. esta especificação de implementação;
-4. modelo conceitual e catálogo de padrões;
-5. regras próprias de cada aplicação cliente.
+## 2. Contratos de cartas
 
-Código e testes são a evidência executável. Se divergirem de uma decisão normativa, a
-divergência deve ser registrada e corrigida; não se altera silenciosamente o documento
-ou o código para esconder o problema.
+### `Carta`
 
-Nesta revisão, “implementado” significa presente na branch local `trilha/a-motor`, que
-incorporou a `main`. A publicação antecipada destes documentos serve à revisão da
-equipe e não afirma que a `main` remota já contenha o novo `engine`.
+Toda carta fornece `UUID id()` não nulo e estável. A API não fixa atributos visuais.
 
-## 2. Arquitetura física
+### `Baralho<C extends Carta>`
 
-```text
-clientes ─────> cardgame.api
-clientes ─────> cardgame.engine.MotorDePartida
-engine   ─────> cardgame.api
-api      ─────> Java
-```
+Operações implementadas:
 
-`cardgame.engine` contém o runtime. Somente `MotorDePartida` é público; os demais
-tipos não possuem modificador `public`. Não há pacote de produção `core`.
+- `quantidade()` e `estaVazio()`;
+- `topo()`;
+- `comprar()`;
+- `colocarNoTopo(C)` e `colocarNaBase(C)`;
+- `embaralhar()` e `embaralhar(RandomGenerator)`;
+- `cartas()` como snapshot imutável.
 
-## 3. Superfície pública
+`comprar()` em um baralho vazio lança `BaralhoVazioException`.
 
-### 3.1 Domínio reutilizável
+### `BaralhoFactory<C>`
 
-- `Carta`, `Baralho`, `BaralhoPadrao`, `BaralhoFactory`;
-- `MaoDeCartas`;
-- `Jogador`, `JogadorPadrao`.
+`criar()` deve devolver um baralho novo e independente. O motor rejeita `null`.
 
-### 3.2 Decisão e I/O
+### `MaoDeCartas<C>`
 
-- `Jogada`, `EtapaDeTurno`;
-- `ContextoDeDecisao`, `ContextoDeDecisaoPadrao`;
-- `EstrategiaDeDecisao`;
-- `EntradaSaida` e `api.io.ControleEntradaSaida`;
-- `DecisaoAleatoria`, `DecisaoGulosa` e `DecisaoHumanaConsole`.
+Disponibiliza quantidade, busca, adição, remoção e snapshot. Embora o contrato da
+Trilha B possua mutadores públicos, `VisaoDaPartida` não devolve a mão; devolve
+`List<C>`, impedindo que uma regra receba autoridade de mutação por acidente.
 
-### 3.3 Partida
+## 3. Distribuição
 
-- `PartidaConfig` e `PartidaConfig.Builder`;
-- `EstadoPartida`, `VisaoDaPartida`, `ContextoDePartida`;
-- `ContextoDeDistribuicao`, `ContextoDeValidacao`;
-- `ResultadoDoTurno`, `DesfechoDePartida`, `ResultadoDePartida`;
-- `MotivoDeEncerramento`, `MotivoPadrao`;
-- `engine.MotorDePartida`.
+`EstrategiaDeDistribuicao<C>.distribuir(ContextoDeDistribuicao<C>)` recebe somente:
 
-### 3.4 Extensões, eventos e erros
+- lista imutável de jogadores;
+- quantidade de cartas disponíveis;
+- operação `entregarProximaCarta(Jogador)`.
 
-- `EstrategiaDeDistribuicao`;
-- `RegraDeValidacaoStrategy`, `RegraDeVitoriaStrategy`,
-  `RegraDePontuacaoStrategy`;
-- `EventoDePartida`, `PartidaListener` e eventos padrão;
-- `PartidaException` e subclasses.
+Ela não recebe o baralho nem o mapa de mãos. `ContextoDeDistribuicaoInterno` adapta
+essa porta ao estado da execução e permanece package-private.
+
+`DistribuicaoAlternada<C>` é a implementação pronta por rodadas e valida previamente
+se existem cartas suficientes.
 
 ## 4. Configuração
 
-`PartidaConfig` é imutável e criada por Builder.
+`PartidaConfig<C>` é imutável e criada por `PartidaConfig.<C>builder()`.
 
-| Propriedade | Obrigatória | Regra |
-|---|---:|---|
-| jogadores | sim | mínimo 2; ids não nulos e distintos |
-| fábrica de baralho | sim | não pode devolver `null` |
-| distribuição | sim | recebe contexto limitado à preparação |
-| regra de vitória | sim | devolve `Optional<DesfechoDePartida>`, nunca `null` |
-| regra de pontuação | não | padrão registra zero para todos |
-| regra de validação | não | padrão aceita qualquer jogada |
-| primeiro jogador | não | índice zero por padrão; deve existir na lista |
+Campos obrigatórios:
 
-Listas são copiadas defensivamente.
+- lista com pelo menos dois `Jogador`;
+- `BaralhoFactory<C>`;
+- `EstrategiaDeDistribuicao<C>`.
 
-## 5. Contrato do motor
+Campo opcional:
 
-`MotorDePartida` é abstrato e seu construtor protegido recebe a configuração. O método
-`executar()` é público, final e de uso único.
+- índice do primeiro jogador, zero por padrão.
 
-### 5.1 Operação primitiva
+Validações:
 
-```java
-protected abstract ResultadoDoTurno executarTurno(ContextoDePartida contexto);
-```
+- lista, elementos e identidades não nulos;
+- identidades sem repetição;
+- índice dentro do intervalo;
+- cópia defensiva da lista.
 
-O motor concreto interpreta a mecânica do jogo e devolve uma diretiva. Ele não avança
-turnos diretamente.
+As regras da Trilha D não integram `PartidaConfig` enquanto seus contratos continuam
+sem métodos.
 
-### 5.2 Hooks opcionais
+## 5. Leitura e mutação durante a partida
 
-```java
-protected void preparar(ContextoDePartida contexto);
-protected void aposDistribuir(ContextoDePartida contexto);
-protected void aoEncerrar(VisaoDaPartida visao, ResultadoDePartida resultado);
-```
+### `VisaoDaPartida<C>`
 
-`preparar` ocorre antes da distribuição; `aposDistribuir`, depois dela e antes da
-primeira avaliação; `aoEncerrar`, depois do estado final e do evento correspondente.
+Porta somente leitura:
 
-### 5.3 Ordem garantida
+- `estado()`;
+- `jogadores()`;
+- `jogadorAtual()`;
+- `maoDe(Jogador)` como `List<C>` imutável;
+- `quantidadeNoBaralho()`;
+- `numeroDoTurno()`.
+
+### `ContextoDePartida<C>`
+
+Estende a visão e acrescenta:
+
+- `comprarDoBaralho()`;
+- `adicionarNaMao(Jogador, C)`;
+- `removerDaMao(Jogador, UUID)`;
+- `adicionarAoBaralho(Collection<? extends C>)`;
+- `embaralharBaralho()`.
+
+O contexto não permite avançar turno, alterar estado ou finalizar a partida.
+
+Cartas adicionadas são rejeitadas quando sua identidade já está no baralho ou em
+qualquer mão. Uma coleção com identidades repetidas é validada antes de alterar o
+baralho.
+
+## 6. Estado
+
+`EstadoPartida` define o grafo:
 
 ```text
-criar/embaralhar baralho
-→ preparar
-→ distribuir
-→ aposDistribuir
-→ iniciar
-→ avaliar
-→ [turno → avaliar → aplicar diretiva]*
-→ pontuar
-→ finalizar
-→ aoEncerrar
+CONFIGURADA → PREPARANDO → EM_ANDAMENTO → FINALIZADA
 ```
 
-## 6. Contextos
+`CicloDeVidaDaPartida` mantém o estado corrente e lança
+`EstadoDePartidaInvalidoException` em transições ou operações incompatíveis. O enum é
+o Especialista na Informação sobre destinos legais; o ciclo apenas aplica a política.
 
-`VisaoDaPartida` fornece estado, jogadores, jogador atual, mãos e quantidade restante
-no baralho.
+## 7. Execução
 
-`ContextoDePartida` acrescenta operações controladas:
+Assinatura conceitual:
 
-- comprar do baralho;
-- adicionar/remover carta de uma mão;
-- devolver cartas ao baralho e embaralhá-lo;
-- validar uma `Jogada` pela Strategy configurada;
-- publicar um evento específico do cliente.
+```java
+public abstract class MotorDePartida<C extends Carta> {
+    public final ResultadoDePartida executar();
 
-Não há `avancarTurno()` nem `finalizar()` públicos.
+    protected void preparar(ContextoDePartida<C> contexto);
+    protected void aposDistribuir(ContextoDePartida<C> contexto);
+    protected abstract ResultadoDoTurno executarTurno(
+            ContextoDePartida<C> contexto);
+    protected abstract Optional<DesfechoDePartida> avaliarDesfecho(
+            VisaoDaPartida<C> contexto);
+    protected Map<Jogador, Integer> calcularPontuacao(
+            VisaoDaPartida<C> contexto, DesfechoDePartida desfecho);
+    protected void aoEncerrar(
+            VisaoDaPartida<C> contexto, ResultadoDePartida resultado);
+}
+```
 
-`ContextoDeDecisao` contém uma etapa e ações permitidas. Implementações específicas
-podem acrescentar informação pública, mas não expor internals.
+Algoritmo fixo de `executar()`:
 
-## 7. Turnos
+1. exigir `CONFIGURADA`;
+2. transicionar para `PREPARANDO`;
+3. criar e embaralhar o baralho;
+4. criar mãos, ciclo e turnos internos;
+5. chamar preparação, distribuição e pós-distribuição;
+6. transicionar para `EM_ANDAMENTO`;
+7. avaliar encerramento antes do primeiro turno;
+8. executar turnos, repetindo jogadas inválidas;
+9. avaliar o desfecho após cada turno;
+10. aplicar repetição/inversão/pulo/avanço;
+11. validar desfecho e placar;
+12. transicionar para `FINALIZADA`, chamar `aoEncerrar` e devolver o resultado.
 
-`ResultadoDoTurno` representa exatamente uma diretiva coerente:
+O método é `final` para preservar Inversão de Controle.
 
-- `avancar()`;
-- `repetir()`;
-- `inverter()`;
-- `pular(int quantidade)`.
+## 8. Turnos
 
-`GerenciadorDeTurnos` é interno e suporta N jogadores, rotação horária/anti-horária e
-pulos acumulados. O resultado não pode simultaneamente repetir e pular jogadores.
+`ResultadoDoTurno` contém:
 
-## 8. Vitória, motivo e placar
+- `repetirJogador`;
+- `inverterSentido`;
+- `jogadoresAPular`.
 
-`RegraDeVitoriaStrategy` devolve vazio enquanto a partida continua ou um
-`DesfechoDePartida` quando encerra.
+Combinações inválidas são recusadas, por exemplo repetir e pular simultaneamente.
+O gerenciador interno usa `Math.floorMod` e aceita qualquer quantidade de jogadores
+maior ou igual a dois.
 
-`MotivoDeEncerramento` é extensível. Um motivo de vitória exige ao menos um vencedor;
-um empate pode registrar co-vencedores ou lista vazia. Identidades não podem se repetir,
-e todos os nomes registrados como vencedores devem participar da partida.
+Se `executarTurno` lançar `JogadaInvalidaException`, o hook é repetido sem avançar a
+vez. Cem recusas consecutivas encerram a tentativa com `IllegalStateException`.
 
-`RegraDePontuacaoStrategy` recebe a visão e o desfecho. O placar final deve conter
-exatamente uma entrada não nula por identidade participante.
+## 9. Desfecho e resultado
 
-## 9. Eventos
+`DesfechoDePartida` contém vencedores e motivo. `ResultadoDePartida` acrescenta o
+placar final. Ambos copiam coleções defensivamente e usam identidade lógica de
+jogador (`UUID`) nas validações.
 
-O motor publica eventos padrão de início da partida, início/fim do turno, jogada
-rejeitada e encerramento. Clientes podem publicar eventos adicionais.
+Regras:
 
-Listeners são agregados por identidade, podem ser removidos e são notificados a partir
-de uma cópia da coleção. Falha não verificada de um listener é registrada e não derruba
-a partida.
+- motivo de vitória exige pelo menos um vencedor;
+- motivo não pode ser vitória e empate ao mesmo tempo;
+- vencedores não se repetem por identidade;
+- vencedor precisa participar da partida;
+- todo vencedor aparece no placar;
+- o placar produzido pelo motor cobre exatamente os participantes.
 
-## 10. Exceções
+`MotivoDeEncerramento` é extensível. O enum `MotivoPadrao` oferece casos comuns.
 
-`PartidaException` estende `RuntimeException`.
+## 10. Encapsulamento
 
-| Exceção | Situação |
-|---|---|
-| `BaralhoVazioException` | compra sem carta disponível |
-| `EstadoDePartidaInvalidoException` | operação incompatível com o ciclo de vida |
-| `JogadaInvalidaException` | recusa recuperável de uma jogada |
+- listas de jogadores são copiadas na entrada;
+- baralho e mãos devolvem snapshots;
+- `VisaoDaPartida` não expõe `MaoDeCartas` mutável;
+- mapa de placar e vencedores são imutáveis;
+- colaboradores de `engine` não são públicos;
+- nenhuma mutação de carta é aceita depois de `FINALIZADA`.
 
-Uma jogada inválida repete o mesmo turno e gera `JogadaRejeitada`. Após 100 recusas
-consecutivas, o engine lança `IllegalStateException` para impedir laço infinito.
+## 11. Contratos pendentes da Trilha D
 
-## 11. Encapsulamento
+Na baseline, estas interfaces não possuem operações:
 
-- configurações, resultados, desfechos, eventos e contextos copiam coleções recebidas;
-- `MaoDeCartas.cartas()` devolve visão imutável;
-- nenhum colaborador mutável de `engine` é público;
-- uma carta não pode estar simultaneamente no baralho e em uma mão;
-- participantes são comparados por `UUID` nas invariantes de partida.
+```text
+RegraDeValidacaoStrategy
+RegraDeVitoriaStrategy
+RegraDePontuacaoStrategy
+PartidaListener
+```
 
-## 12. Padrões implementados
+Consequências:
 
-| Padrão | Evidência |
-|---|---|
-| Template Method | `MotorDePartida.executar()` final e hooks protegidos |
-| Strategy | distribuição, decisão, validação, vitória e pontuação |
-| Factory Method | `BaralhoFactory` e fábricas fornecidas pelos clientes |
-| Observer | `PartidaListener` e eventos |
+- validação específica pode lançar `JogadaInvalidaException` dentro do turno;
+- vitória e pontuação são hooks provisórios do motor;
+- não há publicação de eventos;
+- Observer não deve ser apresentado como implementado.
 
-Builder auxilia `PartidaConfig`, mas não entra na contagem mínima. Decorator foi
-avaliado e adiado por falta de necessidade comprovada.
+Critérios para integrar a Trilha D:
 
-## 13. Rastreabilidade
+1. contextos somente leitura aprovados;
+2. assinaturas genéricas compatíveis com `C extends Carta`;
+3. política de exceções definida;
+4. ordem e isolamento das notificações testados;
+5. decisão explícita sobre substituir ou adaptar os hooks provisórios.
 
-| Requisito | Evidência | Estado |
-|---|---|---|
-| API pública | pacotes e Javadoc | implementado |
-| ≥ 5 extensões | dez hot-spots | implementado |
-| separação | teste de dependências | implementado |
-| cliente | dois stubs; Trinca completa pendente | parcial |
-| interfaces/abstrata | API + motor | implementado |
-| exceções | hierarquia pública | implementado |
-| encapsulamento | testes de cópia e mutação | implementado |
-| testes | 103 testes | implementado |
-| Javadoc | `mvn javadoc:javadoc` | implementado |
-| UML | PlantUML versionado | implementado, sujeito à evolução da API |
-| exemplos | stubs executáveis | implementado como prova arquitetural |
-| justificativas | documentos de arquitetura/padrões | implementado |
+## 12. Critérios de aceitação arquitetural
 
-## 14. Limitações e próximas entregas
+- `./mvnw test` passa;
+- um cliente compila usando somente `api` e `engine.MotorDePartida`;
+- API não importa engine;
+- engine não importa clientes nem `core`;
+- nenhum detalhe interno de `engine` é público;
+- Trinca e Blackjack reutilizam o mesmo algoritmo de ciclo de vida;
+- novos jogos não exigem condicionais por tipo dentro do framework.
 
-- implementar Trinca completa como primeira aplicação;
-- implementar Blackjack básico completo como segunda prova;
-- revisar a API depois dessas implementações antes de declará-la estável;
-- gerar a imagem final do PlantUML e recortes para o relatório de até oito páginas;
-- manter Java 26 uniforme nas máquinas da equipe e no CI.
+Estado medido nesta versão: **105 testes aprovados**. Os testes de clientes concretos
+e de Observer ainda são entregas futuras.

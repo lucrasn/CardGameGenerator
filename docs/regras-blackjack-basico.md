@@ -1,7 +1,7 @@
 # Regras do Blackjack básico — cliente de validação
 
-**Status:** escopo mínimo aprovado; stub arquitetural na branch local
-`trilha/a-motor` e aplicação completa pendente.
+**Status:** escopo mínimo aprovado; aplicação cliente e testes de aceitação ainda
+pendentes na `main`.
 
 ## 1. Objetivo
 
@@ -84,6 +84,6 @@ O cliente valida:
 6. estouro, vitória e empate são reconhecidos;
 7. nenhuma alteração no engine é necessária.
 
-O stub atual comprova montagem, distribuição, decisão e execução sem imports internos.
-Ele não substitui os casos de aceitação da aplicação completa, especialmente cálculo
-do Ás, política da casa, empate e estouro.
+A implementação futura deverá comprovar montagem, distribuição, decisão e execução
+sem imports internos. Os casos de aceitação precisam cobrir especialmente cálculo do
+Ás, política da casa, empate e estouro.

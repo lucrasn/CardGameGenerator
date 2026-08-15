@@ -1,247 +1,180 @@
-# Divisão de responsabilidades — Projeto Final MAP
+# Divisão de responsabilidades
 
 **Equipe:** Lucas · Allan · Raffael · Lívia · Júlio
 
 **Cliente principal:** Trinca
 
-**Segundo cliente:** Blackjack básico
+**Segundo cliente de extensibilidade:** Blackjack básico
 
-**Status:** baseline das Trilhas A–D integrada na branch local `trilha/a-motor`;
-integração do código à `main`, aplicações completas e relatório final pendentes
+**Status em 15/08/2026:** Trilha A integrada seletivamente à `main`; contratos das
+demais trilhas foram preservados.
 
-## 1. Princípio de colaboração
+## 1. Regra de colaboração
 
-O corte é por responsabilidade e fronteira de contrato, não por quantidade de
-classes. Cada dono mantém código, testes, Javadoc e seção correspondente do relatório.
+O corte é por propriedade de contrato, não por quantidade de classes. Cada trilha:
 
-Regras comuns:
+1. define e implementa seus tipos;
+2. escreve os testes e o Javadoc desses tipos;
+3. não completa silenciosamente interfaces pertencentes a outro integrante;
+4. negocia mudanças de assinatura antes de alterar consumidores;
+5. mantém a `main` compilando.
 
-1. quem altera um tipo atualiza seus testes e Javadoc;
-2. mudança em API pública exige aviso aos demais donos;
-3. cliente não importa internals de `engine`;
-4. código de framework não importa Trinca ou Blackjack;
-5. `main` deve permanecer compilando;
-6. documentação deve descrever o código efetivo, não uma arquitetura planejada que já
-   foi substituída.
+Essa regra evita o problema encontrado na antiga feature da Trilha A: ela havia
+criado versões próprias de contratos de baralho, jogador, regras e eventos para
+conseguir executar isoladamente. A integração atual remove esse viés e usa os
+contratos reais da `main`.
 
-## 2. Trilha A — motor, ciclo de vida e turnos
+## 2. Trilha A — Motor e ciclo de vida
 
-**Responsável:** Lucas
+**Responsável:** Lucas.
 
-### Tipos sob responsabilidade principal
+Tipos públicos de responsabilidade da trilha:
 
-- `engine.MotorDePartida`;
-- internals de `engine`: `GerenciadorDeTurnos`, `SentidoDeRotacao`,
-  `CicloDeVidaDaPartida`, `PartidaEmExecucao` e contexto interno de distribuição;
-- `api.PartidaConfig`, `EstadoPartida`, `ContextoDePartida`, `VisaoDaPartida`;
-- `ResultadoDoTurno`, `DesfechoDePartida`, `ResultadoDePartida` e motivos de
-  encerramento.
+- `api.EstadoPartida`;
+- `api.PartidaConfig<C>`;
+- `api.VisaoDaPartida<C>` e `api.ContextoDePartida<C>`;
+- `api.ResultadoDoTurno`;
+- `api.DesfechoDePartida`, `api.ResultadoDePartida`;
+- `api.MotivoDeEncerramento` e `api.MotivoPadrao`;
+- `engine.MotorDePartida<C>`.
 
-### Responsabilidades
+Detalhes internos, todos sem `public`:
 
-- manter o Template Method e a Inversão de Controle;
-- controlar transições de estado e impedir segunda execução;
-- aplicar repetição, inversão e pulos sem expor o gerenciador;
-- validar vencedores e placar;
-- fornecer contextos controlados aos jogos;
-- isolar listeners defeituosos e impedir repetição infinita de jogadas inválidas;
-- garantir a direção `engine → api`.
+- `GerenciadorDeTurnos`;
+- `SentidoDeRotacao`;
+- `CicloDeVidaDaPartida`;
+- `PartidaEmExecucao<C>`;
+- `ContextoDeDistribuicaoInterno<C>`.
 
-### Entrega para a defesa
+Responsabilidades:
 
-Explicar por que `MotorDePartida` é público em `engine`, enquanto o gerenciador de
-turnos permanece no mesmo pacote sem `public`, e demonstrar que o framework chama o
-jogo por meio dos hooks.
+- controlar a sequência preparar → distribuir → jogar → avaliar → pontuar → encerrar;
+- manter a máquina de estados e impedir segunda execução;
+- avançar, repetir, inverter e pular turnos para N participantes;
+- proteger baralho e mãos por um contexto de operações controladas;
+- validar vencedores e a cobertura do placar;
+- manter o runtime independente de Trinca e Blackjack.
 
-## 3. Trilha B — cartas, baralho, mão e distribuição
+Não pertencem à Trilha A: decidir a composição do baralho, implementar decisão de
+jogador, definir as assinaturas das regras ou criar o protocolo de eventos.
 
-**Responsável:** Júlio
+## 3. Trilha B — Cartas, baralho, mãos e distribuição
 
-### Tipos sob responsabilidade principal
+**Responsável:** Júlio.
+
+Tipos principais:
 
 - `Carta`;
-- `Baralho`, `BaralhoPadrao`, `BaralhoFactory`;
-- `MaoDeCartas`;
-- `EstrategiaDeDistribuicao` e `ContextoDeDistribuicao`.
+- `Baralho<C>`, `BaralhoPadrao<C>` e `BaralhoFactory<C>`;
+- `MaoDeCartas<C>` e `MaoDeCartasPadrao<C>`;
+- `ContextoDeDistribuicao<C>`;
+- `EstrategiaDeDistribuicao<C>` e `DistribuicaoAlternada<C>`;
+- implementação auxiliar do contexto de distribuição mantida pela trilha.
 
-### Responsabilidades
+Responsabilidades:
 
-- manter `Carta` aberta a modelos diferentes;
-- encapsular a coleção e as invariantes de `BaralhoPadrao`;
-- permitir composições de baralho criadas pelos clientes;
-- garantir compra, adição e embaralhamento sem duplicar identidade de carta;
-- oferecer mão somente leitura;
-- permitir formas diferentes de distribuição.
+- identidade estável de cada carta;
+- encapsulamento e snapshots imutáveis;
+- operações de topo/base, compra e embaralhamento;
+- criação de composições diferentes por Factory Method;
+- distribuição substituível por Strategy.
 
-### Entrega para a defesa
+O motor consome exatamente `BaralhoFactory.criar()`, `Baralho.quantidade()` e
+`ContextoDeDistribuicao.entregarProximaCarta()`. A Trilha A não mantém uma cópia
+alternativa desses contratos.
 
-Demonstrar que uma coleção devolvida pelo framework não pode ser modificada por fora e
-comparar as fábricas de 104 cartas da Trinca e 52 do Blackjack.
+## 4. Trilha C — Jogadores e decisão
 
-## 4. Trilha C — jogadores, decisão e I/O
+**Responsável:** Allan.
 
-**Responsável:** Allan
+Tipos principais:
 
-### Tipos sob responsabilidade principal
-
-- `Jogador`, `JogadorPadrao`;
-- `Jogada`, `EtapaDeTurno`;
-- `ContextoDeDecisao`, `ContextoDeDecisaoPadrao`;
+- `Jogador` e `JogadorPadrao`;
+- `Jogada`, `EtapaDeTurno` e `ContextoDeDecisao`;
 - `EstrategiaDeDecisao`;
-- `DecisaoAleatoria`, `DecisaoGulosa`, `DecisaoHumanaConsole`;
-- `EntradaSaida`, `ControleEntradaSaida`.
+- estratégias humana, aleatória e gulosa;
+- abstrações de entrada e saída.
 
-### Responsabilidades
+Responsabilidades:
 
-- separar identidade de comportamento por composição;
-- manter ações e etapas abertas para os clientes;
-- não revelar informação privada em contextos de decisão;
-- permitir troca de Strategy sem trocar identidade;
-- isolar console por uma porta testável;
-- trafegar `Jogada`, nunca `String`, pelo domínio.
+- separar identidade de comportamento;
+- trocar humano, bot e dealer por composição;
+- não colocar mãos nem fluxo da partida dentro do jogador;
+- manter console fora do engine.
 
-`JogadorPadrao` aceita estratégia opcional: partidas dirigidas externamente podem usar
-somente a identidade; jogos que pedem decisão ao jogador devem configurá-la.
+O motor conhece apenas `Jogador.id()` e `Jogador.nome()` para identidade, ordem e
+mensagens. Ele não chama diretamente uma estratégia de decisão.
 
-### Entrega para a defesa
+## 5. Trilha D — Regras, eventos e exceções
 
-Trocar uma decisão humana por bot sem recompilar o engine e mostrar o teste da porta
-de console com `Reader`/`Writer` injetados.
+**Responsável:** Lívia.
 
-## 5. Trilha D — regras, exceções e eventos
+Tipos reservados:
 
-**Responsável:** Lívia
-
-### Tipos sob responsabilidade principal
-
-- `RegraDeValidacaoStrategy` e `ContextoDeValidacao`;
+- `RegraDeValidacaoStrategy`;
 - `RegraDeVitoriaStrategy`;
 - `RegraDePontuacaoStrategy`;
-- `EventoDePartida`, eventos padrão e `PartidaListener`;
-- pacote `api.excecao`.
+- `PartidaListener` e futuros eventos;
+- `PartidaException` e subclasses.
 
-### Responsabilidades
+Estado atual:
 
-- manter validação, vitória e pontuação independentes;
-- definir quais falhas são recuperáveis;
-- garantir eventos imutáveis e extensíveis;
-- evitar acoplamento do motor ao console;
-- avaliar Decorator somente se validações combináveis demonstrarem necessidade real.
+- exceções de domínio estão implementadas;
+- as três regras e `PartidaListener` continuam interfaces vazias;
+- `EventoDePartida` e eventos padrão ainda não existem na `main`;
+- Observer ainda não está implementado.
 
-### Entrega para a defesa
+Até a assinatura desses contratos ser aprovada, a Trilha A usa hooks protegidos para
+avaliar desfecho e pontuação e aceita `JogadaInvalidaException` lançada pelo jogo. Na
+integração futura, a equipe deve decidir conjuntamente se as Strategies entram em
+`PartidaConfig` e como o motor publica eventos.
 
-Adicionar uma regra e um listener novos sem editar o engine, relacionando a solução a
-OCP, DIP e Observer.
+## 6. Trilha E — Clientes, UML e relatório
 
-## 6. Trilha E — aplicações, UML e relatório
+**Responsável:** Raffael.
 
-**Responsável:** Raffael
+Entregas:
 
-### Artefatos sob responsabilidade principal
+- aplicação cliente Trinca em pacote separado;
+- cliente mínimo de Blackjack para provar extensibilidade;
+- UML consolidado e relatório final;
+- testes de aceitação que importem somente a API pública e `MotorDePartida`.
 
-- pacote da aplicação Trinca;
-- pacote da aplicação Blackjack;
-- `docs/diagrama-classes.puml`;
-- consolidação do relatório e exemplos da apresentação.
+Os clientes não devem importar nenhum tipo interno de `engine`. Se precisarem fazê-lo,
+isso revela um contrato público ausente e deve ser discutido com a trilha proprietária.
 
-### Responsabilidades
+## 7. Matriz de dependências
 
-- implementar as regras aprovadas usando somente a superfície pública;
-- transformar os stubs atuais em aplicações completas;
-- registrar lacunas genéricas em vez de contorná-las com acesso a internals;
-- manter UML com relações e multiplicidades compatíveis com o código;
-- consolidar o relatório de até oito páginas;
-- preparar uma demonstração reproduzível dos dois jogos.
-
-### Entrega para a defesa
-
-Executar os dois clientes sobre a mesma baseline e mostrar que diferenças de baralho,
-distribuição, decisão e vitória não exigem condicionais por jogo no framework.
-
-## 7. Tabela de propriedade
-
-| Trilha | Responsável | Área principal |
+| Consumidor | Pode depender de | Não deve depender de |
 |---|---|---|
-| A | Lucas | motor, contextos de execução, estado, turno e resultado |
-| B | Júlio | carta, baralho, mão e distribuição |
-| C | Allan | jogador, ações, decisão e I/O |
-| D | Lívia | regras, eventos e exceções |
-| E | Raffael | clientes, UML e relatório |
+| `engine` | `api` | jogos concretos, internals de `core` |
+| auxiliares em `core` | `api` | `engine`, jogos concretos |
+| Trinca/Blackjack | `api`, `engine.MotorDePartida` | colaboradores internos de `engine` |
+| Strategies | visões/contextos públicos aprovados | estado mutável interno |
 
-Propriedade não significa exclusividade. Mudança transversal deve ser revisada pelos
-donos afetados. O merge entre A e C, por exemplo, preservou decisão por composição sem
-forçar o engine a exigir uma estratégia para toda identidade.
+## 8. Padrões e proprietários
 
-## 8. Cobertura dos requisitos
-
-| Requisito | Dono primário | Evidência |
+| Padrão | Responsável principal | Estado |
 |---|---|---|
-| API pública | A + B + C + D | pacotes e Javadoc |
-| ≥ 5 pontos de extensão | B + C + D + A | dez hot-spots |
-| separação | A + E | `ClientesStubTest` |
-| aplicação cliente | E | stubs atuais; versões completas pendentes |
-| interfaces/abstrata | todos | contratos e motor abstrato |
-| exceções | D | `api.excecao` |
-| encapsulamento | B + A | testes de baralho, mão, configuração e resultado |
-| testes | cada trilha | 103 testes integrados |
-| Javadoc | cada dono | Maven Javadoc |
-| UML | E, revisado por todos | PlantUML versionado |
-| exemplos | E | Trinca e Blackjack |
-| decisões | todos, consolidação E | documentos arquiteturais |
+| Template Method | A | implementado em `MotorDePartida.executar()` |
+| Factory Method | B | implementado em `BaralhoFactory.criar()` |
+| Strategy de decisão/distribuição | B/C | implementado |
+| Strategy de regras | D | contrato vazio; pendente |
+| Observer | D | pendente |
 
-## 9. Padrões por trilha
+Builder em `PartidaConfig` é apoio de construção e não deve ser contado entre os
+quatro padrões GoF exigidos pela disciplina.
 
-| Padrão | Responsáveis | Evidência |
-|---|---|---|
-| Template Method | A | `MotorDePartida` |
-| Strategy | B, C e D | distribuição, decisão e regras |
-| Factory Method | B | `BaralhoFactory` |
-| Observer | D + A | eventos/listener + publicação no motor |
-| Builder auxiliar | A | `PartidaConfig.Builder` |
+## 9. Checklist de integração
 
-Decorator não é parte da baseline atual. Ele só deve entrar se jogos completos
-exigirem combinações independentes de validação e a equipe conseguir demonstrar o
-ganho sobre uma Strategy simples.
+Antes de mesclar uma trilha:
 
-## 10. Estado das fases
+- [ ] o diff contém apenas arquivos próprios ou mudanças conjuntas aprovadas;
+- [ ] nenhuma interface de outra trilha foi preenchida unilateralmente;
+- [ ] não há duplicação pública de um mesmo conceito;
+- [ ] coleções expostas são snapshots imutáveis;
+- [ ] `./mvnw test` passa;
+- [ ] Javadoc e UML representam o código atual;
+- [ ] pendências são marcadas como pendências, não como padrões implementados.
 
-| Fase | Estado | Critério de saída |
-|---|---|---|
-| modelo conceitual | concluída para a baseline | documentos coerentes |
-| implementação A–D | baseline integrada | build e Javadoc verdes |
-| integração arquitetural | concluída | dois stubs executam; 103 testes |
-| Trinca completa | pendente | casos de aceitação de `regras-trinca.md` |
-| Blackjack completo | pendente | casos de aceitação do escopo básico |
-| API estável | pendente | clientes completos sem novo vazamento de internals |
-| UML/relatório/defesa | em andamento | material revisado pelos cinco integrantes |
-
-## 11. Convenções de Git
-
-- branches de trilha permanecem locais até revisão;
-- nunca trocar de branch com alterações não commitadas;
-- usar commits pequenos por finalidade;
-- documentação destinada à `main` deve estar em commit que altere somente `docs/`;
-- levar esse commit por `cherry-pick`, em vez de copiar arquivos de uma árvore suja;
-- não usar `--ours` ou `--theirs` globalmente em conflitos de API;
-- não reescrever `main` publicada com `push --force`.
-
-Fluxo recomendado para documentação:
-
-```text
-feature limpa
-→ editar docs
-→ git add docs/
-→ commit exclusivamente documental
-→ worktree limpo da main
-→ cherry-pick do commit de docs
-→ testes/revisão
-→ push normal da main
-```
-
-## 12. Próxima coordenação da equipe
-
-1. E transforma cada stub em cliente completo;
-2. donos A–D respondem apenas a lacunas genéricas comprovadas por teste;
-3. todos revisam o UML após os clientes completos;
-4. cada integrante prepara a explicação da própria trilha e de uma trilha vizinha;
-5. a equipe congela a API somente depois dessa validação.
+Baseline verificada nesta integração: **105 testes, zero falhas e zero erros**.
