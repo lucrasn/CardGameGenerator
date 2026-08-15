@@ -1,134 +1,153 @@
 # Modelo conceitual — CardGame Framework
 
-**Status:** base arquitetural para discussão; não é ainda uma especificação de
-assinaturas Java.
+**Status:** consolidado e refletido na baseline da branch local `trilha/a-motor`;
+integração do código à `main` pendente
 
-## 1. Propósito e regra de decisão
+**Nível:** responsabilidades e relações; assinaturas ficam na especificação Java
 
-O framework fornece infraestrutura reutilizável para partidas de cartas. Trinca e
-Blackjack são aplicações clientes que a validam; nenhuma característica particular de
-um deles define, sozinha, um conceito do framework.
+## 1. Propósito
 
-Antes de incluir uma abstração ou operação pública, a equipe deve responder:
+O framework fornece conceitos reutilizáveis para partidas de cartas. Trinca e
+Blackjack validam a arquitetura, mas nenhum deles define sozinho o domínio comum.
 
-1. ela representa um conceito presente em mais de um jogo de cartas?
-2. um jogo novo precisará conhecê-la para usar ou estender o framework?
-3. sua responsabilidade pode ser expressa sem termos como descarte, dealer,
-   combinação, aposta, naipe ou valor?
+Uma responsabilidade pertence ao framework quando:
 
-Se a resposta for negativa, a responsabilidade pertence ao pacote do jogo cliente.
+1. aparece em jogos diferentes;
+2. pode ser descrita sem termos de um jogo específico;
+3. precisa ser usada ou estendida por um cliente;
+4. preserva baixo acoplamento e alta coesão.
 
-## 2. Abstrações mínimas
+Pilha de descarte, dealer, apostas, combinações, naipe e valor permanecem nos jogos.
 
-| Abstração | Responsabilidade | Dados/operações esperados | Não deve conhecer |
+## 2. Conceitos principais
+
+| Conceito | Responsabilidade | Dados/operações conceituais | Não deve conhecer |
 |---|---|---|---|
-| `Carta` | Representar uma carta individual, inclusive quando há cartas visualmente iguais. | Identidade estável. Atributos específicos pertencem às cartas concretas. | Naipes, valores, regras, mão, turno ou vitória. |
-| `Baralho` | Guardar e fornecer uma sequência de cartas. | Quantidade, vazio, comprar, adicionar e embaralhar; coleções sempre encapsuladas. | Jogadores, regras de jogo, descarte ou placar. |
-| `MaoDeCartas` | Agrupar cartas controladas por uma partida. | Consultar, adicionar e remover cartas sem expor a coleção mutável. | Regras de combinação, valor da mão e decisão do jogador. |
-| `Jogador` | Representar a identidade de um participante. | Identificador, nome e, quando aplicável, estratégia de decisão por composição. | Regras concretas, console, dealer ou estado mutável de mesa. |
-| `Partida` | Representar o ciclo de vida e a configuração de uma execução. | Jogadores, estado, turnos, baralho, resultado e eventos por contratos controlados. | Regras ou ações de um jogo específico. |
-| `RegraDoJogo` | Nome conceitual para comportamentos que determinam um jogo. | É decomposta em validação, vitória e pontuação para evitar interface ampla. | Estruturas internas mutáveis do `core`. |
+| Carta | representar uma carta individual | identidade estável e atributos definidos pelo cliente | mão, turno ou vitória |
+| Baralho | guardar e fornecer cartas | comprar, adicionar, embaralhar e consultar quantidade | jogadores ou regras |
+| Mão | expor as cartas controladas pela partida | consulta imutável; mutação mediada pelo engine | combinações ou valor |
+| Jogador | identificar um participante e, opcionalmente, compor sua decisão | id, nome e Strategy | estado mutável da partida |
+| Partida | representar uma execução configurada | ciclo de vida, participantes, baralho, turnos e resultado | regra concreta de um jogo |
+| Jogada | representar uma ação tipada | dados imutáveis definidos pelo cliente | interpretação genérica obrigatória |
+| Regra | variar validação, vitória e pontuação | recebe visões controladas e produz decisão/resultado | internals do engine |
+| Evento | representar um fato ocorrido | payload imutável adequado ao observador | console ou GUI específicos |
 
-`Carta` deve ter identidade estável, mas não expor `naipe`, `valor`, `cor` ou
-`símbolo` no contrato geral: esses atributos não existem em todos os jogos.
+`RegraDoJogo` é um nome conceitual, não uma interface monolítica. O código a decompõe
+em três contratos menores para cumprir o ISP: validar, reconhecer o desfecho e calcular
+o placar.
 
-## 3. Responsabilidades de infraestrutura
+## 3. Participante, decisão e mão
 
-O framework contém mecanismos comuns, não regras de mesa:
+`Jogador` é a identidade usada pelo engine. A estratégia de decisão é composição:
+`JogadorPadrao` pode recebê-la e trocá-la, sem subclasses “humano”, “bot” ou “dealer”.
+Também é possível criar um participante sem estratégia quando a jogada chega por outra
+fronteira; tentar pedir decisão nesse estado falha explicitamente.
 
-- `MotorDePartida` coordena o ciclo de vida da partida.
-- `GerenciadorDeTurnos` controla o jogador atual e a rotação.
-- `EstadoPartida` restringe transições do ciclo de vida.
-- `ResultadoDePartida` expõe o desfecho como valor imutável.
-- contextos entregam somente snapshots e operações controladas às extensões.
-- eventos notificam observadores sem acoplar o motor ao console.
-- exceções de domínio comunicam falhas previsíveis sem expor detalhes internos.
+A mão não é propriedade mutável do objeto `Jogador`. Ela pertence à execução da
+partida, pois o mesmo participante pode jogar partidas diferentes. A baseline mantém
+uma mão principal por jogador e expõe apenas `MaoDeCartas` somente leitura.
 
-O framework **não** define uma pilha de descarte, mão do dealer, apostas,
-combinações, cartas francesas ou a regra de reciclagem de descarte. Esses elementos
-ficam nos jogos clientes até que o uso por jogos independentes justifique uma nova
-abstração reutilizável.
+## 4. Configuração e execução
 
-## 4. Variações e pontos de extensão
+`PartidaConfig` representa colaborações imutáveis:
 
-| Ponto de extensão | Variação atendida | Contrato público candidato |
+- jogadores;
+- fábrica de baralho;
+- distribuição;
+- validação;
+- vitória;
+- pontuação;
+- primeiro jogador.
+
+`MotorDePartida` interpreta a configuração. Uma execução cria um agregado interno
+contendo baralho, mãos, ciclo de vida e gerenciador de turnos. Esse agregado não é
+exposto ao cliente; ele é acessado por contextos públicos com capacidades limitadas.
+
+## 5. Contextos e visões
+
+| Contrato | Quem consome | Capacidade |
 |---|---|---|
-| Tipo de carta | atributos e igualdade de cada baralho | `Carta` |
-| Composição do baralho | 52 cartas, dois baralhos, cartas especiais etc. | `BaralhoFactory` |
-| Distribuição inicial | quantidade, ordem e destinatários das cartas | `EstrategiaDeDistribuicao` |
-| Decisão do jogador | humano, bot, dealer ou outra automação | `EstrategiaDeDecisao` |
-| Ações e etapas | operações válidas em cada turno | `Jogada` e `EtapaDeTurno` abertas |
-| Validação | pré-condições de ações de um jogo | `RegraDeValidacaoStrategy` |
-| Vitória/encerramento | critério de fim e vencedores | `RegraDeVitoriaStrategy` |
-| Pontuação | cálculo de placar, inclusive estratégia neutra | `RegraDePontuacaoStrategy` |
-| Eventos | fatos observáveis e reações externas | `EventoDePartida` e `PartidaListener` |
-| Turno concreto | interpretação de ações do jogo | gancho protegido de `MotorDePartida` |
+| `VisaoDaPartida` | vitória e pontuação | estado, jogadores, atual, mãos e quantidade no baralho |
+| `ContextoDeDistribuicao` | Strategy de distribuição | comprar e entregar cartas durante a preparação |
+| `ContextoDePartida` | motor concreto | mover cartas, validar jogada, embaralhar e publicar evento |
+| `ContextoDeValidacao` | Strategy de validação | visão da partida + jogada pretendida |
+| `ContextoDeDecisao` | Strategy humana/automática | etapa + lista imutável de ações permitidas |
 
-Esses contratos são candidatos; suas assinaturas só devem ser definidas depois de os
-dois jogos-prova demonstrarem que conseguem usá-los sem importar `core`.
+O contexto de partida não permite avançar a vez ou finalizar diretamente. O jogo
+solicita essas decisões por valores (`ResultadoDoTurno` e `DesfechoDePartida`), e o
+engine conserva o controle.
 
-## 5. Fluxo comum e fluxo específico
-
-O fluxo comum da partida é:
+## 6. Ciclo de vida
 
 ```text
-configurar → preparar → distribuir → executar turnos → avaliar encerramento → finalizar
+CONFIGURADA → PREPARANDO → EM_ANDAMENTO → FINALIZADA
 ```
 
-`MotorDePartida.executar()` controla essa sequência e permanece final. O turno não é
-presumido como "comprar e descartar": cada jogo o implementa ou especializa com suas
-próprias ações. Assim, Trinca pode controlar compra, descarte e reciclagem, enquanto
-Blackjack controla pedir carta, parar e o turno do dealer.
+`EstadoPartida` é especialista na tabela de transições. `MotorDePartida.executar()`
+coordena a sequência, e `GerenciadorDeTurnos` é especialista na rotação, no sentido e
+nos pulos. Nenhum jogo cliente manipula esses colaboradores internos.
 
-Um `ContextoDePartida` público, caso seja necessário para o gancho de turno, deve
-conter apenas capacidade genérica: consultar estado, jogadores e mãos; comprar do
-baralho; mover uma carta para ou de uma mão; avançar turno; encerrar partida e
-publicar evento. Ele não terá `cartasPublicas`, `publicarCarta`, `recolherCarta` nem
-`devolverAoBaralho`, pois esses nomes codificam a mecânica de descarte da Trinca.
+## 7. Resultado do turno e resultado final
 
-## 6. Fronteira entre API e core
+`ResultadoDoTurno` é uma diretiva imutável:
 
-### API pública
+- avançar normalmente;
+- repetir o jogador atual;
+- inverter o sentido;
+- pular uma quantidade de participantes.
 
-Contém os contratos que um autor de jogo precisa conhecer: cartas, baralho, mão,
-jogador, estratégias, jogadas/etapas, eventos, exceções, configuração, motor abstrato,
-estado, resultado e os contextos indispensáveis às extensões. Implementações padrão
-como `BaralhoPadrao`, `MaoDeCartasPadrao` e `JogadorPadrao` podem ser públicas se forem
-utilizáveis sem conhecer detalhes internos.
+`DesfechoDePartida` é a conclusão preliminar da regra de vitória: vencedores e motivo.
+Depois, a regra de pontuação calcula o placar e o engine cria `ResultadoDePartida`.
 
-### Core interno
+`MotivoDeEncerramento` é interface aberta. `MotivoPadrao` oferece vitória, empate e
+esgotamento, mas um cliente pode declarar outro motivo sem editar o framework.
 
-Contém o estado mutável da partida, implementação de contextos, ordem de turnos,
-armazenamento das mãos, publicação de eventos e detalhes de execução. Clientes não
-importam `core`; `core` nunca importa um pacote de jogo.
+## 8. Variações e pontos de extensão
 
-### Jogos clientes
-
-Contêm cartas concretas, regras, jogadas, fases, estratégias concretas, interface de
-console e qualquer estado de mesa próprio. Exemplos: `PilhaDeDescarte` e combinações
-na Trinca; `MaoDoDealer` e valor de Ás no Blackjack.
-
-## 7. Cenários de validação
-
-Os dois jogos não são modelos para a API; eles são testes de aceitação arquitetural:
-
-| Cenário | Deve demonstrar |
+| Variação | Contrato |
 |---|---|
-| Trinca | dois baralhos, distribuição alternada, compra de monte ou descarte, combinações e reciclagem sem alterar o `core`. |
-| Blackjack básico | baralho simples, duas cartas iniciais, pedir/parar, Ás como 1 ou 11, dealer compra até 17 e limite 21 sem alterar o `core`. |
+| tipo de carta | `Carta` |
+| composição do baralho | `BaralhoFactory` |
+| distribuição | `EstrategiaDeDistribuicao` |
+| tomada de decisão | `EstrategiaDeDecisao` |
+| ações/fases | `Jogada`, `EtapaDeTurno` |
+| validação | `RegraDeValidacaoStrategy` |
+| vitória | `RegraDeVitoriaStrategy` |
+| pontuação | `RegraDePontuacaoStrategy` |
+| observação | `EventoDePartida`, `PartidaListener` |
+| mecânica do turno | `MotorDePartida.executarTurno` |
 
-Blackjack básico não inclui apostas, seguro, *split*, *double down* ou outras regras
-avançadas. Essas funcionalidades aumentam o escopo, mas não são necessárias para
-provar reuso.
+## 9. Fronteira física
 
-## 8. Critério de congelamento da API
+### API
 
-A API só poderá ser congelada quando:
+Contratos, valores e implementações públicas reutilizáveis ficam em `cardgame.api` e
+seus subpacotes.
 
-1. cada contrato tiver responsabilidade e fronteira de pacote definidas;
-2. ao menos cinco pontos de extensão estiverem justificados por variações reais;
-3. existirem pequenos stubs de Trinca e Blackjack que compilem apenas contra `api`;
-4. não houver referência a descarte, dealer, combinação ou aposta no `core`;
-5. coleções internas forem protegidas por cópias defensivas ou visões imutáveis;
-6. os quatro padrões GoF forem associados a problemas reais, e não a uma contagem.
+### Engine
 
+O runtime fica em `cardgame.engine`. `MotorDePartida` é público porque é o ponto de
+extensão. Turnos, ciclo de vida, estado mutável e contexto concreto são package-private.
+
+### Clientes
+
+Trinca e Blackjack dependem de `api` e de `engine.MotorDePartida`. O framework nunca
+depende deles.
+
+## 10. Agregados e relações
+
+- uma configuração possui ao menos dois jogadores;
+- uma execução possui um baralho e uma mão principal para cada jogador;
+- baralho e mãos contêm zero ou mais cartas;
+- um motor agrega zero ou mais listeners;
+- um jogador pode ter zero ou uma estratégia configurada;
+- regras e distribuição são colaborações únicas da configuração;
+- um resultado contém todos os participantes no placar e zero ou mais vencedores,
+  conforme o motivo.
+
+## 11. Critério para evoluir o modelo
+
+Uma nova abstração só entra quando dois clientes independentes demonstrarem a mesma
+lacuna. Primeiro escreve-se o cenário de cliente; depois o contrato mínimo; por fim,
+atualizam-se testes, Javadoc, UML e especificação. Esse processo evita que o framework
+seja enviesado para Trinca ou Blackjack.

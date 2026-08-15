@@ -1,12 +1,14 @@
 # Regras da Trinca - versão de referência do projeto
 
-**Status:** regras aprovadas para orientar a Fase 0  
+**Status:** regras aprovadas; stub arquitetural na branch local `trilha/a-motor` e
+aplicação completa pendente
+
 **Objetivo:** definir a variante de nove cartas que a equipe adotou como a Trinca
 oficial do projeto.
 
 > O nome e detalhes desse tipo de jogo variam regionalmente (Pife, Pif Paf,
 > Cacheta, Pontinho ou Trinca). Este documento fixa a variante usada neste projeto;
-> outra variante deve ser implementada por novas regras, sem alterar o `core`.
+> outra variante deve ser implementada por novas regras, sem alterar o `engine`.
 
 ## 1. Visão geral
 
@@ -24,7 +26,7 @@ framework deve continuar independente da forma de decisão para permitir bots de
 | Elemento | Regra |
 |---|---|
 | Jogadores | Dois humanos na configuração inicial; a API deve aceitar uma coleção para futura expansão. |
-| Baralho | Dois baralhos de 52 cartas: 104 cartas, sem curingas. |
+| Baralho | Um `Baralho` com a composição de dois baralhos franceses: 104 cartas, sem curingas. |
 | Mão inicial | Nove cartas por jogador. |
 | Monte de compra | Cartas restantes, viradas para baixo. |
 | Pilha de descarte | Começa com uma carta do monte, virada para cima. |
@@ -93,10 +95,10 @@ do turno.
 ## 8. Eventos esperados pela aplicação de console
 
 O cliente de console observa a partida; ele não deve ser chamado diretamente pelo
-motor. A Trinca necessita, no mínimo, dos eventos: partida iniciada/cartas
-distribuídas, turno iniciado, carta comprada, carta descartada, jogada inválida,
-turno encerrado e partida finalizada. Os eventos não devem vazar cartas da mão de um
-jogador ao adversário.
+motor. O framework já publica início/fim da partida e do turno e rejeição de jogada.
+A Trinca pode declarar eventos próprios para cartas distribuídas, compradas e
+descartadas por meio de `ContextoDePartida.publicar`. Esses eventos não devem vazar
+cartas da mão de um jogador ao adversário.
 
 ## 9. Implicações para a API pública
 
@@ -115,7 +117,8 @@ Esta regra exige que a API permita, sem conhecer classes da Trinca:
 
 Se algum item não puder ser atendido apenas pela API pública, a Trilha E deve
 registrar a lacuna para o responsável pelo contrato. O pacote
-`br.edu.uepb.map.trinca` não deve importar classes internas de `core`.
+`br.edu.uepb.map.trinca` não deve importar colaboradores internos de `engine`; o único
+tipo desse pacote que o cliente conhece é `MotorDePartida`.
 
 ## 10. Casos de aceitação da Trinca
 
@@ -141,11 +144,11 @@ tempo limite, pontuação acumulada em várias rodadas e regras regionais altern
 - [x] a variante de nove cartas com trincas e sequências é a Trinca oficial;
 - [x] a primeira demonstração será humano x humano;
 - [x] o segundo jogo de demonstração será Blackjack básico;
-- [ ] os contratos públicos serão congelados com base na seção 9.
+- [x] a baseline pública atende a seção 9 nos clientes-stub;
+- [ ] os contratos serão congelados somente depois da Trinca e do Blackjack completos.
 
-### Regra ainda necessária para fechar o Blackjack
+### Escopo usado para validar com Blackjack
 
-"Blackjack normal" não é um regulamento único. Para esta demonstração, a equipe deve
-fixar somente o escopo básico: duas cartas iniciais, pedir/parar, Ás como 1 ou 11,
-dealer compra até 17 e limite 21. Seguro, divisão, dobro, rendição e pagamentos ficam
-fora da primeira versão.
+O escopo básico já foi registrado em `regras-blackjack-basico.md`: duas cartas
+iniciais, pedir/parar, Ás como 1 ou 11, casa compra até 17 e limite 21. Seguro, divisão,
+dobro, rendição e pagamentos ficam fora da primeira versão.

@@ -1,487 +1,363 @@
-# Levantamento de Padrões de Projeto — CardGame Framework
+# Padrões de projeto, SOLID e GRASP — CardGame Framework
 
-**Disciplina:** Métodos Avançados de Programação (CPT01091) — UEPB
-**Documento-base para:** relatório (seções "padrões utilizados", "GRASP e SOLID",
-"pontos de extensão") e defesa oral.
-**Fonte única de verdade sobre padrões neste repositório.** Se `.claudecode.md` ou
-`docs/divisao-responsabilidades.md` divergirem daqui, este documento prevalece.
+**Disciplina:** Métodos Avançados de Programação — UEPB
 
----
+**Status:** catálogo correspondente à baseline implementada na branch local
+`trilha/a-motor`; publicação do código na `main` pendente
 
-## 0. Regra de escopo — leia antes de propor qualquer padrão
+**Padrões GoF contabilizados:** Template Method, Strategy, Factory Method e Observer
 
-O enunciado (p. 2) diz:
+## 1. Regra de escopo
 
-> *"A solução deverá utilizar pelo menos **quatro padrões GoF dentre os estudados na
-> disciplina**. Além desses, a equipe poderá usar outros padrões não apresentados,
-> sempre tomando cuidado com engenharia excessiva (que conhecemos nas aulas como
-> overengineering)."*
+O enunciado exige pelo menos quatro padrões GoF estudados na disciplina e alerta para
+overengineering. O material da equipe registra Observer, Strategy, Decorator, Template
+Method e Factory Method.
 
-Isso tem uma consequência dura: **os quatro padrões que contam para o mínimo têm que
-sair da lista do que a professora deu em aula.** Padrão de fora só entra como *extra*,
-e ainda assim sob risco de ser lido como overengineering.
+A baseline usa quatro deles. Decorator foi analisado, mas não foi implementado sem uma
+necessidade concreta. Builder auxilia a configuração, porém não entra na contagem dos
+GoF da disciplina.
 
-### Padrões GoF efetivamente estudados (`MATERIAL_DA_AULA/`)
-
-| Aula | Arquivo | Padrão |
+| Padrão | Evidência | Estado |
 |---|---|---|
-| 03.1 | `03.1_GoFObserver.pdf` (23 p.) | **Observer** |
-| 04.1 | `04.1_GoFStrategy.pdf` (37 p.) | **Strategy** |
-| 05.1 | `05.1_GofDecorator.pdf` (38 p.) | **Decorator** |
-| 06.2 | `06.2_GofTemplateMethod.pdf` (32 p.) | **Template Method** |
-| 07.1 | `07.1_GofFactoryMethod.pdf` (30 p.) | **Factory Method** |
+| Template Method | `engine.MotorDePartida` | implementado |
+| Strategy | distribuição, decisão e três regras | implementado |
+| Factory Method | `BaralhoFactory.criarBaralho()` | implementado |
+| Observer | `PartidaListener` e eventos | implementado |
+| Decorator | composição de validações | analisado e adiado |
 
-Complementares (não são GoF, mas são cobrados no relatório):
+## 2. Template Method — `MotorDePartida`
 
-| Aula | Arquivo | Conteúdo |
+### 2.1 Intenção
+
+Reutilizar a estrutura de um algoritmo, permitindo que subclasses redefinam etapas
+específicas sem alterar sua sequência.
+
+### 2.2 Participantes
+
+| Papel GoF | Elemento do projeto |
+|---|---|
+| AbstractClass | `engine.MotorDePartida` |
+| Template Method | `executar()`, público e `final` |
+| Primitive Operation | `executarTurno(ContextoDePartida)` |
+| Hooks | `preparar`, `aposDistribuir`, `aoEncerrar` |
+| ConcreteClass | motores concretos de Trinca e Blackjack |
+
+### 2.3 Problema resolvido
+
+Jogos compartilham criar/embaralhar baralho, distribuir, iniciar, repetir jogada
+inválida, avaliar vitória, aplicar a diretiva do turno, pontuar e finalizar. Sem o
+padrão, cada cliente copiaria o laço e poderia esquecer estados, eventos ou invariantes.
+
+O método `executar()` final é o frozen-spot. A subclasse fornece a mecânica do turno,
+mas não avança o gerenciador nem encerra a partida por conta própria.
+
+### 2.4 Inversão de Controle
+
+O cliente não chama uma sequência de serviços para fabricar a partida. Ele configura e
+estende o motor; depois, o framework chama seus hooks. Essa inversão distingue um
+framework de uma coleção de utilitários.
+
+### 2.5 Trade-off
+
+Template Method cria acoplamento por herança. A baseline limita esse custo:
+
+- uma única operação abstrata obrigatória;
+- três hooks opcionais pequenos;
+- nenhum atributo protegido;
+- estado acessível apenas por interfaces públicas controladas.
+
+Usar Strategy para o fluxo inteiro foi rejeitado: a sequência não deve variar em tempo
+de execução; ela é justamente a invariável que o framework protege.
+
+## 3. Strategy — comportamentos substituíveis
+
+### 3.1 Intenção
+
+Definir uma família de algoritmos, encapsular cada um e torná-los intercambiáveis por
+composição.
+
+### 3.2 Strategies implementadas
+
+| Variação | Abstração | Contexto |
 |---|---|---|
-| 02.1 | `02.1_MVC.pdf` | MVC como **composição** de padrões |
-| 08.2 / 09.2 | `PrincipiosSOLIDSRPI.pdf` / `SRPIi.pdf` | SOLID (SRP, OCP, LSP, ISP, DIP) |
-| 10.2 | `10.2_GRASPCoesão.pdf` (36 p.) | GRASP — Alta Coesão |
-| 11.2 | `11.2_GRASPAcoplamento.pdf` (18 p.) | GRASP — Baixo Acoplamento |
-| 12.2 | `12.2_GRASPExpert.pdf` (24 p.) | GRASP — Especialista na Informação |
+| distribuição | `EstrategiaDeDistribuicao` | `ContextoDeDistribuicao` |
+| decisão | `EstrategiaDeDecisao` | `ContextoDeDecisao` |
+| validação | `RegraDeValidacaoStrategy` | `ContextoDeValidacao` |
+| vitória | `RegraDeVitoriaStrategy` | `VisaoDaPartida` |
+| pontuação | `RegraDePontuacaoStrategy` | visão + desfecho |
 
-**O universo estudado tem exatamente 5 padrões GoF. A proposta abaixo usa os 5** —
-4 como obrigatórios e 1 (Decorator) como condicional, com critério explícito de
-descarte na seção 3.
+Implementações reutilizáveis de decisão já existentes:
 
-> ⚠️ **Correção em relação aos documentos anteriores.** `docs/divisao-responsabilidades.md`
-> mencionava State, Chain of Responsibility, Iterator e Adapter como "opcionais".
-> Nenhum deles foi dado em aula. Continuam permitidos como extras pelo enunciado, mas
-> **não contam para o mínimo de quatro** e passaram para a tabela de rejeitados
-> (seção 4), que é uma seção que joga a favor da nota.
+- `DecisaoAleatoria`;
+- `DecisaoGulosa`;
+- `DecisaoHumanaConsole`.
 
----
+Distribuição e regras concretas dos clientes podem ser classes ou lambdas, pois os
+contratos são interfaces funcionais.
 
-## 1. Visão geral — o mapa fechado
+### 3.3 Problema resolvido
 
-| # | Padrão | Onde na arquitetura | Trilha | Status |
-|---|---|---|---|---|
-| 1 | **Template Method** | `MotorDePartida` | A — Lucas | obrigatório |
-| 2 | **Strategy** | `Regra*Strategy` + estratégia de decisão do jogador | C — Allan / D — Lívia | obrigatório |
-| 3 | **Factory Method** | `BaralhoFactory` | B — Júlio | obrigatório |
-| 4 | **Observer** | `PartidaListener` | D — Lívia | obrigatório |
-| 5 | **Decorator** | composição de `RegraDeValidacaoStrategy` | D — Lívia | condicional |
+O motor não contém condicionais como `if (jogo == TRINCA)`. Cada configuração injeta
+algoritmos próprios. Novo jogo adiciona implementações e não altera o engine, atendendo
+OCP e DIP.
 
-**Mínimo do enunciado: 4. Entregamos 4 garantidos + 1 condicional.** Nenhum padrão
-fora desta tabela entra sem discussão no grupo.
+Validação, vitória e pontuação são interfaces separadas. Uma interface única
+`RegraDoJogo` obrigaria clientes a depender de métodos que não usam e violaria ISP.
 
----
+### 3.4 Decisão por composição
 
-## 2. Catálogo detalhado
+`JogadorPadrao` pode receber uma `EstrategiaDeDecisao` e trocá-la mantendo o mesmo
+UUID. Humano, bot e dealer são comportamentos, não subclasses obrigatórias.
 
-Cada ficha segue a mesma estrutura, para virar seção do relatório com corte mínimo:
-*intenção (na definição da aula) → participantes (na nomenclatura da aula) →
-mapeamento para nossas classes → problema concreto → justificativa → alternativa
-rejeitada → o que aparece no diagrama.*
+`ContextoDeDecisao` oferece etapa e ações permitidas. Jogos podem acrescentar dados
+públicos por subtipo sem revelar internals.
 
----
+### 3.5 Alternativas rejeitadas
 
-### 2.1 Template Method — `MotorDePartida`
+- `enum TipoDeJogo` com `switch`: fecha a extensão e viola OCP;
+- subclasses `JogadorHumano`/`JogadorBot`: combina identidade e decisão por herança;
+- uma Strategy única para todas as regras: baixa coesão e interface larga.
 
-**Intenção (slide 06.2, "Definição oficial do GoF"):** reutilizar a estrutura de um
-algoritmo, permitindo que subclasses redefinam etapas específicas sem alterar a
-sequência. O slide reforça: *"a superclasse controla a sequência do algoritmo; as
-subclasses implementam etapas específicas"* e *"é a superclasse que chama os métodos
-da subclasse"*.
+## 4. Factory Method — criação do baralho
 
-**Participantes (nomenclatura da aula 06.2):**
+### 4.1 Intenção
 
-| Participante (slide) | Nossa classe |
+Definir um método de criação contra uma abstração e deixar a implementação concreta
+decidir qual produto fornecer.
+
+### 4.2 Participantes
+
+| Papel GoF | Elemento do projeto |
 |---|---|
-| `AbstractTemplate` | `api.MotorDePartida` (abstrata) |
-| Template Method (marcado `final`) | `MotorDePartida.executar()` |
-| Operação primitiva (abstrata, obrigatória) | `executarTurno(ContextoDePartida)` |
-| Hooks / métodos gancho (com implementação padrão) | `preparar(ContextoDePartida)`, `aoEncerrar(ContextoDePartida, ResultadoDePartida)` |
-| `ImplementationA`, `ImplementationB` | `MotorDeTrinca`, `MotorDeBlackjack` |
+| Product | `Baralho` |
+| ConcreteProduct reutilizável | `BaralhoPadrao` |
+| Creator contract / factory method | `BaralhoFactory.criarBaralho()` |
+| ConcreteCreator | fábrica fornecida pelo jogo cliente |
 
-**Problema concreto.** Trinca e Blackjack compartilham a mesma espinha dorsal —
-preparar mesa → distribuir cartas → laço de turnos → apurar vencedor → encerrar. O que
-muda é *quantas* cartas se distribui, *o que* acontece no turno e *quando* a partida
-acaba. Sem o padrão, cada jogo reescreveria o laço inteiro, e a ordem dos passos
-poderia divergir entre eles — exatamente o cenário `ProcessadorPDF` / `ProcessadorExcel`
-do slide, em que os dois métodos `processar()` são idênticos exceto por uma linha.
+Em Java, o papel de ConcreteCreator pode ser uma classe nomeada ou uma implementação da
+interface funcional. Nos clientes completos, classes nomeadas são preferíveis para que
+o mapeamento do padrão fique explícito no UML e na defesa.
 
-**Justificativa para a defesa.** É o padrão que materializa a **Inversão de Controle**,
-que é o que faz esta solução ser um *framework* e não uma *biblioteca*. O slide 06.2
-diz literalmente que o padrão se aplica *"em frameworks e bibliotecas"* e que
-*"o framework ou a superclasse controla o fluxo"*. Marcar `executar()` como `final` é
-a garantia mecânica de que nenhum jogo cliente pode subverter a ordem da partida —
-é o **frozen-spot** da arquitetura.
+### 4.3 Problema resolvido
 
-**Fronteira pública.** `MotorDePartida` pertence à API pública como a abstração de
-extensão do framework; `MotorDeTrinca` e `MotorDeBlackjack` ficam nos pacotes dos
-jogos clientes e a estendem. As operações primitivas recebem apenas um
-`ContextoDePartida` público e controlado. Assim, a subclasse não importa
-implementações internas como `ContextoDeDistribuicaoPadrao` de `core`, preservando
-a separação exigida no enunciado sem esconder o Template Method atrás de uma fachada.
+O engine precisa iniciar com um baralho, mas não pode conhecer quantidade, tipo das
+cartas ou implementação concreta. A Trinca fornece 104 cartas; o Blackjack, 52. Ambos
+podem devolver `BaralhoPadrao`, mas com composições diferentes.
 
-**Alternativa rejeitada.** Strategy para o fluxo inteiro. Descartada porque a sequência
-da partida **não** deve variar em tempo de execução nem ser substituível pelo cliente;
-o slide 06.2 é explícito: use Strategy *"quando o comportamento precisa mudar em tempo
-de execução"*, o que não é o caso da espinha dorsal da partida. Fixar a sequência é
-requisito, não limitação.
+Instanciar `new BaralhoPadrao(...)` dentro do motor o acoplaria à composição de um
+cliente. Fazer cada jogo reimplementar compra e embaralhamento duplicaria código.
 
-**Desvantagem que precisamos admitir (slide 06.2).** O padrão gera *"forte dependência
-de herança"* e *"alto acoplamento estrutural"*: `MotorDeTrinca` depende do contrato
-protegido de `MotorDePartida`. Mitigação: há uma única operação primitiva obrigatória
-e nenhum atributo protegido; todo acesso ao estado ocorre por `ContextoDePartida`.
+### 4.4 Delimitação acadêmica
 
-**No diagrama:** `MotorDePartida` em *itálico* (abstrata), com `executar()` sublinhado
-como `final` e as operações primitivas em itálico; `MotorDeTrinca` e `MotorDeBlackjack`
-ligadas por **herança** (triângulo vazado).
+Não é Abstract Factory: há um produto principal (`Baralho`), e não uma família de
+produtos relacionados. Também não se deve chamar qualquer construtor auxiliar de
+Factory Method; a evidência é o método público de criação usado pelo engine.
 
----
+## 5. Observer — eventos da partida
 
-### 2.2 Strategy — regras do jogo e decisão do jogador
+### 5.1 Intenção
 
-**Intenção (slide 04.1, "Definição oficial do GoF"):** *"Define uma família de
-algoritmos, encapsula cada um deles e os torna intercambiáveis."*
+Permitir que interessados sejam avisados de fatos sem que o objeto observado conheça
+suas implementações concretas.
 
-**Participantes (nomenclatura da aula 04.1):**
+### 5.2 Participantes
 
-| Participante (slide) | Nossas classes |
+| Papel GoF | Elemento do projeto |
 |---|---|
-| `Context` | `MotorDePartida` (para as regras) · `Jogador` (para a decisão) |
-| `Strategy` (Estratégia Abstrata) | `RegraDeValidacaoStrategy`, `RegraDePontuacaoStrategy`, `RegraDeVitoriaStrategy`, `EstrategiaDeDecisao` |
-| `ConcreteStrategy` | `ValidacaoTrinca`, `PontuacaoBlackjack`, `VitoriaPorTrincaFormada`, `DecisaoAleatoria`, `DecisaoGulosa`, `DecisaoHumanaConsole` |
+| Subject | `MotorDePartida` |
+| Observer | `PartidaListener` |
+| Notification | `EventoDePartida` |
+| Concrete notifications | eventos em `api.evento` e eventos dos clientes |
 
-**Problema concreto.** O enunciado (p. 1) exige que jogos diferentes tenham
-*"diferentes regras"*, *"diferentes formas de vencer uma partida"* e *"diferentes
-estratégias de tomada de decisão dos jogadores"*. A solução ingênua seria
-`if (jogo == TRINCA) ... else if (jogo == BLACKJACK) ...` dentro do motor — o
-anti-padrão que o slide 04.1 abre denunciando (*"Muitos if/else · Difícil manutenção ·
-Toda mudança quebra algo"*).
+O motor agrega zero ou mais listeners, oferece adicionar/remover e publica eventos a
+partir de uma cópia da lista. Um listener defeituoso é isolado e registrado; os demais
+continuam recebendo notificações.
 
-**Justificativa para a defesa.** Duas frases do slide 04.1 são o núcleo do argumento:
+### 5.3 Problema resolvido
 
-- *"O segredo do Strategy é COMPOSIÇÃO e não herança. O objeto recebe um comportamento
-  (ele não tem um comportamento)."* — por isso `Jogador` **tem uma** `EstrategiaDeDecisao`
-  em vez de `JogadorAgressivo extends Jogador`. Um mesmo jogador pode trocar de
-  estratégia em tempo de execução.
-- *"A classe principal depende da abstração e não das implementações concretas."* — é a
-  formulação que a aula dá para o **DIP**, e é o que permite que o `core` não conheça
-  nenhuma regra concreta.
+Sem Observer, console, log ou placar precisariam ser chamados diretamente pelo motor.
+Isso aumentaria acoplamento, misturaria domínio e apresentação e dificultaria testes.
 
-**Por que três interfaces de regra e não uma.** Separar *validar*, *pontuar* e *vencer*
-é aplicação direta do **ISP** (aula 08.2/09.2): o Blackjack precisa de pontuação
-sofisticada e vitória trivial; a Trinca é o inverso. Uma interface `RegraDoJogo` única
-obrigaria cada jogo a implementar métodos que não usa.
+O cliente pode trocar console por GUI ou acrescentar telemetria sem editar o engine.
 
-**Alternativa rejeitada.** `enum` com comportamento (`TipoDeRegra.TRINCA.validar(...)`).
-Funciona, mas fecha o ponto de extensão: um jogo novo exigiria **editar o enum**, dentro
-do framework — violação frontal do OCP e do requisito 3 (separação framework/cliente).
+### 5.4 Relação com MVC
 
-**No diagrama:** `MotorDePartida` com **associação direcionada** (seta simples) para
-cada interface de regra, multiplicidade `1`; as concretas ligadas por **realização**
-(linha tracejada com triângulo vazado). As concretas ficam do lado do pacote do jogo,
-não do `core` — isso precisa ficar visualmente evidente no diagrama.
+Observer ajuda a separar Model e View, mas a baseline não declara um MVC completo: não
+existe ainda uma aplicação final com Controller/View definidos. MVC pode ser discutido
+no relatório somente depois dos clientes completos, sem contar como GoF adicional.
 
----
+## 6. Decorator — decisão de não usar ainda
 
-### 2.3 Factory Method — `BaralhoFactory`
+Decorator seria apropriado se validações independentes precisassem ser empilhadas em
+combinações diferentes, mantendo a mesma interface e delegando recursivamente.
 
-**Intenção (slide 07.1, "Definição oficial do GoF"):** *"Define uma interface para
-criar um objeto, mas deixa as subclasses decidirem qual classe instanciar."*
+A baseline não possui decoradores concretos. Strategy simples já atende os stubs. O
+padrão só deve ser acrescentado se os jogos completos demonstrarem pelo menos três
+validações combináveis e se a composição reduzir duplicação real.
 
-**Participantes (nomenclatura da aula 07.1 — em inglês, como no slide):**
+Essa ausência é deliberada: declarar Decorator sem classes que realizem a estrutura do
+padrão seria documentação falsa; criá-las sem uso seria overengineering.
 
-| Participante (slide) | Nossas classes |
+## 7. Builder auxiliar — `PartidaConfig.Builder`
+
+Configuração possui vários colaboradores opcionais e obrigatórios. O Builder evita um
+construtor longo e posicional, valida invariantes no `build()` e produz objeto
+imutável.
+
+Builder não integra a contagem mínima porque não está entre os GoF selecionados do
+material da disciplina para este trabalho.
+
+## 8. Padrões considerados e rejeitados
+
+| Padrão | Decisão |
 |---|---|
-| `Product` | `Baralho` |
-| `ConcreteProduct` | `BaralhoPadrao` (recebe a composição de cartas definida por cada fábrica) |
-| `Creator` | `BaralhoFactory` |
-| `ConcreteCreator` | `BaralhoFrancesFactory` (52), `BaralhoDeTrincaFactory` |
+| State | quatro estados com tabela de transição não justificam uma classe por estado |
+| Chain of Responsibility | validações atuais não formam cadeia de tratadores |
+| Iterator | coleções Java e visões imutáveis já resolvem a iteração |
+| Adapter | `ControleEntradaSaida` implementa uma porta própria; não adapta API incompatível |
+| Singleton | estado global prejudicaria isolamento dos testes |
+| Abstract Factory | não há família de produtos |
+| Null Object | a estratégia ausente falha explicitamente; não simula uma decisão silenciosa |
 
-**Problema concreto.** O motor precisa de um baralho, mas **não pode saber** qual
-composição ele possui. Blackjack usa 52 cartas francesas; a Trinca usa dois baralhos
-franceses. Cada fábrica cria um `BaralhoPadrao` com sua própria coleção de cartas. O slide 07.1
-enuncia o problema em termos que servem literalmente ao nosso caso: *"o problema não é
-criar personagens, é **decidir qual criar**. Quem deveria ter essa responsabilidade?"*
+## 9. SOLID
 
-**Justificativa para a defesa.** É a resposta ao *"Provê ganchos para subclasses"* do
-slide 07.1 — a criação do baralho é o primeiro hot-spot que um jogo novo precisa
-preencher, e é o que permite ao `core` trabalhar apenas contra a interface `Baralho`
-(*"o código só lida com a interface Produto"*, slide 07.1).
+### SRP — Single Responsibility Principle
 
-**Distinção que provavelmente será cobrada na defesa.** Não é Abstract Factory. Abstract
-Factory criaria *famílias* de produtos relacionados (carta + baralho + mesa temática);
-aqui há **um** produto variável, criado por **um** método fábrica. Chamar de Abstract
-Factory seria overengineering nominal — e o enunciado penaliza isso.
+- `GerenciadorDeTurnos`: ordem e rotação;
+- `CicloDeVidaDaPartida`: estado corrente;
+- `EstadoPartida`: transições permitidas;
+- `BaralhoPadrao`: coleção do baralho;
+- cada Strategy: um algoritmo variável;
+- `MotorDePartida`: orquestração do fluxo.
 
-**Alternativa rejeitada.** `new BaralhoPadrao(...)` direto no motor. Acopla o `core` à
-composição de cartas de um jogo concreto e quebra o requisito 3. Também rejeitado:
-fazer cada jogo reimplementar o baralho, o que duplicaria embaralhamento, compra e
-encapsulamento de coleção. O `BaralhoPadrao` é componente reutilizável público; a
-fábrica concreta varia somente as cartas que o compõem.
+### OCP — Open/Closed Principle
 
-**No diagrama:** `BaralhoFactory` como interface com `criarBaralho(): Baralho`;
-`MotorDePartida` associado a ela com multiplicidade `1`; `Baralho` em **composição**
-(losango cheio) com `Carta`, multiplicidade `1 -- 0..*`.
+Novas cartas, baralhos, decisões, distribuições, regras, motivos, eventos e motores
+concretos são adicionados por implementação/extensão. O engine não recebe condicionais
+por nome de jogo.
 
----
+### LSP — Liskov Substitution Principle
 
-### 2.4 Observer — `PartidaListener`
+Subclasses de `MotorDePartida` não podem alterar o algoritmo público porque
+`executar()` é final. Elas cumprem o contrato devolvendo uma diretiva válida e usando
+somente o contexto protegido.
 
-**Intenção (slide 03.1):** *"O padrão Observer permite que objetos interessados sejam
-avisados da mudança de estado"* de outro objeto.
+### ISP — Interface Segregation Principle
 
-**Participantes (nomenclatura da aula 03.1 — o slide usa os termos em inglês):**
+Visão, distribuição, decisão, validação, vitória e pontuação possuem contratos
+distintos. Um cliente recebe apenas as capacidades necessárias naquela extensão.
 
-| Participante (slide) | Nossas classes |
+### DIP — Dependency Inversion Principle
+
+O engine depende de abstrações em `api`: `BaralhoFactory`, Strategies, listener e
+contextos. Nenhuma classe de produção importa pacotes de Trinca ou Blackjack.
+
+## 10. GRASP
+
+### Alta Coesão
+
+Responsabilidades mutáveis foram separadas do modelo público. Contextos agrupam apenas
+operações relacionadas à fase em que são usados.
+
+### Baixo Acoplamento
+
+Clientes conhecem contratos e `engine.MotorDePartida`; internals são package-private.
+Eventos evitam dependência do motor em apresentação.
+
+### Especialista na Informação
+
+| Informação | Especialista |
 |---|---|
-| `Subject` | `MotorDePartida` |
-| `Observer` | `PartidaListener` |
-| Observadores concretos | `ConsoleView`, `PlacarListener`, `LogDePartidaListener` |
+| cartas no baralho | `BaralhoPadrao` |
+| transições legais | `EstadoPartida` |
+| índice, sentido e pulos | `GerenciadorDeTurnos` |
+| localização de cartas e mãos | `PartidaEmExecucao` |
+| invariantes do resultado | `DesfechoDePartida` / `ResultadoDePartida` |
+| algoritmo concreto de vitória | Strategy do jogo |
 
-**Problema concreto.** O enunciado (p. 1) exige *"diferentes eventos durante a partida"*.
-Sem Observer, o `MotorDePartida` chamaria `System.out.println` diretamente — e aí o
-framework fica acoplado ao console, o motor vira intestável (não dá para asserir sobre
-saída padrão com JUnit) e o requisito de I/O em console vira parte do `core`.
+### Controlador
 
-**Justificativa para a defesa.** A aula 03.1 constrói o padrão a partir do problema de
-acoplamento do `GeradorDeNotaFiscal`, e a conclusão dos slides é a nossa: *"o Subject
-está acoplado apenas à classe base Observer"* e *"o cliente configura o número e o tipo
-de observadores"*. Traduzindo para o projeto: **o motor não sabe que existe console.**
-Ele anuncia "carta jogada"; quem quiser que escute. É o que permite trocar console por
-GUI sem tocar no `core` — e é o argumento mais forte de *baixo acoplamento* (GRASP,
-aula 11.2) que temos.
+`MotorDePartida` recebe o evento de sistema “executar partida” e coordena os
+colaboradores sem absorver suas regras internas.
 
-**Ligação com MVC (aula 02.1) — vale ponto no relatório.** A aula 02.1 apresenta MVC
-como *composição* de padrões, e é exatamente o que temos: o `core` é o **Model**, o
-`ConsoleView` é a **View** registrada como Observer, e `MotorDePartida` acumula o papel
-de **Controller**. Citar essa leitura mostra que a arquitetura não é um amontoado de
-padrões isolados.
+### Creator
 
-**Alternativa rejeitada.** Passar o `ConsoleView` por parâmetro ao motor. Resolve a
-dependência de compilação, mas fixa **um** observador; o slide 03.1 destaca justamente
-que o cliente configura *o número* de observadores.
+- `PartidaConfig.Builder` cria a configuração que conhece;
+- `MotorDePartida` cria o agregado transitório da execução;
+- `BaralhoFactory` cria o produto solicitado pelo motor.
 
-**No diagrama:** `MotorDePartida ◇—— PartidaListener` com **agregação** (losango vazado,
-porque os listeners existem independentemente do motor) e multiplicidade `1 -- 0..*`.
-Métodos `adicionarListener()` / `removerListener()` visíveis no `MotorDePartida`.
+## 11. Herança e composição
 
----
+Herança é usada onde há um algoritmo estável com etapa variável:
 
-### 2.5 Decorator — composição de regras de validação *(condicional)*
-
-**Intenção (slide 05.1):** *"O padrão Decorator adiciona responsabilidades extras a
-objetos dinamicamente"*, usando composição e evitando *"explosão de subclasses"*.
-
-**Participantes (nomenclatura da aula 05.1 — mista, `BaseDecorator` em inglês e
-`ConcreteDecorator` traduzido como "Decorador" nos exemplos):**
-
-| Participante (slide) | Nossas classes |
-|---|---|
-| `Component` | `RegraDeValidacaoStrategy` |
-| `ConcreteComponent` | `ValidacaoBase` (aceita qualquer jogada legal do baralho) |
-| `BaseDecorator` | `ValidacaoDecorator` (guarda referência a outra `RegraDeValidacaoStrategy` e delega) |
-| `ConcreteDecorator` | `NaoUltrapassarLimiteDecorator`, `CartaPertenceAMaoDecorator`, `RespeitaTurnoDecorator` |
-
-**Problema concreto.** As validações de jogada se acumulam por combinação. O Blackjack
-precisa de "a carta veio do baralho" + "o jogador não estourou 21" + "o jogador não
-declarou parada". A Trinca precisa de "a carta está na mão" + regra própria de descarte.
-Modelar isso por herança produz `ValidacaoComLimiteEComTurno`, `ValidacaoComLimiteSemTurno`…
-— literalmente a lista `EmailComLogECriptografia` do slide 05.1, cuja legenda é:
-*"quando usamos herança para adicionar funcionalidades, cada combinação vira uma classe"*.
-
-**Justificativa para a defesa.** É o único ponto da arquitetura com **explosão
-combinatória real**, que é a condição de uso do padrão. A *composição recursiva* descrita
-no slide permite montar a regra de cada jogo como um encadeamento declarativo:
-
-```java
-new RespeitaTurnoDecorator(
-    new CartaPertenceAMaoDecorator(
-        new ValidacaoBase()));
+```text
+MotorDeTrinca ──|> MotorDePartida
+MotorDeBlackjack ──|> MotorDePartida
 ```
 
-**Por que é condicional — e este critério é o que nos protege de overengineering.**
-O próprio slide 05.1 lista como desvantagem *"mais objetos, mais indireção e mais
-estrutura complexa"*. Então a regra de decisão é objetiva:
+Composição é usada para algoritmos substituíveis:
 
-> **Só usamos Decorator se, ao escrever as regras da Trinca e do Blackjack, houver pelo
-> menos 3 validações independentes que se combinem de formas diferentes entre os dois
-> jogos.** Se cada jogo tiver 1 ou 2 validações fixas, um `ConcreteStrategy` por jogo
-> resolve, e o Decorator sai — sobram 4 padrões, que é o mínimo exigido.
+```text
+PartidaConfig → distribuição / validação / vitória / pontuação
+JogadorPadrao → estratégia de decisão opcional
+MotorDePartida → listeners
+```
 
-Essa decisão só pode ser tomada **depois** que Raffael entregar o documento de regras da
-Trinca (Fase 0). Levar essa condicional explicitada para o relatório é melhor do que
-levar o padrão aplicado sem necessidade: demonstra o critério de parada que a aula cobra.
+Essa divisão evita tanto uma hierarquia de classes por combinação de regras quanto um
+motor cheio de condicionais.
 
-**Uso alternativo, caso a validação não sustente o padrão:** decorar `PartidaListener`
-(`ListenerComLogDecorator` sobre `ConsoleView`). É honesto, mas mais fraco — a
-combinação de listeners já é resolvida pelo próprio Observer, que aceita N observadores.
-Aplicar Decorator ali seria redundante. **Preferir cortar o padrão a forçá-lo.**
+## 12. Pontos de extensão
 
-**No diagrama (se entrar):** `ValidacaoDecorator` implementa `RegraDeValidacaoStrategy`
-**e** agrega uma `RegraDeValidacaoStrategy` — a seta que volta para a própria abstração
-é a assinatura visual do padrão e precisa estar desenhada com multiplicidade `1`.
-
----
-
-## 3. Padrões auxiliares, considerados e rejeitados
-
-Esta seção **entra no relatório**. O enunciado penaliza overengineering explicitamente;
-por isso registramos tanto o Builder auxiliar adotado quanto os padrões descartados.
-
-| Padrão | Onde caberia | Decisão |
+| # | Hot-spot | Como o cliente estende |
 |---|---|---|
-| **State** | `EstadoPartida` como hierarquia de classes | Não foi dado em aula. Nossos 4 estados têm transições lineares e nenhum comportamento próprio — um `enum` com validação de transição resolve. State aqui troca 1 enum por 4 classes sem ganho. |
-| **Chain of Responsibility** | encadeamento de validações | Não foi dado em aula, e resolve o mesmo problema do Decorator (que **foi** dado). Entre dois padrões equivalentes, usar o da ementa. |
-| **Iterator** | percorrer `MaoDeCartas` | Java já entrega via `Iterable`. Implementar à mão é reinventar a biblioteca padrão. |
-| **Adapter** | camada de console | Não há interface incompatível a adaptar — o console é código nosso, escrito já no formato certo. |
-| **Singleton** | `BaralhoFactory` | Não foi dado em aula, introduz estado global e quebra o isolamento dos testes. Rejeição fácil de defender. |
-| **Abstract Factory** | criação de baralho | Há um único produto variável, não uma família. Ver 2.3. |
-| **Builder** | `PartidaConfig` | **Adotado como decisão auxiliar:** a configuração tem jogadores, fábrica de baralho, distribuição, três regras, primeiro jogador e listeners. Evita construtor longo e posicional. Não conta entre os quatro padrões da disciplina porque não foi estudado. |
+| 1 | `Carta` | declara um tipo imutável |
+| 2 | `BaralhoFactory` | fornece a composição |
+| 3 | `EstrategiaDeDistribuicao` | define a distribuição inicial |
+| 4 | `EstrategiaDeDecisao` | cria humano, bot ou dealer |
+| 5 | `Jogada` / `EtapaDeTurno` | define ações e fases |
+| 6 | `RegraDeValidacaoStrategy` | valida ações específicas |
+| 7 | `RegraDeVitoriaStrategy` | reconhece encerramento |
+| 8 | `RegraDePontuacaoStrategy` | calcula placar |
+| 9 | eventos/listener | declara fatos e reações |
+| 10 | `executarTurno` | implementa a mecânica concreta |
 
----
-
-## 4. Pontos de extensão × padrão (requisito 2: mínimo 5)
-
-Cada ponto de extensão existe **por causa de** um padrão. Esta tabela é a resposta
-direta à exigência de *"identificar explicitamente quais elementos representam
-componentes reutilizáveis e quais representam pontos de extensão"* (p. 2 do enunciado).
-
-| # | Ponto de extensão (hot-spot) | Padrão que o sustenta | O que o jogo cliente faz |
-|---|---|---|---|
-| 1 | `Carta` | Factory Method | define seu tipo de carta |
-| 2 | `BaralhoFactory` | Factory Method | define a composição do baralho |
-| 3 | `EstrategiaDeDistribuicao` | Strategy | define quantas cartas e em que ordem |
-| 4 | `EstrategiaDeDecisao` | Strategy | define bots e o jogador humano |
-| 5 | `RegraDeValidacaoStrategy` | Strategy (+ Decorator) | define validações do jogo |
-| 6 | `RegraDeVitoriaStrategy` | Strategy | define a condição de vitória |
-| 7 | `RegraDePontuacaoStrategy` | Strategy | define o cálculo de pontos |
-| 8 | `Jogada` / `EtapaDeTurno` | Strategy | define ações e fases próprias do jogo |
-| 9 | `EventoDePartida` / `PartidaListener` | Observer | define eventos e reações (console, placar, log) |
-| 10 | `MotorDePartida.executarTurno()` | Template Method | especializa o turno do jogo |
-
-**Componentes reutilizáveis (frozen-spots):** `MotorDePartida.executar()`,
-`GerenciadorDeTurnos`, `EstadoPartida`, `BaralhoPadrao`, `MaoDeCartasPadrao`,
-`JogadorPadrao`, mecanismo de notificação e hierarquia de exceções.
-
----
-
-## 5. GRASP — como justificar (aulas 10.2, 11.2, 12.2)
-
-A aula 12.2 abre com a pergunta que organiza esta seção: *"onde esse método deve ficar?"*
-
-| Princípio GRASP | Onde aplicamos | Argumento |
-|---|---|---|
-| **Especialista na Informação** (12.2) | `RegraDePontuacaoStrategy.calcular(ContextoDePontuacao)`, não `MotorDePartida.pontuarMao(...)` | a regra concreta conhece o algoritmo de pontuação; a mão apenas encapsula cartas. Isso evita acoplar um componente reutilizável às regras de um jogo. |
-| **Alta Coesão** (10.2) | separação `MotorDePartida` / `GerenciadorDeTurnos` | *"cada classe faz poucas coisas"*. Fluxo da partida e ordem de turnos são responsabilidades distintas; juntá-las criaria a classe-Deus típica. |
-| **Baixo Acoplamento** (11.2) | `core` depende só de interfaces da `api` | a aula mede acoplamento por *"quanto uma classe conhece outra / quanto cria objetos"*: o `core` **não instancia** nenhuma classe de jogo — quem instancia é a `BaralhoFactory` injetada. |
-| **Polimorfismo** | despacho das regras | substitui `if/else` por tipo — ver slide 04.1. |
-| **Variações Protegidas** | interfaces da `api` como fronteira | a variação (o jogo) fica atrás de uma interface estável; o slide 03.1 chama isso de *"a interface será estável por natureza"*. |
-| **Criador** | `BaralhoFactory` cria `BaralhoPadrao`; `ContextoDePartida` cria e associa mãos | quem possui os dados necessários coordena a criação, sem expor coleções. |
-
-**Alerta de coerência para a defesa.** Existe uma tensão real entre o Template Method
-(que a aula 06.2 admite gerar *"alto acoplamento estrutural"* por herança) e o princípio
-de Baixo Acoplamento da aula 11.2. **Não escondam isso** — é provável que seja
-perguntado. A resposta: aceitamos acoplamento por herança **apenas** no eixo do fluxo da
-partida, onde a sequência precisa ser imutável; todos os outros eixos de variação usam
-composição via Strategy. É uma escolha consciente de onde pagar o custo.
-
----
-
-## 6. SOLID — como justificar (aulas 08.2 e 09.2)
-
-| Princípio | Onde | Argumento |
-|---|---|---|
-| **SRP** | `MotorDePartida` orquestra, `GerenciadorDeTurnos` ordena, `Regra*` decide, `ConsoleView` exibe | quatro motivos de mudança, quatro classes |
-| **OCP** | os 7 pontos de extensão da seção 4 | a aula 09.2 dedica ~8 slides ao OCP — é o princípio central. *"Uma nova funcionalidade deve ser adicionada com mudanças mínimas no código existente."* Um jogo novo = **zero** linhas alteradas no `core`. |
-| **LSP** | `MotorDeTrinca` e `MotorDeBlackjack` substituem `MotorDePartida` | nenhuma subclasse fortalece pré-condição nem lança exceção não prevista pelo contrato |
-| **ISP** | três interfaces de regra separadas em vez de uma `RegraDoJogo` | jogo nenhum implementa método que não usa |
-| **DIP** | `core` → interfaces da `api`; concretas injetadas pelo cliente | o slide 04.1 formula assim: *"a classe principal depende da abstração e não das implementações concretas"* |
-
-**Prova mecânica do OCP para a apresentação.** Rodar ao vivo:
+## 13. Evidências mecânicas
 
 ```bash
-grep -rn "import br.edu.uepb.map.\(trinca\|blackjack\)" src/main/java/br/edu/uepb/map/cardgame/
+./mvnw clean verify
+./mvnw javadoc:javadoc
 ```
 
-Saída vazia = o framework não conhece nenhum jogo. É a demonstração mais curta e mais
-convincente que temos, e cobre de uma vez o requisito 3 e o OCP.
+A baseline integrada executa 103 testes. `ClientesStubTest` verifica a direção das
+dependências. Testes específicos cobrem encapsulamento, transições, turnos, resultados,
+regras, decisões, I/O e falha de observador.
 
----
+## 14. Elementos obrigatórios no UML
 
-## 7. Guia do diagrama de classes (para Raffael — Trilha E)
+- `MotorDePartida` abstrato e herança dos clientes;
+- `executar()` final, operação primitiva e três hooks;
+- realização das interfaces Strategy;
+- fábrica criando `Baralho`;
+- agregação de listeners;
+- composição do estado interno com baralho e mãos;
+- multiplicidades de jogadores, cartas, mãos e listeners;
+- separação visual entre `api`, `engine` e clientes;
+- estereótipos dos quatro padrões implementados.
 
-O enunciado exige **multiplicidades** nominalmente; é item de checagem.
+## 15. Roteiro curto para a defesa
 
-**Notação por tipo de relacionamento:**
-
-| Relacionamento | Notação | Onde usar |
-|---|---|---|
-| Herança | linha cheia, triângulo vazado | `MotorDeTrinca → MotorDePartida` |
-| Realização (implementação) | linha **tracejada**, triângulo vazado | `ValidacaoTrinca ⇢ RegraDeValidacaoStrategy` |
-| Composição (o todo destrói a parte) | losango **cheio** | `Baralho ◆— Carta`, `ContextoDePartida ◆— MaoDeCartas` |
-| Agregação (parte sobrevive ao todo) | losango **vazado** | `MotorDePartida ◇— PartidaListener`, `PilhaDeDescarte ◇— Carta` |
-| Associação direcionada | seta simples | `MotorDePartida → RegraDeVitoriaStrategy` |
-
-**Multiplicidades a desenhar:**
-
-```
-MotorDePartida    1  ——  2..*  Jogador          (abre para N, como o enunciado pede)
-MotorDePartida    1  ——  1     GerenciadorDeTurnos
-MotorDePartida    1  ——  1     Baralho
-MotorDePartida    1  ——  1     EstadoPartida
-MotorDePartida    1  ——  0..*  PartidaListener
-MotorDePartida    1  ——  1     RegraDeValidacaoStrategy
-MotorDePartida    1  ——  1     RegraDePontuacaoStrategy
-MotorDePartida    1  ——  1     RegraDeVitoriaStrategy
-Jogador           1  ——  1..*  MaoDeCartas      (Blackjack pode dividir a mão)
-Jogador           1  ——  1     EstrategiaDeDecisao
-MaoDeCartas       1  ——  0..*  Carta
-Baralho           1  ——  0..*  Carta
-ContextoDeDistribuicao 1 —— 1  Baralho
-ContextoDeDistribuicao 1 —— 2..* Jogador
-PilhaDeDescarte   1  ——  0..*  Carta             (somente no cliente Trinca)
-```
-
-**Convenções visuais:**
-
-- Classes abstratas e métodos abstratos em *itálico*; interfaces com `«interface»`.
-- **Separe visualmente os pacotes:** `api` e `core` de um lado, `trinca` e `blackjack`
-  do outro. **Todas as setas entre os blocos devem apontar do jogo para o framework,
-  nunca o contrário.** Um diagrama em que isso é óbvio já defende o requisito 3 sozinho.
-- Marque cada hot-spot da seção 4 com um destaque (cor ou estereótipo `«extensão»`) —
-  o enunciado pede identificação explícita, e o diagrama é o melhor lugar.
-- Para os recortes do relatório (o enunciado sugere justificar *"utilizando trechos do
-  diagrama"*), gere 5 sub-diagramas, um por padrão. Cabe melhor em 8 páginas do que um
-  diagrama gigante ilegível.
-
----
-
-## 8. Roteiro da defesa — perguntas prováveis
-
-Todos os cinco apresentam. Cada um deve conseguir responder pelo próprio padrão **e**
-pelo do colega (ver seção 6 de `divisao-responsabilidades.md`).
-
-| Pergunta esperada | Onde está a resposta |
+| Pergunta | Resposta central |
 |---|---|
-| "Por que Template Method e não Strategy no motor?" | 2.1, alternativa rejeitada |
-| "Isso não é Abstract Factory?" | 2.3, distinção |
-| "Por que três interfaces de regra e não uma?" | 2.2, ISP |
-| "Onde vocês usaram herança e onde usaram composição, e por quê?" | 5, alerta de coerência |
-| "Mostre onde eu adiciono um jogo novo sem tocar no framework" | 4 + `grep` da seção 6 |
-| "Vocês não exageraram nos padrões?" | 3, tabela de rejeitados + critério do Decorator em 2.5 |
-| "Qual padrão vocês quase usaram e desistiram?" | 3 (State e Chain of Responsibility) |
+| Por que é framework? | Inversão de Controle no Template Method final |
+| Como entra um jogo novo? | implementa os hot-spots sem editar o engine |
+| Por que não uma classe de regra única? | ISP e combinações independentes |
+| Por que jogador não tem subclasses humano/bot? | Strategy por composição |
+| Como o console não contamina o motor? | porta de I/O + Observer |
+| Onde está o baixo acoplamento? | direção `cliente → engine → api` e internals fechados |
+| Por que não Decorator? | necessidade combinatória ainda não comprovada |
+| Isso é Abstract Factory? | não; há um único produto variável, `Baralho` |
 
 ---
 
-## 9. Pendências que travam este documento
-
-1. **Regras do Blackjack.** A equipe escolheu a versão completa, mas ainda precisa
-   congelar a regra de mesa para fechar validações e decidir o Decorator (2.5).
-2. **Assinaturas da API.** Elas serão derivadas de
-   `modelo-conceitual-framework.md` e aprovadas por A-D antes de o UML ou novos
-   imports se consolidarem.
-3. **Decidir se o MVC (aula 02.1) entra no relatório** como leitura arquitetural
-   (ver 2.4). Custo: meio parágrafo. Retorno: mostra composição de padrões, que é a tese
-   daquela aula.
-
----
-
-*Fontes: `PROJETOS/AtividadeProposta.pdf` (pp. 1–3) e `MATERIAL_DA_AULA/` — aulas 02.1,
-03.1, 04.1, 05.1, 06.2, 07.1, 08.2, 09.2, 10.2, 11.2 e 12.2. As citações entre aspas são
-transcrições dos slides. Documento redigido em 15/08/2026.*
+Referências locais: enunciado em `docs/proposta/AtividadeProposta.pdf` e materiais das
+aulas de Observer, Strategy, Decorator, Template Method, Factory Method, SOLID e GRASP.

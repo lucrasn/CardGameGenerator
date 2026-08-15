@@ -1,7 +1,7 @@
 # Regras do Blackjack básico — cliente de validação
 
-**Status:** escopo mínimo aprovado arquiteturalmente; detalhes de interface ainda
-podem ser refinados pela Trilha E.
+**Status:** escopo mínimo aprovado; stub arquitetural na branch local
+`trilha/a-motor` e aplicação completa pendente.
 
 ## 1. Objetivo
 
@@ -32,8 +32,9 @@ O jogador escolhe:
 - `PEDIR`: compra uma carta e pode decidir novamente;
 - `PARAR`: encerra suas decisões.
 
-A estratégia humana ou automatizada produz uma `Jogada` tipada a partir de um
-`ContextoDeDecisao` específico do Blackjack.
+A estratégia humana ou automatizada produz uma `Jogada` a partir de um
+`ContextoDeDecisao` específico do Blackjack. O contrato base permanece independente
+das ações concretas; o cliente interpreta a jogada devolvida.
 
 ## 5. Turno da casa
 
@@ -67,7 +68,7 @@ O cliente valida:
 1. composição própria de baralho;
 2. distribuição diferente da Trinca;
 3. carta com cálculo de valor específico;
-4. decisão automatizada por Strategy tipada;
+4. decisão automatizada por Strategy sobre ações tipadas;
 5. pedir/repetir e parar/avançar por `ResultadoDoTurno`;
 6. regra de vitória por limite;
 7. ausência de tipo `Dealer` dentro do framework;
@@ -82,3 +83,7 @@ O cliente valida:
 5. casa respeita o limite 17;
 6. estouro, vitória e empate são reconhecidos;
 7. nenhuma alteração no engine é necessária.
+
+O stub atual comprova montagem, distribuição, decisão e execução sem imports internos.
+Ele não substitui os casos de aceitação da aplicação completa, especialmente cálculo
+do Ás, política da casa, empate e estouro.

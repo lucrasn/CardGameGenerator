@@ -2,7 +2,7 @@
 
 !pragma layout smetana
 
-title CardGame Framework — diagrama de classes da baseline
+title CardGame Framework — baseline integrada
 
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
@@ -11,7 +11,7 @@ hide empty fields
 hide empty methods
 
 package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
-    interface Carta <<public>> {
+    interface Carta <<public, extensão>> {
         +id(): UUID
     }
 
@@ -25,16 +25,19 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
     }
 
     class BaralhoPadrao <<public, final>>
-    interface BaralhoFactory <<public, Strategy>> {
+    interface BaralhoFactory <<public, Factory Method, extensão>> {
         +criarBaralho(): Baralho
     }
 
     interface Jogador <<public>> {
         +id(): UUID
         +nome(): String
+        +estrategiaDeDecisao(): EstrategiaDeDecisao
     }
 
-    class JogadorPadrao <<public, final>>
+    class JogadorPadrao <<public, final>> {
+        +alterarEstrategiaDeDecisao(estrategia): void
+    }
 
     interface MaoDeCartas <<public, read-only>> {
         +quantidadeDeCartas(): int
@@ -43,10 +46,47 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
         +contem(cartaId: UUID): boolean
     }
 
-    interface VisaoDaPartida <<public, read-only>>
-    interface ContextoDePartida <<public>>
+    interface Jogada <<public, extensão>>
+    interface EtapaDeTurno <<public, extensão>>
+    interface ContextoDeDecisao <<public, read-only>> {
+        +etapa(): EtapaDeTurno
+        +jogadasPermitidas(): List
+    }
+    class ContextoDeDecisaoPadrao <<public, record>>
+    interface EstrategiaDeDecisao <<public, Strategy, extensão>> {
+        +decidir(contexto: ContextoDeDecisao): Jogada
+    }
+
+    interface EntradaSaida <<public>> {
+        +exibir(mensagem: String): void
+        +solicitarOpcao(mensagem: String, opcoes: List): int
+    }
+
+    interface VisaoDaPartida <<public, read-only>> {
+        +estado(): EstadoPartida
+        +jogadores(): List
+        +jogadorAtual(): Jogador
+        +maoDe(jogador: Jogador): MaoDeCartas
+        +quantidadeNoBaralho(): int
+    }
+
+    interface ContextoDePartida <<public>> {
+        +comprarDoBaralho(): Carta
+        +adicionarNaMao(jogador, carta): void
+        +removerDaMao(jogador, cartaId): Carta
+        +adicionarAoBaralho(cartas): void
+        +embaralharBaralho(): void
+        +validarJogada(jogada): void
+        +publicar(evento): void
+    }
+
     interface ContextoDeDistribuicao <<public>>
     class ContextoDeValidacao <<public, record>>
+
+    interface EstrategiaDeDistribuicao <<public, Strategy, extensão>>
+    interface RegraDeValidacaoStrategy <<public, Strategy, extensão>>
+    interface RegraDeVitoriaStrategy <<public, Strategy, extensão>>
+    interface RegraDePontuacaoStrategy <<public, Strategy, extensão>>
 
     class PartidaConfig <<public, final>>
     class "PartidaConfig.Builder" as PartidaConfigBuilder <<public, Builder>>
@@ -55,27 +95,26 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
     class DesfechoDePartida <<public, record>>
     class ResultadoDePartida <<public, record>>
 
-    interface Jogada <<public>>
-    interface ContextoDeDecisao <<public>>
-    interface "EstrategiaDeDecisao<C,J>" as EstrategiaDeDecisao <<public, Strategy>>
-    interface EstrategiaDeDistribuicao <<public, Strategy>>
-    interface RegraDeValidacaoStrategy <<public, Strategy>>
-    interface RegraDeVitoriaStrategy <<public, Strategy>>
-    interface RegraDePontuacaoStrategy <<public, Strategy>>
-
-    interface MotivoDeEncerramento <<public>> {
-        +ehVitoria(): boolean
-        +ehEmpate(): boolean
-    }
+    interface MotivoDeEncerramento <<public, extensão>>
     enum MotivoPadrao <<public>>
 
-    interface EventoDePartida <<public>>
-    interface PartidaListener <<public, Observer>> {
+    interface EventoDePartida <<public, extensão>>
+    interface PartidaListener <<public, Observer, extensão>> {
         +aoOcorrer(evento: EventoDePartida): void
     }
 }
 
-package "br.edu.uepb.map.cardgame.api.evento" as eventos #EAF2F8 {
+package "br.edu.uepb.map.cardgame.api.estrategia" as estrategias #D6EAF8 {
+    class DecisaoAleatoria <<public, final>>
+    class DecisaoGulosa <<public, final>>
+    class DecisaoHumanaConsole <<public, final>>
+}
+
+package "br.edu.uepb.map.cardgame.api.io" as io #D6EAF8 {
+    class ControleEntradaSaida <<public, final>>
+}
+
+package "br.edu.uepb.map.cardgame.api.evento" as eventos #D6EAF8 {
     class PartidaIniciada <<public, record>>
     class TurnoIniciado <<public, record>>
     class JogadaRejeitada <<public, record>>
@@ -83,7 +122,7 @@ package "br.edu.uepb.map.cardgame.api.evento" as eventos #EAF2F8 {
     class PartidaFinalizada <<public, record>>
 }
 
-package "br.edu.uepb.map.cardgame.api.excecao" as excecoes #EAF2F8 {
+package "br.edu.uepb.map.cardgame.api.excecao" as excecoes #D6EAF8 {
     abstract class PartidaException <<public>>
     class BaralhoVazioException <<public, final>>
     class EstadoDePartidaInvalidoException <<public, final>>
@@ -91,12 +130,13 @@ package "br.edu.uepb.map.cardgame.api.excecao" as excecoes #EAF2F8 {
 }
 
 package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
-    abstract class MotorDePartida <<public, Template Method>> {
+    abstract class MotorDePartida <<public, Template Method, extensão>> {
         +executar(): ResultadoDePartida
         +adicionarListener(listener: PartidaListener): void
         +removerListener(listener: PartidaListener): boolean
         +estado(): EstadoPartida
         #preparar(contexto: ContextoDePartida): void
+        #aposDistribuir(contexto: ContextoDePartida): void
         {abstract} #executarTurno(contexto: ContextoDePartida): ResultadoDoTurno
         #aoEncerrar(visao: VisaoDaPartida, resultado: ResultadoDePartida): void
     }
@@ -116,6 +156,8 @@ package "clientes-stub (src/test)" as clientes #E8F8F5 {
     class CartaBlackjack <<client, record>>
     enum AcaoTrinca <<client>>
     enum AcaoBlackjack <<client>>
+    enum EtapaBlackjack <<client>>
+    class ContextoBlackjack <<client, record>>
 }
 
 BaralhoPadrao ..|> Baralho
@@ -123,11 +165,23 @@ BaralhoPadrao "1" *-- "0..*" Carta
 BaralhoFactory ..> Baralho : cria
 
 JogadorPadrao ..|> Jogador
+JogadorPadrao "1" --> "0..1" EstrategiaDeDecisao : compõe
+
+ContextoDeDecisaoPadrao ..|> ContextoDeDecisao
+ContextoDeDecisao --> EtapaDeTurno
+ContextoDeDecisao --> "0..*" Jogada
+EstrategiaDeDecisao ..> ContextoDeDecisao
+EstrategiaDeDecisao ..> Jogada : produz
+
+DecisaoAleatoria ..|> EstrategiaDeDecisao
+DecisaoGulosa ..|> EstrategiaDeDecisao
+DecisaoHumanaConsole ..|> EstrategiaDeDecisao
+DecisaoHumanaConsole --> EntradaSaida
+ControleEntradaSaida ..|> EntradaSaida
+
 ContextoDePartida --|> VisaoDaPartida
 ContextoDeValidacao --> VisaoDaPartida
 ContextoDeValidacao --> Jogada
-EstrategiaDeDecisao ..> ContextoDeDecisao
-EstrategiaDeDecisao ..> Jogada
 EstrategiaDeDistribuicao ..> ContextoDeDistribuicao
 RegraDeValidacaoStrategy ..> ContextoDeValidacao
 RegraDeVitoriaStrategy ..> VisaoDaPartida
@@ -137,10 +191,11 @@ RegraDePontuacaoStrategy ..> DesfechoDePartida
 
 PartidaConfigBuilder ..> PartidaConfig : build()
 PartidaConfig "1" o-- "2..*" Jogador
-PartidaConfig --> BaralhoFactory
-PartidaConfig --> EstrategiaDeDistribuicao
-PartidaConfig --> RegraDeVitoriaStrategy
-PartidaConfig --> RegraDePontuacaoStrategy
+PartidaConfig --> "1" BaralhoFactory
+PartidaConfig --> "1" EstrategiaDeDistribuicao
+PartidaConfig --> "1" RegraDeValidacaoStrategy
+PartidaConfig --> "1" RegraDeVitoriaStrategy
+PartidaConfig --> "1" RegraDePontuacaoStrategy
 
 MotivoPadrao ..|> MotivoDeEncerramento
 DesfechoDePartida "1" o-- "0..*" Jogador : vencedores
@@ -162,7 +217,7 @@ JogadaInvalidaException --|> PartidaException
 MotorDePartida --> PartidaConfig
 MotorDePartida "1" o-- "0..*" PartidaListener
 MotorDePartida "1" *-- "1" CicloDeVidaDaPartida
-MotorDePartida ..> PartidaEmExecucao : cria durante executar()
+MotorDePartida ..> PartidaEmExecucao : cria por executar()
 MotorDePartida ..> ResultadoDoTurno : aplica
 MotorDePartida ..> EventoDePartida : publica
 
@@ -185,6 +240,8 @@ CartaTrinca ..|> Carta
 CartaBlackjack ..|> Carta
 AcaoTrinca ..|> Jogada
 AcaoBlackjack ..|> Jogada
+EtapaBlackjack ..|> EtapaDeTurno
+ContextoBlackjack ..|> ContextoDeDecisao
 
 note right of MotorDePartida
   Único tipo público de engine.
@@ -192,9 +249,9 @@ note right of MotorDePartida
 end note
 
 note bottom of PartidaEmExecucao
-  O agregado é criado por execução;
-  não é armazenado como associação
-  permanente no motor.
+  Agregado transitório de uma execução.
+  O cliente o enxerga somente pelos
+  contextos públicos implementados.
 end note
 
 @enduml

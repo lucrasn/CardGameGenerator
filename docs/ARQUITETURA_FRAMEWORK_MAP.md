@@ -1,524 +1,326 @@
-# Projeto Final MAP — Arquitetura do Framework de Jogos de Cartas
+# Arquitetura normativa — CardGame Framework
 
-## 1. Objetivo deste documento
+**Status:** baseline implementada e validada na branch local `trilha/a-motor` em
+15/08/2026; publicação do código na `main` pendente de revisão
 
-Este documento estabelece o novo ponto de partida do projeto.
+**Escopo:** framework reutilizável para jogos de cartas com turnos sequenciais
 
-A equipe deve projetar primeiro um **framework reutilizável para jogos de cartas** e somente depois implementar as aplicações cliente, como Trinca e Blackjack.
+**Clientes de validação:** Trinca e Blackjack básico
 
-A Trinca não deve definir a arquitetura do framework. Ela será utilizada posteriormente como uma primeira aplicação cliente para validar se a infraestrutura projetada é realmente reutilizável.
+Este documento é o mapa normativo da arquitetura atual. Ele substitui a versão que
+descrevia apenas uma fase de planejamento e dizia “não implementar código ainda”. O
+código já existe; portanto, as decisões abaixo descrevem o contrato efetivamente
+implementado e coberto por testes.
 
----
+> **Nota de publicação:** este documento pode chegar à `main` antes do código da
+> Trilha A. As evidências de implementação e os 103 testes referem-se à branch local
+> `trilha/a-motor`, após ela incorporar a `main` no merge `4968e9e`. Até a revisão e a
+> integração dessa feature, a documentação representa a baseline proposta e validada,
+> não o estado compilável da `main` remota.
 
-## 2. Base do projeto
+## 1. Objetivo e limite da promessa
 
-O enunciado do Projeto Final exige uma infraestrutura reutilizável capaz de servir de base para diferentes jogos de cartas.
+O projeto oferece infraestrutura para construir jogos de cartas sem duplicar baralho,
+mãos, participantes, ciclo de vida, turnos, regras, eventos e tratamento de falhas.
+Ele aplica Inversão de Controle: o framework conduz a partida e chama os pontos de
+extensão fornecidos por cada jogo.
 
-A solução deve contemplar, no mínimo:
+O framework não “gera automaticamente qualquer jogo de cartas”. A afirmação correta é:
 
-- Cartas;
-- Baralho;
-- Jogadores;
-- Mão de cartas;
-- Regras do jogo;
-- Partida.
+> A baseline permite implementar diferentes jogos de cartas baseados em turnos,
+> mantendo as regras e o estado específico fora do framework.
 
-Também deve permitir diferenças entre jogos quanto a:
+Trinca e Blackjack são provas de reutilização, não modelos dos quais a API foi
+copiada. Funcionalidades como apostas, tempo real, rede, persistência, múltiplas mesas
+ou várias mãos simultâneas podem exigir extensões futuras.
 
-- tipos de cartas;
-- formas de distribuição;
-- regras;
-- condições de vitória;
-- estratégias de tomada de decisão;
-- eventos durante a partida.
+## 2. Requisitos arquiteturais atendidos
 
-A implementação deve ser acompanhada do projeto arquitetural e de testes automatizados.
-
----
-
-## 3. Requisitos obrigatórios que orientam a arquitetura
-
-O framework deverá possuir:
-
-1. API pública claramente definida;
-2. pelo menos cinco pontos de extensão;
-3. separação entre código da solução e código das aplicações clientes;
-4. pelo menos uma aplicação cliente;
-5. interfaces e classes abstratas;
-6. tratamento adequado de exceções;
-7. encapsulamento das coleções internas;
-8. testes automatizados;
-9. documentação Javadoc da API pública;
-10. diagrama de classes simplificado;
-11. exemplos de utilização;
-12. justificativa das decisões de projeto.
-
-Além disso, o projeto deve justificar:
-
-- responsabilidades das classes principais;
-- relacionamentos entre classes;
-- uso de herança e composição;
-- baixo acoplamento;
-- alta coesão;
-- especialista na informação;
-- pontos de extensão;
-- padrões GoF utilizados;
-- princípios GRASP;
-- princípios SOLID.
-
-A solução deve utilizar pelo menos quatro padrões GoF estudados na disciplina.
-
----
-
-# 4. Princípio arquitetural central
-
-## Framework primeiro, jogos depois
-
-A ordem de desenvolvimento será:
-
-```text
-Domínio do framework
-        ↓
-Responsabilidades
-        ↓
-Variações entre jogos
-        ↓
-Pontos de extensão
-        ↓
-Arquitetura
-        ↓
-API pública × implementação interna
-        ↓
-Implementação do framework
-        ↓
-Testes do framework
-        ↓
-Aplicação cliente: Trinca
-        ↓
-Aplicação cliente: Blackjack
-        ↓
-UML e relatório final
-```
-
-A pergunta principal deixa de ser:
-
-> "O que a Trinca precisa que o framework tenha?"
-
-e passa a ser:
-
-> "O que um framework reutilizável para jogos de cartas precisa oferecer para permitir diferentes jogos?"
-
-A Trinca será utilizada posteriormente para verificar se essa arquitetura funciona.
-
----
-
-# 5. Etapa 1 — Definição do domínio do framework
-
-Antes de escrever código, a equipe deve identificar as abstrações gerais presentes em jogos de cartas.
-
-As abstrações mínimas fornecidas pelo enunciado são:
-
-- `Carta`
-- `Baralho`
-- `Jogador`
-- `MaoDeCartas`
-- `RegraDoJogo`
-- `Partida`
-
-A equipe poderá acrescentar outras abstrações quando houver uma necessidade arquitetural clara.
-
-## Regra
-
-Uma abstração só deve ser adicionada ao framework quando representar um conceito reutilizável entre diferentes jogos.
-
-Não criar abstrações específicas da Trinca ou do Blackjack dentro do framework.
-
----
-
-# 6. Etapa 2 — Responsabilidades
-
-Para cada abstração, definir:
-
-- o que ela representa;
-- quais informações possui;
-- quais operações realiza;
-- quais responsabilidades NÃO possui;
-- com quais outras abstrações se relaciona.
-
-Exemplo de raciocínio:
-
-### Carta
-
-Deve representar uma carta.
-
-Não deve conhecer:
-
-- regras da Trinca;
-- regras do Blackjack;
-- condição de vitória;
-- fluxo da partida.
-
-### Jogador
-
-Deve representar um participante da partida.
-
-Não deve conter regras específicas de um jogo concreto.
-
-### Partida
-
-Deve coordenar uma partida de acordo com as abstrações configuradas.
-
-Não deve conter condicionais específicas como:
-
-```text
-if jogo == Trinca
-if jogo == Blackjack
-```
-
-Essas decisões seriam sinais de acoplamento indevido.
-
----
-
-# 7. Etapa 3 — Identificação das variações
-
-Depois de definir as responsabilidades, identificar quais comportamentos podem variar entre jogos.
-
-O enunciado indica como exemplos:
-
-- tipos de cartas;
-- distribuição;
-- regras;
-- vitória;
-- estratégia de decisão;
-- eventos.
-
-Para cada variação, responder:
-
-1. O que varia?
-2. Por que varia?
-3. Quem deve ser responsável por isso?
-4. Como um novo jogo poderia fornecer outro comportamento?
-5. Isso constitui um ponto de extensão?
-
----
-
-# 8. Etapa 4 — Pontos de extensão
-
-O projeto exige pelo menos cinco pontos de extensão.
-
-Os candidatos devem ser identificados a partir da análise do domínio, e não escolhidos apenas para cumprir numericamente o requisito.
-
-Para cada ponto de extensão, registrar:
-
-| Campo | Descrição |
+| Requisito do enunciado | Evidência atual |
 |---|---|
-| Ponto de extensão | Nome do comportamento variável |
-| Problema | O que pode mudar entre jogos |
-| Abstração | Interface/classe abstrata responsável |
-| Implementação padrão | Se existir |
-| Exemplo | Como Trinca/Blackjack poderiam variar |
-| Justificativa | Por que a extensão é necessária |
+| API pública definida | pacote `cardgame.api` e `engine.MotorDePartida` |
+| Pelo menos cinco pontos de extensão | dez hot-spots catalogados na seção 7 |
+| Framework separado dos clientes | dependências verificadas por `ClientesStubTest` |
+| Aplicação cliente | dois clientes-stub executáveis; jogos completos ainda são entregas posteriores |
+| Interfaces e classe abstrata | contratos públicos + `MotorDePartida` abstrato |
+| Exceções | hierarquia `PartidaException` |
+| Coleções encapsuladas | cópias defensivas e visões somente leitura |
+| Testes automatizados | 103 testes na baseline integrada |
+| Javadoc | API pública documentada e validada pelo Maven |
+| UML | `docs/diagrama-classes.puml` |
+| Exemplos | stubs de Trinca e Blackjack em `src/test/java` |
+| Decisões justificadas | este mapa e `padroes-de-projeto.md` |
 
-Possíveis candidatos iniciais, a validar pela equipe:
-
-- tipo de carta;
-- distribuição;
-- regras de validação;
-- condição de vitória;
-- pontuação;
-- estratégia de decisão do jogador;
-- eventos.
-
-Esses são apenas candidatos. A decisão final deve ocorrer depois da análise das responsabilidades.
-
----
-
-# 9. Etapa 5 — Arquitetura antes dos padrões
-
-Os padrões GoF não devem ser escolhidos previamente apenas para atingir quatro padrões.
-
-A ordem será:
+## 3. Estrutura de pacotes e direção das dependências
 
 ```text
-Problema arquitetural
-        ↓
-Comportamento que varia
-        ↓
-Ponto de extensão
-        ↓
-Solução arquitetural
-        ↓
-Padrão GoF adequado, se houver
+br.edu.uepb.map.cardgame.api
+  contratos, valores imutáveis e implementações públicas reutilizáveis
+
+br.edu.uepb.map.cardgame.api.evento
+  eventos padrão da partida
+
+br.edu.uepb.map.cardgame.api.excecao
+  exceções de domínio
+
+br.edu.uepb.map.cardgame.api.estrategia
+  decisões humana, aleatória e gulosa
+
+br.edu.uepb.map.cardgame.api.io
+  adaptador de console para a porta EntradaSaida
+
+br.edu.uepb.map.cardgame.engine
+  MotorDePartida público e colaboradores internos sem public
+
+br.edu.uepb.map.trinca / br.edu.uepb.map.blackjack
+  aplicações clientes; atualmente stubs arquiteturais em src/test/java
 ```
 
-Para cada padrão utilizado, documentar:
-
-- onde foi aplicado;
-- qual problema resolve;
-- por que é adequado;
-- qual seria o problema sem ele;
-- como contribui para baixo acoplamento/alta coesão;
-- qual trecho do UML demonstra sua aplicação.
-
----
-
-# 10. Etapa 6 — API pública e implementação interna
-
-Somente depois de definir a arquitetura será decidida a fronteira entre `api` e `core`.
-
-## API pública
-
-Deve conter somente aquilo que um desenvolvedor precisa conhecer para utilizar ou estender o framework.
-
-Pergunta-guia:
-
-> "Um desenvolvedor criando um novo jogo precisa conhecer este contrato?"
-
-Se sim, ele pode fazer parte da API pública.
-
-## Core
-
-Deve conter detalhes de implementação que não precisam ser conhecidos pelos jogos concretos.
-
-Pergunta-guia:
-
-> "Este elemento pode mudar internamente sem exigir alteração nos jogos clientes?"
-
-Se sim, ele provavelmente deve permanecer interno.
-
-Não colocar classes em `api` apenas porque a Trinca precisa delas.
-
----
-
-# 11. Etapa 7 — Implementação do framework
-
-Depois do contrato arquitetural estar definido e acordado:
-
-- implementar as abstrações;
-- implementar os pontos de extensão;
-- implementar as relações entre os componentes;
-- manter clientes separados;
-- garantir encapsulamento;
-- tratar exceções;
-- documentar a API pública;
-- criar testes automatizados.
-
-O framework não deve conter regras específicas da Trinca ou Blackjack.
-
----
-
-# 12. Etapa 8 — Validação com a Trinca
-
-Somente depois que o framework estiver funcional, implementar a Trinca como cliente.
-
-A Trinca deverá:
-
-- depender da API pública;
-- implementar suas regras específicas;
-- utilizar os pontos de extensão;
-- não importar classes internas do `core`;
-- não modificar o framework para resolver regras específicas do jogo.
-
-As regras fornecidas pela equipe para a Trinca serão utilizadas nesta etapa como especificação da aplicação cliente.
-
-## Teste arquitetural
-
-Durante a implementação da Trinca, qualquer dificuldade deve ser classificada:
-
-### Lacuna genérica
-
-A capacidade é útil para diferentes jogos.
-
-→ avaliar alteração no framework.
-
-### Necessidade específica
-
-A capacidade existe apenas por causa das regras da Trinca.
-
-→ manter na aplicação cliente.
-
-Esse processo evita transformar o framework em uma implementação específica da Trinca.
-
----
-
-# 13. Etapa 9 — Blackjack
-
-Depois da Trinca, implementar Blackjack utilizando a mesma API.
-
-Objetivo:
+Direção permitida:
 
 ```text
-Framework
-   ├── Trinca
-   └── Blackjack
+trinca / blackjack ──> api
+trinca / blackjack ──> engine.MotorDePartida
+engine              ──> api
+api                 ──> Java
 ```
 
-A implementação do segundo jogo deve demonstrar que o framework suporta comportamentos suficientemente diferentes sem precisar receber lógica específica de Blackjack.
+Direções proibidas:
 
-Se for necessário alterar repetidamente o framework para criar o segundo jogo, a arquitetura deverá ser revisada.
+- `api → engine`;
+- framework → pacote de jogo concreto;
+- cliente → colaborador interno de `engine`.
 
----
+Não existe pacote de produção `core`. Colocar um “core” fisicamente dentro de `api`
+seria uma fronteira enganosa; manter turnos em outro pacote público exporia detalhes
+internos. Por isso, `MotorDePartida` e seus colaboradores vivem juntos em `engine`,
+mas somente o motor é público.
 
-# 14. Etapa 10 — Testes
+## 4. Abstrações e responsabilidades
 
-Os testes deverão existir em dois níveis:
+| Abstração | Responsabilidade | Não conhece |
+|---|---|---|
+| `Carta` | identidade estável de uma carta | naipe, valor ou regra obrigatórios |
+| `Baralho` | armazenar, comprar, adicionar e embaralhar cartas | jogadores, vitória ou descarte |
+| `MaoDeCartas` | visão somente leitura da mão principal | mutação direta ou combinação vencedora |
+| `Jogador` | identidade e porta opcional de decisão | mão mutável, pontuação ou regra concreta |
+| `PartidaConfig` | configuração imutável das colaborações | estado transitório da execução |
+| `VisaoDaPartida` | snapshot público para regras | operações mutáveis |
+| `ContextoDePartida` | operações controladas para o motor concreto | avanço de turno e finalização direta |
+| `MotorDePartida` | ciclo de vida, repetição, turnos, eventos e resultado | regras de Trinca ou Blackjack |
+| `ResultadoDoTurno` | diretiva imutável de repetir, avançar, inverter ou pular | mutação do gerenciador de turnos |
+| `DesfechoDePartida` | vencedores e motivo reconhecidos pela regra | cálculo do placar |
+| `ResultadoDePartida` | resultado final imutável | execução da partida |
 
-## Framework
+Estado específico de mesa continua no cliente. Pilha de descarte, cartas abertas do
+dealer, apostas, combinações e valor flexível do Ás não pertencem ao framework.
 
-Testar as responsabilidades e comportamentos gerais da infraestrutura.
+## 5. Fronteira pública e implementação interna
 
-## Aplicações clientes
+### 5.1 API pública
 
-Testar a integração entre o jogo concreto e o framework.
+Um autor de jogo pode depender de:
 
-A Trinca deve possuir testes que demonstrem, entre outros aspectos:
+- domínio: `Carta`, `Baralho`, `BaralhoPadrao`, `MaoDeCartas`, `Jogador` e
+  `JogadorPadrao`;
+- decisão: `Jogada`, `EtapaDeTurno`, `ContextoDeDecisao`,
+  `ContextoDeDecisaoPadrao`, `EstrategiaDeDecisao` e `EntradaSaida`;
+- partida: `PartidaConfig`, `EstadoPartida`, `VisaoDaPartida`,
+  `ContextoDePartida`, `ContextoDeDistribuicao`, `ResultadoDoTurno`,
+  `DesfechoDePartida` e `ResultadoDePartida`;
+- extensões: fábrica, distribuição, validação, vitória, pontuação e listeners;
+- eventos e exceções dos subpacotes públicos;
+- `engine.MotorDePartida`, único ponto público do runtime.
 
-- início da partida;
-- execução de turnos;
-- aplicação das regras;
-- vitória/empate;
-- tratamento de jogadas inválidas.
+### 5.2 Engine interno
 
-Os testes devem demonstrar que a aplicação consegue utilizar o framework sem acessar seus detalhes internos.
+Permanecem package-private:
 
----
+- `GerenciadorDeTurnos`;
+- `SentidoDeRotacao`;
+- `CicloDeVidaDaPartida`;
+- `PartidaEmExecucao` e sua mão interna;
+- `ContextoDeDistribuicaoInterno`.
 
-# 15. Etapa 11 — UML
+Esses tipos podem mudar sem recompilar um jogo cliente. A ausência de `public` é a
+garantia mecânica da fronteira, não apenas uma convenção documental.
 
-O UML final deve representar a arquitetura efetivamente construída.
+## 6. Fluxo do Template Method
 
-Deve apresentar:
-
-- classes;
-- interfaces;
-- herança;
-- implementação;
-- associação;
-- composição/agregação;
-- multiplicidades.
-
-O diagrama deve destacar, quando possível:
-
-- componentes reutilizáveis;
-- pontos de extensão;
-- relações entre API e implementação;
-- aplicação dos padrões.
-
-Não finalizar o UML antes do congelamento da arquitetura.
-
----
-
-# 16. Etapa 12 — Relatório
-
-O relatório deve consolidar:
-
-1. descrição geral da arquitetura;
-2. responsabilidades das principais classes;
-3. relacionamentos;
-4. decisões de herança e composição;
-5. baixo acoplamento;
-6. alta coesão;
-7. GRASP;
-8. SOLID;
-9. padrões GoF;
-10. pontos de extensão;
-11. componentes reutilizáveis;
-12. separação entre framework e aplicações;
-13. justificativa das decisões.
-
-O relatório deve explicar não apenas "o que foi feito", mas principalmente **por que a arquitetura foi construída dessa maneira**.
-
----
-
-# 17. Critério principal de sucesso
-
-A arquitetura será considerada adequada quando for possível demonstrar:
+`MotorDePartida.executar()` é `final` e só pode ser chamado uma vez:
 
 ```text
-                 FRAMEWORK
-                     │
-          ┌──────────┴──────────┐
-          │                     │
-       TRINCA              BLACKJACK
-          │                     │
-          └────── usam a mesma ─┘
-                 API pública
+CONFIGURADA
+   ↓
+PREPARANDO
+   ├─ criar e embaralhar o baralho
+   ├─ preparar(contexto)                    hook opcional
+   ├─ distribuir(contextoDeDistribuicao)    Strategy
+   └─ aposDistribuir(contexto)              hook opcional
+   ↓
+EM_ANDAMENTO
+   ├─ publicar PartidaIniciada
+   ├─ avaliar encerramento inicial
+   └─ para cada turno:
+        publicar TurnoIniciado
+        executarTurno(contexto)             operação primitiva
+          └─ até 100 tentativas se a jogada for rejeitada
+        publicar TurnoEncerrado
+        avaliar vitória
+        aplicar ResultadoDoTurno internamente
+   ↓
+FINALIZADA
+   ├─ calcular placar
+   ├─ publicar PartidaFinalizada
+   └─ aoEncerrar(visao, resultado)          hook opcional
 ```
 
-Sem que o framework precise conhecer regras específicas de nenhum dos dois jogos.
+O jogo não avança a vez e não finaliza a partida diretamente. Ele devolve uma
+`ResultadoDoTurno`; somente `GerenciadorDeTurnos` interpreta a diretiva. Isso protege
+o frozen-spot do Template Method.
 
----
+## 7. Pontos de extensão implementados
 
-# 18. Estado inicial da documentação
+| # | Hot-spot | Contrato | Variação | Padrão principal |
+|---|---|---|---|---|
+| 1 | tipo de carta | `Carta` | atributos próprios de cada jogo | Factory Method |
+| 2 | criação do baralho | `BaralhoFactory` | composição e implementação do baralho | Factory Method |
+| 3 | distribuição | `EstrategiaDeDistribuicao` | quantidade, ordem e destinatários | Strategy |
+| 4 | decisão | `EstrategiaDeDecisao` | humano, bot, dealer | Strategy |
+| 5 | ações e fases | `Jogada`, `EtapaDeTurno` | vocabulário de cada jogo | interfaces abertas |
+| 6 | validação | `RegraDeValidacaoStrategy` | pré-condições da jogada | Strategy |
+| 7 | vitória | `RegraDeVitoriaStrategy` | encerramento, vencedores e motivo | Strategy |
+| 8 | pontuação | `RegraDePontuacaoStrategy` | cálculo de placar | Strategy |
+| 9 | eventos | `EventoDePartida`, `PartidaListener` | fatos e observadores adicionais | Observer |
+| 10 | turno concreto | `executarTurno` | mecânica específica | Template Method |
 
-## Decisões já estabelecidas pelo enunciado
+Os quatro GoF efetivamente usados para o mínimo da disciplina são Template Method,
+Strategy, Factory Method e Observer. Decorator foi analisado, mas não foi forçado na
+baseline porque ainda não existe uma combinação de validações que justifique sua
+estrutura.
 
-- Framework reutilizável para jogos de cartas.
-- Pelo menos cinco pontos de extensão.
-- Separação entre framework e aplicações clientes.
-- Interfaces e classes abstratas.
-- Testes automatizados.
-- API pública.
-- Javadoc.
-- Pelo menos quatro padrões GoF.
-- Justificativas de GRASP e SOLID.
-- UML.
-- Pelo menos uma aplicação cliente.
-- Demonstração de outro jogo utilizando a mesma biblioteca.
+## 8. Decisão do jogador sem viés de jogo
 
-## Decisões que ainda precisam ser tomadas pela equipe
+`ContextoDeDecisao` expõe apenas:
 
-- responsabilidades exatas de cada abstração;
-- quais são os pontos de extensão definitivos;
-- quais contratos pertencem à API pública;
-- quais implementações permanecem no `core`;
-- padrões GoF efetivamente utilizados;
-- relacionamentos e multiplicidades;
-- fluxo geral da partida;
-- estratégia de eventos;
-- estratégia de decisão dos jogadores;
-- estrutura final dos pacotes.
+- uma `EtapaDeTurno` definida pelo cliente;
+- uma lista imutável de `Jogada` permitidas.
 
----
+Um jogo pode implementar uma subinterface com informações públicas adicionais. O
+contexto não revela mãos adversárias, ordem do baralho ou estruturas mutáveis.
 
-# 19. Regra para as próximas decisões
+`JogadorPadrao` aceita construção com ou sem `EstrategiaDeDecisao`. A forma sem
+estratégia atende jogos cuja entrada chega por outra fronteira; solicitar uma decisão
+nesse estado falha explicitamente. A forma com estratégia permite trocar humano, bot
+ou dealer por composição, sem subclasses como `JogadorHumano` e `JogadorBot`.
 
-Toda decisão arquitetural deverá ser avaliada nesta ordem:
+## 9. Configuração e invariantes
 
-1. **É necessária para o domínio geral de jogos de cartas?**
-2. **É reutilizável por diferentes jogos?**
-3. **É uma variação que precisa ser extensível?**
-4. **Qual responsabilidade deve possuir essa decisão?**
-5. **Qual contrato precisa ser público?**
-6. **O que pode permanecer interno?**
-7. **Qual padrão, se algum, resolve o problema?**
-8. **Como a decisão será demonstrada no UML e no relatório?**
+`PartidaConfig.Builder` exige:
 
-Somente depois disso a decisão deve ser implementada.
+- pelo menos dois jogadores com identificadores distintos;
+- `BaralhoFactory`;
+- `EstrategiaDeDistribuicao`;
+- `RegraDeVitoriaStrategy`.
 
----
+São opcionais:
 
-# 20. Próximo passo
+- `RegraDePontuacaoStrategy`, com implementação neutra por padrão;
+- `RegraDeValidacaoStrategy`, que aceita qualquer jogada por padrão;
+- índice do primeiro jogador, zero por padrão.
 
-**Não implementar código ainda.**
+Coleções recebidas são copiadas. O engine também verifica que:
 
-O próximo passo é construir a primeira versão do **modelo conceitual do framework**, começando pelas seis abstrações mínimas:
+- uma carta não ocupa simultaneamente baralho e mão;
+- somente participantes configurados acessam mãos;
+- vencedores pertencem à partida;
+- o placar contém exatamente uma entrada por identidade participante;
+- transições seguem a tabela de `EstadoPartida`;
+- resultados e desfechos não representam combinações incoerentes.
 
-```text
-Carta
-Baralho
-Jogador
-MaoDeCartas
-RegraDoJogo
-Partida
+## 10. Eventos e exceções
+
+Eventos padrão:
+
+- `PartidaIniciada`;
+- `TurnoIniciado`;
+- `JogadaRejeitada`;
+- `TurnoEncerrado`;
+- `PartidaFinalizada`.
+
+Clientes podem criar outros `EventoDePartida` e publicá-los pelo contexto. Cada
+listener é isolado: uma `RuntimeException` de um observador é registrada, e os demais
+continuam recebendo eventos.
+
+Exceções de domínio são não verificadas e descendem de `PartidaException`:
+
+- `BaralhoVazioException`;
+- `EstadoDePartidaInvalidoException`;
+- `JogadaInvalidaException`.
+
+Uma `JogadaInvalidaException` é recuperável durante o turno: o motor notifica a
+rejeição e repete a operação primitiva. Cem recusas consecutivas indicam defeito no
+cliente e resultam em `IllegalStateException`.
+
+## 11. SOLID e GRASP
+
+- **SRP / Alta Coesão:** turnos, ciclo de vida, baralho, regras, decisão e eventos
+  possuem responsáveis distintos.
+- **OCP:** novos jogos adicionam implementações dos hot-spots sem editar o engine.
+- **LSP:** subclasses de `MotorDePartida` preservam o fluxo porque `executar()` é final.
+- **ISP:** validação, vitória e pontuação são interfaces separadas.
+- **DIP / Baixo Acoplamento:** engine depende de contratos em `api`, nunca de jogos.
+- **Especialista na Informação:** `EstadoPartida` conhece transições;
+  `GerenciadorDeTurnos` conhece rotação; `BaralhoPadrao` conhece suas cartas.
+
+As justificativas e alternativas rejeitadas estão detalhadas em
+`docs/padroes-de-projeto.md`.
+
+## 12. Validação por clientes
+
+Os stubs atuais demonstram, sem importar internals:
+
+- Trinca com 104 cartas, nove cartas por jogador, descarte mantido pelo cliente,
+  validação, vitória e pontuação próprias;
+- Blackjack com 52 cartas, duas cartas iniciais, decisões por Strategy e repetição de
+  turno ao pedir carta.
+
+Eles são testes arquiteturais, não implementações completas das regras descritas nos
+documentos de cada jogo.
+
+## 13. Limites conhecidos da baseline
+
+- uma mão principal por participante;
+- turnos sequenciais em uma única thread;
+- um baralho compartilhado por execução;
+- sem persistência, rede ou interface gráfica;
+- sem múltiplas rodadas ou torneio;
+- Trinca e Blackjack completos ainda precisam ser implementados como aplicações.
+
+Esses limites são escopo honesto. Uma necessidade só deve entrar no framework quando
+for reutilizável por jogos independentes e puder ser expressa sem termos de um cliente
+específico.
+
+## 14. Verificação
+
+```bash
+./mvnw clean verify
+./mvnw javadoc:javadoc
 ```
 
-Para cada uma, definir:
+A baseline integrada possui 103 testes. `ClientesStubTest` verifica automaticamente
+que o framework não importa Trinca/Blackjack, que `api` não importa `engine` e que os
+clientes só alcançam o tipo público do runtime.
 
-- responsabilidade;
-- dados;
-- operações;
-- relacionamentos;
-- o que ela não deve conhecer.
+## 15. Regra para evoluções
 
-Depois disso, identificaremos os comportamentos que variam e, só então, os pontos de extensão.
+Antes de ampliar a API pública, responder:
+
+1. a capacidade aparece em mais de um jogo?
+2. o cliente precisa conhecê-la para usar ou estender o framework?
+3. ela preserva a direção `cliente → engine → api`?
+4. pode ser expressa sem vocabulário de Trinca ou Blackjack?
+5. existe teste de cliente demonstrando a lacuna e depois a solução?
+
+Mudanças de assinatura pública exigem comunicação entre as trilhas, atualização do
+UML, Javadoc e teste de integração no mesmo commit.
