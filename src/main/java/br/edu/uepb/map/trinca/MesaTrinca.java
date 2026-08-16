@@ -1,7 +1,6 @@
 package br.edu.uepb.map.trinca;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
@@ -31,18 +30,9 @@ final class MesaTrinca {
         return carta;
     }
 
-    List<CartaTrinca> retirarParaReciclagem() {
-        CartaTrinca topo = descarte.pollFirst();
-        if (topo == null || descarte.isEmpty()) {
-            if (topo != null) {
-                descarte.addFirst(topo);
-            }
-            return List.of();
-        }
-
-        List<CartaTrinca> recicladas = new ArrayList<>(descarte);
+    List<CartaTrinca> retirarTodasParaReciclagem() {
+        List<CartaTrinca> recicladas = List.copyOf(descarte);
         descarte.clear();
-        descarte.addFirst(topo);
         return recicladas;
     }
 }

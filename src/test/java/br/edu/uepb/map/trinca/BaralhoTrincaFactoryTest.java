@@ -7,15 +7,15 @@ import org.junit.jupiter.api.Test;
 class BaralhoTrincaFactoryTest {
 
     @Test
-    void deveCriarDoisBaralhosComIdsUnicos() {
+    void deveCriarUmBaralhoComIdsUnicos() {
         var baralho = new BaralhoTrincaFactory().criar();
 
-        assertEquals(104, baralho.quantidade());
-        assertEquals(104, baralho.cartas().stream().map(CartaTrinca::id).distinct().count());
+        assertEquals(52, baralho.quantidade());
+        assertEquals(52, baralho.cartas().stream().map(CartaTrinca::id).distinct().count());
     }
 
     @Test
-    void deveCriarDuasCopiasDeCadaValorENaipe() {
+    void deveCriarUmaCartaDeCadaValorENaipe() {
         var cartas = new BaralhoTrincaFactory().criar().cartas();
 
         for (Valor valor : Valor.values()) {
@@ -23,7 +23,7 @@ class BaralhoTrincaFactoryTest {
                 long quantidade = cartas.stream()
                         .filter(carta -> carta.valor() == valor && carta.naipe() == naipe)
                         .count();
-                assertEquals(2, quantidade);
+                assertEquals(1, quantidade);
             }
         }
     }

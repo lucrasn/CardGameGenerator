@@ -192,7 +192,7 @@ motor.
 O cliente cria:
 
 - `CartaTrinca implements Carta`, com `UUID`, valor e naipe;
-- `BaralhoTrincaFactory`, que cria 104 cartas sem curingas;
+- `BaralhoTrincaFactory`, que cria 52 cartas sem curingas;
 - `MotorDeTrinca extends MotorDePartida<CartaTrinca>`;
 - ações tipadas de compra e descarte;
 - estado próprio para a pilha de descarte;

@@ -131,7 +131,7 @@ A implementação abaixo pertence ao pacote cliente, por exemplo
 O cliente cria:
 
 - `CartaTrinca implements Carta`, com `UUID`, valor e naipe;
-- `BaralhoTrincaFactory`, que cria 104 cartas sem curingas;
+- `BaralhoTrincaFactory`, que cria 52 cartas sem curingas;
 - `MotorDeTrinca extends MotorDePartida<CartaTrinca>`;
 - regra para validar trincas e sequências;
 - estado próprio para a pilha de descarte;
@@ -154,9 +154,9 @@ todos os jogos de carta.
 
 ### 6.2 Configuração
 
-Os dois participantes humanos reutilizam `JogadorPadrao` e
-`DecisaoHumanaConsole`. A configuração usa a fábrica própria e a distribuição pronta
-de nove cartas:
+Os dois a cinco participantes humanos reutilizam `JogadorPadrao` e uma estratégia
+de decisão de console especializada pela Trinca. A configuração usa a fábrica própria
+e a distribuição pronta de nove cartas:
 
 ```java
 PartidaConfig<CartaTrinca> configuracao = PartidaConfig
@@ -189,7 +189,7 @@ O fluxo do `MotorDeTrinca` seria:
    escolhida para o topo do descarte;
 7. devolver `ResultadoDoTurno.avancar()` após o ciclo comprar–descartar completo;
 8. implementar `RegraDeVitoriaStrategy` verificando se as nove cartas restantes formam
-   combinações ou se não há carta para comprar/reciclar;
+   combinações; o descarte reciclável impede encerramento por falta de compra;
 9. implementar `RegraDePontuacaoStrategy` atribuindo 1 ao vencedor e 0 aos demais, e
    registrar as duas em `PartidaConfig`.
 

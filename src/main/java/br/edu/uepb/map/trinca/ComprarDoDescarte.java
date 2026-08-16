@@ -22,6 +22,6 @@ public record ComprarDoDescarte(UUID cartaId, CartaTrinca carta) implements Joga
 
     @Override
     public String toString() {
-        return "Comprar do descarte (" + carta + ")";
+        return "Comprar do descarte";
     }
 }
