@@ -10,6 +10,7 @@ import br.edu.uepb.map.cardgame.api.excecao.BaralhoVazioException;
  *
  * @param <C> tipo de carta distribuído
  * @author Júlio
+ * @version 0.0.1
  */
 public final class DistribuicaoAlternada<C extends Carta>
         implements EstrategiaDeDistribuicao<C> {
@@ -17,6 +18,8 @@ public final class DistribuicaoAlternada<C extends Carta>
     private final int cartasPorJogador;
 
     /**
+     * Cria uma estratégia com a quantidade de cartas de cada participante.
+     *
      * @param cartasPorJogador quantidade positiva entregue a cada jogador
      * @throws IllegalArgumentException se a quantidade não for positiva
      */
@@ -28,6 +31,8 @@ public final class DistribuicaoAlternada<C extends Carta>
     }
 
     /**
+     * Consulta a quantidade de cartas que será entregue a cada jogador.
+     *
      * @return quantidade configurada para cada jogador
      */
     public int cartasPorJogador() {

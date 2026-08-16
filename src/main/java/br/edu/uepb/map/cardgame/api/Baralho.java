@@ -14,15 +14,20 @@ import br.edu.uepb.map.cardgame.api.excecao.BaralhoVazioException;
  *
  * @param <C> tipo de carta armazenado
  * @author Júlio
+ * @version 0.0.1
  */
 public interface Baralho<C extends Carta> {
 
     /**
+     * Consulta quantas cartas permanecem no baralho.
+     *
      * @return quantidade atual de cartas
      */
     int quantidade();
 
     /**
+     * Verifica se o baralho não possui cartas disponíveis.
+     *
      * @return {@code true} quando não há cartas disponíveis
      */
     default boolean estaVazio() {

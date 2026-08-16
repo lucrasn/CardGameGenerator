@@ -8,6 +8,7 @@ package br.edu.uepb.map.cardgame.api;
  *
  * @param <C> tipo de carta distribuído
  * @author Júlio
+ * @version 0.0.1
  */
 @FunctionalInterface
 public interface EstrategiaDeDistribuicao<C extends Carta> {

@@ -9,15 +9,20 @@ import java.util.UUID;
  *
  * @param <C> tipo de carta da mão
  * @author Júlio
+ * @version 0.0.1
  */
 public interface MaoDeCartas<C extends Carta> {
 
     /**
+     * Consulta quantas cartas pertencem à mão.
+     *
      * @return quantidade atual de cartas
      */
     int quantidade();
 
     /**
+     * Verifica se a mão não possui cartas.
+     *
      * @return {@code true} quando a mão não possui cartas
      */
     default boolean estaVazia() {

@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @param <C> tipo de carta distribuído
  * @author Júlio
+ * @version 0.0.1
  */
 public interface ContextoDeDistribuicao<C extends Carta> {
 
@@ -22,6 +23,8 @@ public interface ContextoDeDistribuicao<C extends Carta> {
     List<Jogador> jogadores();
 
     /**
+     * Consulta quantas cartas ainda podem ser entregues durante a distribuição.
+     *
      * @return quantidade de cartas ainda disponível para distribuição
      */
     int cartasDisponiveis();

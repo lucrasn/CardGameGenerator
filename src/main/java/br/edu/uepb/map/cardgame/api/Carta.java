@@ -14,6 +14,7 @@ import java.util.UUID;
  * ser reutilizado por outra carta da mesma partida.
  *
  * @author Júlio
+ * @version 0.0.1
  */
 public interface Carta {
 
