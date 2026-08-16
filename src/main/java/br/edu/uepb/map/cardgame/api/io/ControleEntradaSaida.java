@@ -44,6 +44,7 @@ public final class ControleEntradaSaida implements EntradaSaida {
      *
      * @param entrada origem das respostas
      * @param saida destino das mensagens
+     * @throws NullPointerException se algum fluxo for nulo
      */
     public ControleEntradaSaida(Reader entrada, Writer saida) {
         this.entrada = new BufferedReader(Objects.requireNonNull(entrada, "entrada"));

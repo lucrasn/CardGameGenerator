@@ -2,6 +2,8 @@ package br.edu.uepb.map.cardgame.api;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -31,17 +33,26 @@ class JogadorPadraoTest {
 
     @Test
     void permiteTrocarEstrategiaSemTrocarIdentidade() {
+        Jogada primeira = new Acao("primeira");
+        Jogada ultima = new Acao("ultima");
+        ContextoDeDecisao contexto = new ContextoDeDecisaoPadrao(
+                EtapaTeste.DECISAO,
+                List.of(primeira, ultima)
+        );
         EstrategiaDeDecisao ultimaJogada =
-                contexto -> contexto.jogadasPermitidas().get(
-                        contexto.jogadasPermitidas().size() - 1
+                visao -> visao.jogadasPermitidas().get(
+                        visao.jogadasPermitidas().size() - 1
                 );
         JogadorPadrao jogador = new JogadorPadrao("Ana", PRIMEIRA_JOGADA);
         var idOriginal = jogador.id();
+
+        assertSame(primeira, jogador.estrategiaDeDecisao().decidir(contexto));
 
         jogador.alterarEstrategiaDeDecisao(ultimaJogada);
 
         assertEquals(idOriginal, jogador.id());
         assertSame(ultimaJogada, jogador.estrategiaDeDecisao());
+        assertSame(ultima, jogador.estrategiaDeDecisao().decidir(contexto));
     }
 
     @Test
@@ -69,5 +80,12 @@ class JogadorPadraoTest {
                 NullPointerException.class,
                 () -> jogador.alterarEstrategiaDeDecisao(null)
         );
+    }
+
+    private record Acao(String descricao) implements Jogada {
+    }
+
+    private enum EtapaTeste implements EtapaDeTurno {
+        DECISAO
     }
 }

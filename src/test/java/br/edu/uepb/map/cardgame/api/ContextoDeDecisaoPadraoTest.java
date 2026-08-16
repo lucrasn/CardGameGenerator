@@ -1,19 +1,18 @@
-package br.edu.uepb.map.cardgame.core.estrategia;
+package br.edu.uepb.map.cardgame.api;
 
-import br.edu.uepb.map.cardgame.api.Jogada;
-import br.edu.uepb.map.cardgame.api.EtapaDeTurno;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ContextoDeDecisaoPadraoTest {
 
     @Test
-    void protegeAListaDeJogadasPermitidas() {
+    void guardaEtapaEProtegeAListaDeJogadasPermitidas() {
         Jogada comprar = new Acao("comprar");
         List<Jogada> origem = new ArrayList<>(List.of(comprar));
         ContextoDeDecisaoPadrao contexto = new ContextoDeDecisaoPadrao(
@@ -23,6 +22,7 @@ class ContextoDeDecisaoPadraoTest {
 
         origem.add(new Acao("descartar"));
 
+        assertSame(EtapaTeste.DECISAO, contexto.etapa());
         assertEquals(List.of(comprar), contexto.jogadasPermitidas());
         assertThrows(
                 UnsupportedOperationException.class,
@@ -31,7 +31,7 @@ class ContextoDeDecisaoPadraoTest {
     }
 
     @Test
-    void rejeitaListaNulaOuComElementoNulo() {
+    void rejeitaEtapaListaOuElementoNulo() {
         assertThrows(
                 NullPointerException.class,
                 () -> new ContextoDeDecisaoPadrao(null, List.of(new Acao("comprar")))

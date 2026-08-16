@@ -2,8 +2,11 @@ package br.edu.uepb.map.cardgame.api.io;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,6 +60,64 @@ class ControleEntradaSaidaTest {
         );
         assertThrows(
                 IllegalStateException.class,
+                () -> controle.solicitarOpcao("Escolha:", List.of("Comprar"))
+        );
+    }
+
+    @Test
+    void rejeitaArgumentosNulos() {
+        assertThrows(
+                NullPointerException.class,
+                () -> new ControleEntradaSaida(null, new StringWriter())
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> new ControleEntradaSaida(new StringReader(""), null)
+        );
+
+        ControleEntradaSaida controle = new ControleEntradaSaida(
+                new StringReader("1\n"),
+                new StringWriter()
+        );
+        assertThrows(NullPointerException.class, () -> controle.exibir(null));
+        assertThrows(
+                NullPointerException.class,
+                () -> controle.solicitarOpcao(null, List.of("Comprar"))
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> controle.solicitarOpcao("Escolha:", null)
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> controle.solicitarOpcao(
+                        "Escolha:",
+                        java.util.Arrays.asList("Comprar", null)
+                )
+        );
+    }
+
+    @Test
+    void converteFalhaDeLeituraEmExcecaoNaoVerificada() {
+        Reader entradaComFalha = new Reader() {
+            @Override
+            public int read(char[] buffer, int inicio, int quantidade)
+                    throws IOException {
+                throw new IOException("falha simulada");
+            }
+
+            @Override
+            public void close() {
+                // O controle não assume a propriedade do fluxo recebido.
+            }
+        };
+        ControleEntradaSaida controle = new ControleEntradaSaida(
+                entradaComFalha,
+                new StringWriter()
+        );
+
+        assertThrows(
+                UncheckedIOException.class,
                 () -> controle.solicitarOpcao("Escolha:", List.of("Comprar"))
         );
     }

@@ -33,6 +33,7 @@ public final class DecisaoAleatoria implements EstrategiaDeDecisao {
      * Cria a estratégia com uma fonte injetada, útil para testes reproduzíveis.
      *
      * @param aleatorio fonte de aleatoriedade
+     * @throws NullPointerException se a fonte for nula
      */
     public DecisaoAleatoria(Random aleatorio) {
         this.aleatorio = Objects.requireNonNull(aleatorio, "aleatorio");
