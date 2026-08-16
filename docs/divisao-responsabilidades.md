@@ -6,8 +6,8 @@
 
 **Segundo cliente de extensibilidade:** Blackjack básico
 
-**Status em 15/08/2026:** Trilha A integrada seletivamente à `main`; contratos das
-demais trilhas foram preservados.
+**Status em 16/08/2026:** parte reutilizável das Trilhas A, B, C e D integrada à
+`main`. Falta a camada de aplicação, sob responsabilidade da Trilha E.
 
 ## 1. Regra de colaboração
 
@@ -117,17 +117,17 @@ Tipos reservados:
 - `PartidaListener` e futuros eventos;
 - `PartidaException` e subclasses.
 
-Estado atual:
+Estado atual: **concluída**.
 
-- exceções de domínio estão implementadas;
-- as três regras e `PartidaListener` continuam interfaces vazias;
-- `EventoDePartida` e eventos padrão ainda não existem na `main`;
-- Observer ainda não está implementado.
+- exceções de domínio implementadas;
+- as três Strategies de regra têm operação definida e são obrigatórias em
+  `PartidaConfig`;
+- `EventoDePartida` e os seis eventos padrão existem em `api.evento`;
+- Observer implementado, com o motor publicando os eventos.
 
-Até a assinatura desses contratos ser aprovada, a Trilha A usa hooks protegidos para
-avaliar desfecho e pontuação e aceita `JogadaInvalidaException` lançada pelo jogo. Na
-integração futura, a equipe deve decidir conjuntamente se as Strategies entram em
-`PartidaConfig` e como o motor publica eventos.
+A integração eliminou os hooks provisórios: vitória e pontuação, que eram métodos
+protegidos do motor, passaram a Strategies da configuração. Existe uma única fonte de
+variação para cada decisão.
 
 ## 6. Trilha E — Clientes, UML e relatório
 
@@ -147,10 +147,10 @@ isso revela um contrato público ausente e deve ser discutido com a trilha propr
 
 | Consumidor | Pode depender de | Não deve depender de |
 |---|---|---|
-| `engine` | `api` | jogos concretos, internals de `core` |
-| auxiliares em `core` | `api` | `engine`, jogos concretos |
+| `api` | apenas a biblioteca padrão | `engine`, jogos concretos |
+| `engine` | `api` | jogos concretos |
 | Trinca/Blackjack | `api`, `engine.MotorDePartida` | colaboradores internos de `engine` |
-| Strategies | visões/contextos públicos aprovados | estado mutável interno |
+| Strategies | visões e contextos públicos | estado mutável interno |
 
 ## 8. Padrões e proprietários
 
@@ -159,8 +159,8 @@ isso revela um contrato público ausente e deve ser discutido com a trilha propr
 | Template Method | A | implementado em `MotorDePartida.executar()` |
 | Factory Method | B | implementado em `BaralhoFactory.criar()` |
 | Strategy de decisão/distribuição | B/C | implementado |
-| Strategy de regras | D | contrato vazio; pendente |
-| Observer | D | pendente |
+| Strategy de regras | D | implementado |
+| Observer | D | implementado |
 
 Builder em `PartidaConfig` é apoio de construção e não deve ser contado entre os
 quatro padrões GoF exigidos pela disciplina.
@@ -177,4 +177,4 @@ Antes de mesclar uma trilha:
 - [ ] Javadoc e UML representam o código atual;
 - [ ] pendências são marcadas como pendências, não como padrões implementados.
 
-Baseline verificada nesta integração: **105 testes, zero falhas e zero erros**.
+Baseline verificada nesta integração: **133 testes, zero falhas e zero erros**.

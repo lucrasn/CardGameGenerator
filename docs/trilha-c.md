@@ -36,7 +36,7 @@ O mapeamento atual está correto:
 | `cardgame.api.estrategia` | `DecisaoHumanaConsole`, `DecisaoAleatoria`, `DecisaoGulosa` | estratégias públicas prontas, agrupadas por responsabilidade |
 | `cardgame.api.io` | `ControleEntradaSaida` | implementação pública da porta de terminal |
 | `cardgame.engine` | nenhum tipo da Trilha C | contém o runtime e seus frozen-spots; o motor não deve conhecer decisões de jogos concretos |
-| `cardgame.core` | nenhum tipo da Trilha C | contém auxiliares internos ou legados e não pode ser dependência dos clientes |
+| `cardgame.api.evento` | nenhum tipo da Trilha C | eventos pertencem à Trilha D; a decisão não os publica |
 
 Uma API pública não precisa ser formada apenas por interfaces. Classes finais e
 records reutilizáveis também pertencem à API quando o cliente deve construí-los. Por
@@ -187,10 +187,10 @@ O fluxo do `MotorDeTrinca` seria:
 6. chamar a mesma Strategy, validar o identificador antes da mutação e mover a carta
    escolhida para o topo do descarte;
 7. devolver `ResultadoDoTurno.avancar()` após o ciclo comprar–descartar completo;
-8. em `avaliarDesfecho`, verificar se as nove cartas restantes formam combinações ou
-   se não há carta para comprar/reciclar;
-9. enquanto a Strategy de pontuação da Trilha D estiver pendente, atribuir 1 ao
-   vencedor e 0 aos demais no hook `calcularPontuacao`.
+8. implementar `RegraDeVitoriaStrategy` verificando se as nove cartas restantes formam
+   combinações ou se não há carta para comprar/reciclar;
+9. implementar `RegraDePontuacaoStrategy` atribuindo 1 ao vencedor e 0 aos demais, e
+   registrar as duas em `PartidaConfig`.
 
 As ações oferecidas devem ser produzidas a partir do estado válido. Assim, a decisão
 escolhe entre possibilidades legais e o cliente valida toda referência antes de

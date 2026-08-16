@@ -1,6 +1,6 @@
 # Padrões de projeto, SOLID e GRASP
 
-**Baseline analisada:** `main`, 15/08/2026.
+**Baseline analisada:** `main`, 16/08/2026.
 
 **Regra deste catálogo:** “implementado” exige participantes, colaboração em runtime e
 testes; uma interface vazia não prova um padrão.
@@ -12,12 +12,13 @@ testes; uma interface vazia não prova um padrão.
 | Template Method | `MotorDePartida.executar()` + hooks | implementado |
 | Factory Method | `BaralhoFactory.criar()` | implementado |
 | Strategy | distribuição e decisão | implementado |
-| Observer | `PartidaListener` + eventos | pendente |
+| Strategy | validação, vitória e pontuação | implementado |
+| Observer | `PartidaListener` + `api.evento` | implementado |
 | Decorator | composição de validações | condicional, não implementado |
 | Builder | `PartidaConfig.Builder<C>` | implementado como apoio |
 
-Para o requisito final de quatro padrões GoF estudados em sala, a baseline ainda
-precisa do Observer. Builder não deve ser usado para completar a contagem se não fizer
+O requisito de quatro padrões GoF estudados em sala está cumprido: Template Method,
+Factory Method, Strategy e Observer. Builder não entra nessa contagem, por não fazer
 parte do conjunto cobrado pela disciplina.
 
 ## 2. Template Method
@@ -33,8 +34,8 @@ a ordem global.
 |---|---|
 | AbstractClass | `engine.MotorDePartida<C>` |
 | template method | `executar()` (`public final`) |
-| primitive operations | `executarTurno`, `avaliarDesfecho` |
-| hooks | `preparar`, `aposDistribuir`, `calcularPontuacao`, `aoEncerrar` |
+| primitive operation | `executarTurno` — a única obrigatória |
+| hooks | `preparar`, `aposDistribuir`, `aoEncerrar` |
 | ConcreteClass | futuros motores de Trinca e Blackjack |
 
 ### Evidência
@@ -99,46 +100,44 @@ algoritmo não altera o motor.
 
 Humano, bot e dealer podem compartilhar identidade e variar comportamento.
 
-### 4.3 Regras — ainda pendentes
+### 4.3 Regras do jogo
 
-As interfaces `RegraDeValidacaoStrategy`, `RegraDeVitoriaStrategy` e
-`RegraDePontuacaoStrategy` estão vazias. Por isso ainda não há Strategy de regra em
-runtime. A Trilha A usa hooks provisórios para desfecho e pontuação.
+| Papel | Tipos |
+|---|---|
+| Strategy | `RegraDeValidacaoStrategy<C>`, `RegraDeVitoriaStrategy<C>`, `RegraDePontuacaoStrategy<C>` |
+| Context port | `ContextoDeValidacao<C>` e `VisaoDaPartida<C>` |
+| cliente da Strategy | `MotorDePartida<C>`, via `PartidaConfig<C>` |
 
-Para considerar essa parte implementada, são necessários:
+As três são obrigatórias na configuração e recebem apenas leitura. Antes elas eram
+hooks protegidos, o que obrigava a criar subclasse para trocar a condição de vitória;
+como Strategy, a troca é de objeto. O motor continua validando o retorno: desfecho não
+nulo, vencedor participante e placar cobrindo exatamente os participantes.
 
-1. métodos aprovados e compatíveis com cartas genéricas;
-2. contextos de leitura com autoridade mínima;
-3. ao menos duas implementações substituíveis;
-4. injeção real no motor ou em um adaptador;
-5. testes que troquem a Strategy sem editar o engine.
+## 5. Observer
 
-## 5. Observer — pendente
-
-### Intenção planejada
+### Intenção
 
 Notificar console, interface gráfica ou telemetria sem acoplá-los ao motor.
 
-Participantes pretendidos:
-
-| Papel | Tipo planejado |
+| Papel | Tipo |
 |---|---|
-| Subject | `MotorDePartida` |
+| Subject | `MotorDePartida<C>` |
 | Observer | `PartidaListener` |
-| Notification | `EventoDePartida` e eventos imutáveis |
+| Notification | `EventoDePartida` e os seis records de `api.evento` |
 
-Na baseline, `PartidaListener` é vazio e eventos não existem. Não há registro,
-remoção ou notificação no motor. Logo Observer é uma decisão de arquitetura, não
-evidência de código.
+### Decisões tomadas na implementação
 
-Critérios para implementação:
+| Questão | Decisão |
+|---|---|
+| duplicidade | por identidade (`==`), não por `equals` |
+| ordem | cadastro, documentada no contrato |
+| iteração | sobre `List.copyOf(listeners)` |
+| falha de um ouvinte | isolada em `try/catch` de `RuntimeException` |
+| conteúdo dos eventos | records imutáveis, sem mão de jogador nem ordem do baralho |
 
-- definir se duplicidade é por identidade ou igualdade;
-- usar cópia da lista durante notificação;
-- decidir isolamento de falhas dos listeners;
-- garantir ordem documentada dos eventos;
-- impedir que eventos exponham estado mutável;
-- testar listener que se remove durante callback e listener que falha.
+A cópia da lista permite que um ouvinte se descadastre dentro do próprio callback sem
+provocar `ConcurrentModificationException`. O isolamento impede que um console com
+defeito derrube a partida. Há teste para os dois casos.
 
 ## 6. Decorator — uso condicional
 
@@ -153,7 +152,8 @@ Critério objetivo:
 - cada wrapper mantém o mesmo contrato de validação;
 - teste comprova composição sem editar as validações existentes.
 
-Sem esse cenário, o projeto já deve buscar o quarto padrão com Observer.
+Sem esse cenário, adicionar Decorator seria engenharia excessiva — e o quarto padrão
+GoF já está garantido pelo Observer.
 
 ## 7. Builder como apoio
 
@@ -234,12 +234,12 @@ O engine depende de `Baralho`, `BaralhoFactory`, `EstrategiaDeDistribuicao`,
 | Como muda o baralho? | nova `BaralhoFactory<C>` |
 | Como muda a distribuição? | nova `EstrategiaDeDistribuicao<C>` |
 | Como troca humano por bot? | nova `EstrategiaDeDecisao` |
-| Observer já existe? | não; listener está vazio e a pendência está documentada |
+| Observer já existe? | sim; o motor publica seis eventos e isola falhas de ouvintes |
 | Por que não State? | estados só restringem transições, sem comportamento próprio |
 
 ## 12. Evidência automatizada
 
-A baseline executa **105 testes**. Há testes para ciclo, turnos, Template Method,
-invariantes, encapsulamento, Factory, distribuição e decisão. Ainda faltam testes de
-Observer, das Strategies de regra e dos dois clientes concretos, pois essas partes não
-estão implementadas na `main`.
+A baseline executa **133 testes**. Há testes para ciclo, turnos, Template Method,
+invariantes, encapsulamento, Factory, distribuição, decisão, as três Strategies de
+regra e a publicação de eventos. Faltam apenas os testes de aceitação dos dois clientes
+concretos, que ainda não existem na `main`.

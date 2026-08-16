@@ -1,6 +1,6 @@
 # Especificação arquitetural
 
-**Versão:** baseline integrada da `main` em 15/08/2026.
+**Versão:** baseline integrada da `main` em 16/08/2026.
 
 **Escopo:** contratos existentes no código; itens futuros são marcados como pendentes.
 
@@ -8,9 +8,8 @@
 
 | Módulo | Responsabilidade | Visibilidade |
 |---|---|---|
-| `cardgame.api` | contratos, valores e exceções públicas | pública |
+| `cardgame.api` | contratos, valores, eventos e exceções públicas | pública |
 | `cardgame.engine` | runtime e ciclo de vida | somente `MotorDePartida` público |
-| `cardgame.core` | auxiliares/placeholders legados de outras trilhas | transitório |
 | `trinca` / `blackjack` | aplicações clientes | ainda pendentes na `main` |
 
 Dependência permitida do runtime: `engine → api`. O runtime não pode importar um
@@ -69,6 +68,12 @@ Campos obrigatórios:
 - `BaralhoFactory<C>`;
 - `EstrategiaDeDistribuicao<C>`.
 
+Campos obrigatórios de regra:
+
+- `RegraDeValidacaoStrategy<C>`;
+- `RegraDeVitoriaStrategy<C>`;
+- `RegraDePontuacaoStrategy<C>`.
+
 Campo opcional:
 
 - índice do primeiro jogador, zero por padrão.
@@ -80,8 +85,8 @@ Validações:
 - índice dentro do intervalo;
 - cópia defensiva da lista.
 
-As regras da Trilha D não integram `PartidaConfig` enquanto seus contratos continuam
-sem métodos.
+As três regras integram `PartidaConfig` e são obrigatórias: uma partida não pode ser
+configurada sem dizer como valida uma jogada, como reconhece o fim e como pontua.
 
 ## 5. Leitura e mutação durante a partida
 
@@ -131,19 +136,24 @@ Assinatura conceitual:
 ```java
 public abstract class MotorDePartida<C extends Carta> {
     public final ResultadoDePartida executar();
+    public final EstadoPartida estado();
+    public final void adicionarListener(PartidaListener listener);
+    public final boolean removerListener(PartidaListener listener);
+
+    protected abstract ResultadoDoTurno executarTurno(
+            ContextoDePartida<C> contexto);
+
+    protected final void validarJogada(
+            VisaoDaPartida<C> contexto, Jogada jogada);
 
     protected void preparar(ContextoDePartida<C> contexto);
     protected void aposDistribuir(ContextoDePartida<C> contexto);
-    protected abstract ResultadoDoTurno executarTurno(
-            ContextoDePartida<C> contexto);
-    protected abstract Optional<DesfechoDePartida> avaliarDesfecho(
-            VisaoDaPartida<C> contexto);
-    protected Map<Jogador, Integer> calcularPontuacao(
-            VisaoDaPartida<C> contexto, DesfechoDePartida desfecho);
     protected void aoEncerrar(
             VisaoDaPartida<C> contexto, ResultadoDePartida resultado);
 }
 ```
+
+Vitória e pontuação não são hooks: o motor as obtém de `PartidaConfig`.
 
 Algoritmo fixo de `executar()`:
 
@@ -151,7 +161,7 @@ Algoritmo fixo de `executar()`:
 2. transicionar para `PREPARANDO`;
 3. criar e embaralhar o baralho;
 4. criar mãos, ciclo e turnos internos;
-5. chamar preparação, distribuição e pós-distribuição;
+5. chamar preparação, distribuição e pós-distribuição, publicando eventos;
 6. transicionar para `EM_ANDAMENTO`;
 7. avaliar encerramento antes do primeiro turno;
 8. executar turnos, repetindo jogadas inválidas;
@@ -203,41 +213,41 @@ Regras:
 - colaboradores de `engine` não são públicos;
 - nenhuma mutação de carta é aceita depois de `FINALIZADA`.
 
-## 11. Contratos pendentes da Trilha D
+## 11. Regras e eventos
 
-Na baseline, estas interfaces não possuem operações:
+As três Strategies de regra recebem apenas leitura e são chamadas pelo motor dentro do
+algoritmo final:
+
+| Contrato | Quando é chamado |
+|---|---|
+| `RegraDeValidacaoStrategy<C>` | pelo jogo, via `validarJogada`, antes de aplicar a ação |
+| `RegraDeVitoriaStrategy<C>` | após a distribuição e ao fim de cada turno |
+| `RegraDePontuacaoStrategy<C>` | uma vez, na finalização |
+
+O motor valida o que recebe de volta: desfecho não nulo, vencedor participante da
+partida, placar cobrindo exatamente os participantes.
+
+Publicação de eventos:
 
 ```text
-RegraDeValidacaoStrategy
-RegraDeVitoriaStrategy
-RegraDePontuacaoStrategy
-PartidaListener
+PartidaIniciada → CartasDistribuidas
+  → (TurnoIniciado → [JogadaRejeitada]* → TurnoEncerrado)*
+  → PartidaFinalizada
 ```
 
-Consequências:
-
-- validação específica pode lançar `JogadaInvalidaException` dentro do turno;
-- vitória e pontuação são hooks provisórios do motor;
-- não há publicação de eventos;
-- Observer não deve ser apresentado como implementado.
-
-Critérios para integrar a Trilha D:
-
-1. contextos somente leitura aprovados;
-2. assinaturas genéricas compatíveis com `C extends Carta`;
-3. política de exceções definida;
-4. ordem e isolamento das notificações testados;
-5. decisão explícita sobre substituir ou adaptar os hooks provisórios.
+A notificação percorre uma cópia da lista de ouvintes e isola cada um em seu próprio
+`try/catch`. Um ouvinte com defeito não interrompe a partida, e um ouvinte que se
+descadastra durante o callback não provoca `ConcurrentModificationException`.
 
 ## 12. Critérios de aceitação arquitetural
 
 - `./mvnw test` passa;
 - um cliente compila usando somente `api` e `engine.MotorDePartida`;
 - API não importa engine;
-- engine não importa clientes nem `core`;
+- engine não importa clientes;
 - nenhum detalhe interno de `engine` é público;
 - Trinca e Blackjack reutilizam o mesmo algoritmo de ciclo de vida;
 - novos jogos não exigem condicionais por tipo dentro do framework.
 
-Estado medido nesta versão: **105 testes aprovados**. Os testes de clientes concretos
-e de Observer ainda são entregas futuras.
+Estado medido nesta versão: **133 testes aprovados**. Os testes dos clientes concretos
+ainda são entrega futura.

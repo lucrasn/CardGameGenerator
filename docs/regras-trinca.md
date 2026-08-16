@@ -55,9 +55,9 @@ carta. A checagem acontece ao fim do turno.
 2. **Ficar com dez cartas na mão:** após a compra, a mão possui dez cartas.
 3. **Descartar uma carta:** escolher exatamente uma das dez cartas da mão e
    colocá-la no topo da pilha de descarte.
-4. **Encerrar o turno:** o motor avalia o desfecho e passa a vez ao próximo jogador
-   se a partida continuar. A publicação de eventos será integrada após a Trilha D
-   definir o contrato de Observer.
+4. **Encerrar o turno:** o motor consulta a regra de vitória e passa a vez ao próximo
+   jogador se a partida continuar, publicando `TurnoIniciado` e `TurnoEncerrado` aos
+   observadores cadastrados.
 
 Não é permitido pular compra, comprar duas cartas, descartar carta que não está na
 mão ou encerrar o turno com dez cartas. Essas situações resultam em uma exceção de
@@ -77,9 +77,8 @@ existindo após a reciclagem.
 ## 6. Pontuação
 
 Esta primeira versão é de uma única rodada: vitória concede **1 ponto** ao vencedor;
-empate concede **0 ponto** a ambos. Enquanto `RegraDePontuacaoStrategy` permanecer
-vazia, o cliente implementará esse cálculo no hook protegido de pontuação. Depois da
-integração da Trilha D, ele deverá migrar para a Strategy aprovada.
+empate concede **0 ponto** a ambos. O cálculo pertence a uma implementação de
+`RegraDePontuacaoStrategy` fornecida pelo cliente e registrada em `PartidaConfig`.
 
 ## 7. Regras de validação separadas
 
@@ -113,9 +112,9 @@ Esta regra exige que a API permita, sem conhecer classes da Trinca:
    controlado;
 5. representar uma ação de turno tipada: compra por origem e descarte de carta;
 6. escolher a ação por uma estratégia de decisão, humana ou automatizada;
-7. configurar regras de validação, pontuação e vitória separadamente — pendente da
-   definição dos contratos da Trilha D;
-8. receber eventos da partida por listeners — pendente de Observer;
+7. configurar regras de validação, pontuação e vitória separadamente, por três
+   Strategies independentes registradas em `PartidaConfig`;
+8. receber eventos da partida cadastrando um `PartidaListener` no motor;
 9. informar falhas por exceções de domínio.
 
 Se algum item não puder ser atendido apenas pela API pública, a Trilha E deve

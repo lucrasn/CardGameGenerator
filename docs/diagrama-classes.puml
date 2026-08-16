@@ -1,5 +1,5 @@
 @startuml
-title CardGame Framework — diagrama simplificado da main (15/08/2026)
+title CardGame Framework — diagrama simplificado da main (16/08/2026)
 
 ' Smetana é o motor de layout Java embutido no próprio plantuml.jar: renderiza sem exigir
 ' Graphviz instalado. Não trocar por "elk": o Eclipse Layout Kernel vem em jars separados
@@ -169,10 +169,30 @@ package "br.edu.uepb.map.cardgame.api" as api #EAF2F8 {
         +pontuacaoDe(jogador: Jogador): Optional<Integer>
     }
 
-    interface RegraDeValidacaoStrategy <<public, placeholder vazio>>
-    interface RegraDeVitoriaStrategy <<public, placeholder vazio>>
-    interface RegraDePontuacaoStrategy <<public, placeholder vazio>>
-    interface PartidaListener <<public, placeholder vazio>>
+    interface "RegraDeValidacaoStrategy<C>" as RegraDeValidacaoStrategy <<public, Strategy>> {
+        +validar(contexto: ContextoDeValidacao<C>): void
+    }
+    interface "RegraDeVitoriaStrategy<C>" as RegraDeVitoriaStrategy <<public, Strategy>> {
+        +avaliar(contexto: VisaoDaPartida<C>): Optional<DesfechoDePartida>
+    }
+    interface "RegraDePontuacaoStrategy<C>" as RegraDePontuacaoStrategy <<public, Strategy>> {
+        +calcular(contexto: VisaoDaPartida<C>, desfecho: DesfechoDePartida): Map<Jogador, Integer>
+    }
+    class "ContextoDeValidacao<C>" as ContextoDeValidacao <<public, record, immutable>> {
+        +partida(): VisaoDaPartida<C>
+        +jogada(): Jogada
+    }
+
+    interface PartidaListener <<public, Observer>> {
+        +aoOcorrer(evento: EventoDePartida): void
+    }
+    interface EventoDePartida <<public, extensão>>
+    class "evento.PartidaIniciada" as PartidaIniciada <<public, record>>
+    class "evento.CartasDistribuidas" as CartasDistribuidas <<public, record>>
+    class "evento.TurnoIniciado" as TurnoIniciado <<public, record>>
+    class "evento.TurnoEncerrado" as TurnoEncerrado <<public, record>>
+    class "evento.JogadaRejeitada" as JogadaRejeitada <<public, record>>
+    class "evento.PartidaFinalizada" as PartidaFinalizada <<public, record>>
 
     abstract class PartidaException <<public>>
     class BaralhoVazioException <<public, final>>
@@ -184,11 +204,12 @@ package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
     abstract class "MotorDePartida<C extends Carta>" as MotorDePartida <<public, Template Method>> {
         +executar(): ResultadoDePartida {final}
         +estado(): EstadoPartida {final}
+        +adicionarListener(listener: PartidaListener): void {final}
+        +removerListener(listener: PartidaListener): boolean {final}
+        #executarTurno(contexto: ContextoDePartida<C>): ResultadoDoTurno {abstract}
+        #validarJogada(contexto: VisaoDaPartida<C>, jogada: Jogada): void {final}
         #preparar(contexto: ContextoDePartida<C>): void
         #aposDistribuir(contexto: ContextoDePartida<C>): void
-        #executarTurno(contexto: ContextoDePartida<C>): ResultadoDoTurno {abstract}
-        #avaliarDesfecho(contexto: VisaoDaPartida<C>): Optional<DesfechoDePartida> {abstract}
-        #calcularPontuacao(contexto: VisaoDaPartida<C>, desfecho: DesfechoDePartida): Map<Jogador, Integer>
         #aoEncerrar(contexto: VisaoDaPartida<C>, resultado: ResultadoDePartida): void
     }
 
@@ -197,14 +218,6 @@ package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
     enum SentidoDeRotacao <<package-private>>
     class CicloDeVidaDaPartida <<package-private, final>>
     class "ContextoDeDistribuicaoInterno<C>" as ContextoDeDistribuicaoInterno <<package-private, final>>
-}
-
-package "br.edu.uepb.map.cardgame.core" as core #F2F3F4 {
-    class "ContextoDeDistribuicaoPadrao<C>" as ContextoDeDistribuicaoPadrao <<package-private, final, outra trilha>>
-    class "estrategia.ContextoDeDecisaoPadrao" as ContextoDeDecisaoPadrao <<public, final, record, outra trilha>>
-    class BaralhoBase <<public, placeholder legado>>
-    class "MaoDeCartas" as MaoDeCartasLegada <<public, placeholder legado>>
-    class Mesa <<public, placeholder legado>>
 }
 
 BaralhoPadrao ..|> Baralho
@@ -235,6 +248,18 @@ ResultadoDePartida --> "1" MotivoDeEncerramento
 PartidaConfig "0..*" o-- "2..*" Jogador
 PartidaConfig --> "1" BaralhoFactory
 PartidaConfig --> "1" EstrategiaDeDistribuicao
+PartidaConfig --> "1" RegraDeValidacaoStrategy
+PartidaConfig --> "1" RegraDeVitoriaStrategy
+PartidaConfig --> "1" RegraDePontuacaoStrategy
+RegraDeValidacaoStrategy ..> ContextoDeValidacao : recebe
+RegraDeVitoriaStrategy ..> DesfechoDePartida : produz
+PartidaIniciada ..|> EventoDePartida
+CartasDistribuidas ..|> EventoDePartida
+TurnoIniciado ..|> EventoDePartida
+TurnoEncerrado ..|> EventoDePartida
+JogadaRejeitada ..|> EventoDePartida
+PartidaFinalizada ..|> EventoDePartida
+PartidaListener ..> EventoDePartida : recebe
 PartidaConfig ..> PartidaConfigBuilder : builder()
 PartidaConfigBuilder ..> PartidaConfig : cria
 
@@ -245,6 +270,8 @@ MotorDePartida ..> ContextoDeDistribuicaoInterno : cria para distribuir
 MotorDePartida ..> ResultadoDoTurno : aplica
 MotorDePartida ..> DesfechoDePartida : valida
 MotorDePartida ..> ResultadoDePartida : cria
+MotorDePartida --> "0..*" PartidaListener : notifica
+MotorDePartida ..> EventoDePartida : publica
 
 PartidaEmExecucao ..|> ContextoDePartida
 PartidaEmExecucao "1" *-- "1" Baralho : exclusivo da execução
@@ -257,13 +284,6 @@ GerenciadorDeTurnos --> "1" SentidoDeRotacao
 ContextoDeDistribuicaoInterno ..|> ContextoDeDistribuicao
 ContextoDeDistribuicaoInterno --> "1" PartidaEmExecucao
 
-ContextoDeDistribuicaoPadrao ..|> ContextoDeDistribuicao
-ContextoDeDistribuicaoPadrao --> "1" Baralho
-ContextoDeDistribuicaoPadrao --> "0..*" Jogador
-ContextoDeDistribuicaoPadrao --> "0..*" MaoDeCartas
-ContextoDeDecisaoPadrao ..|> ContextoDeDecisao
-ContextoDeDecisaoPadrao --> "1" EtapaDeTurno
-ContextoDeDecisaoPadrao --> "0..*" Jogada
 
 BaralhoVazioException --|> PartidaException
 JogadaInvalidaException --|> PartidaException
@@ -271,7 +291,8 @@ EstadoDePartidaInvalidoException --|> PartidaException
 
 note right of MotorDePartida
   Único tipo público de engine.
-  Não depende das interfaces vazias da Trilha D.
+  Publica eventos e delega validação,
+  vitória e pontuação às Strategies.
 end note
 
 note top of api
@@ -281,25 +302,9 @@ note top of api
   Nos tipos genéricos, C sempre estende Carta.
 end note
 
-note right of RegraDeVitoriaStrategy
-  Contratos preservados vazios.
-  Strategy de regras ainda não está implementada.
-end note
-
-note bottom of PartidaListener
-  Observer pendente: EventoDePartida e callbacks
-  ainda não existem na main.
-end note
-
-note bottom of core
-  Pacote transitório preservado porque seus tipos
-  pertencem a outras trilhas. A Trilha A não o importa.
-end note
-
 legend left
   Azul: API pública
   Amarelo: runtime da Trilha A
-  Cinza: artefatos transitórios de outras trilhas
 endlegend
 
 @enduml

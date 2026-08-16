@@ -5,7 +5,7 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="diagram-title" parent="1" value="&lt;b&gt;CardGame Framework — diagrama simplificado da main (15/08/2026)&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;fontSize=20;fontFamily=Helvetica;" vertex="1">
+        <mxCell id="diagram-title" parent="1" value="&lt;b&gt;CardGame Framework — diagrama simplificado da main (16/08/2026)&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;strokeColor=none;fillColor=none;fontSize=20;fontFamily=Helvetica;" vertex="1">
           <mxGeometry x="40" y="20" width="4500" height="40" as="geometry" />
         </mxCell>
         <mxCell id="package-api" parent="1" value="br.edu.uepb.map.cardgame.api" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=#EAF2F8;strokeColor=#6C8EBF;fontStyle=1;align=center;verticalAlign=top;container=1;recursiveResize=0;fontFamily=Helvetica;fontSize=13;" vertex="1" connectable="0" cardgameElement="package">
@@ -14,8 +14,83 @@
         <mxCell id="package-engine" parent="1" value="br.edu.uepb.map.cardgame.engine" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=#FCF3CF;strokeColor=#D6B656;fontStyle=1;align=center;verticalAlign=top;container=1;recursiveResize=0;fontFamily=Helvetica;fontSize=13;" vertex="1" connectable="0" cardgameElement="package">
           <mxGeometry x="40" y="1980" width="2860" height="700" as="geometry" />
         </mxCell>
-        <mxCell id="package-core" parent="1" value="br.edu.uepb.map.cardgame.core" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=#F2F3F4;strokeColor=#999999;fontStyle=1;align=center;verticalAlign=top;container=1;recursiveResize=0;fontFamily=Helvetica;fontSize=13;" vertex="1" connectable="0" cardgameElement="package">
-          <mxGeometry x="2940" y="1980" width="1600" height="700" as="geometry" />
+        <mxCell id="package-api-evento" parent="1" value="br.edu.uepb.map.cardgame.api.evento" style="swimlane;html=1;startSize=30;horizontal=1;collapsible=0;fillColor=#EAF2F8;strokeColor=#6C8EBF;fontStyle=1;align=center;verticalAlign=top;container=1;recursiveResize=0;fontFamily=Helvetica;fontSize=13;" vertex="1" connectable="0" cardgameElement="package">
+          <mxGeometry x="2940" y="1980" width="1600" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaIniciada" parent="package-api-evento" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;PartidaIniciada&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaIniciada">
+          <mxGeometry x="40" y="60" width="380" height="91" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaIniciada-fields" parent="class-PartidaIniciada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="380" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaIniciada-divider" parent="class-PartidaIniciada" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="380" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaIniciada-methods" parent="class-PartidaIniciada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+jogadores(): List&amp;lt;Jogador&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="380" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="class-CartasDistribuidas" parent="package-api-evento" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;CartasDistribuidas&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="CartasDistribuidas">
+          <mxGeometry x="450" y="60" width="420" height="91" as="geometry" />
+        </mxCell>
+        <mxCell id="class-CartasDistribuidas-fields" parent="class-CartasDistribuidas" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="420" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="class-CartasDistribuidas-divider" parent="class-CartasDistribuidas" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="420" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="class-CartasDistribuidas-methods" parent="class-CartasDistribuidas" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+cartasRestantesNoBaralho(): int&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="420" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoIniciado" parent="package-api-evento" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;TurnoIniciado&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="TurnoIniciado">
+          <mxGeometry x="900" y="60" width="400" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoIniciado-fields" parent="class-TurnoIniciado" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="400" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoIniciado-divider" parent="class-TurnoIniciado" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="400" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoIniciado-methods" parent="class-TurnoIniciado" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+numeroDoTurno(): long&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+jogador(): Jogador&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="400" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoEncerrado" parent="package-api-evento" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;TurnoEncerrado&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="TurnoEncerrado">
+          <mxGeometry x="40" y="230" width="440" height="129" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoEncerrado-fields" parent="class-TurnoEncerrado" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="440" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoEncerrado-divider" parent="class-TurnoEncerrado" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="440" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="class-TurnoEncerrado-methods" parent="class-TurnoEncerrado" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+numeroDoTurno(): long&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+jogador(): Jogador&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+resultado(): ResultadoDoTurno&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="440" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="class-JogadaRejeitada" parent="package-api-evento" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;JogadaRejeitada&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="JogadaRejeitada">
+          <mxGeometry x="510" y="230" width="400" height="129" as="geometry" />
+        </mxCell>
+        <mxCell id="class-JogadaRejeitada-fields" parent="class-JogadaRejeitada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="400" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="class-JogadaRejeitada-divider" parent="class-JogadaRejeitada" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="400" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="class-JogadaRejeitada-methods" parent="class-JogadaRejeitada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+numeroDoTurno(): long&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+jogador(): Jogador&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+motivo(): String&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="400" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaFinalizada" parent="package-api-evento" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;PartidaFinalizada&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaFinalizada">
+          <mxGeometry x="940" y="230" width="400" height="91" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaFinalizada-fields" parent="class-PartidaFinalizada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="400" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaFinalizada-divider" parent="class-PartidaFinalizada" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="400" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="class-PartidaFinalizada-methods" parent="class-PartidaFinalizada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+resultado(): ResultadoDePartida&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="400" height="27" as="geometry" />
+        </mxCell>
+        <mxCell id="note-evento" parent="package-api-evento" value="&lt;div style=&quot;text-align:left&quot;&gt;Os seis eventos padrão são records imutáveis e carregam apenas o que o observador precisa saber. Nenhum deles transporta a mão de um jogador nem a ordem do baralho: um observador não pode virar canal de vazamento de informação oculta.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=8;fontFamily=Helvetica;fontSize=11;" vertex="1" cardgameElement="note">
+          <mxGeometry x="40" y="400" width="1300" height="110" as="geometry" />
         </mxCell>
         <mxCell id="class-Carta" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;Carta&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="Carta">
           <mxGeometry x="40" y="60" width="220" height="91" as="geometry" />
@@ -294,7 +369,7 @@
           <mxGeometry y="64" width="440" height="103" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaConfig" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, final, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;PartidaConfig&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaConfig">
-          <mxGeometry x="900" y="980" width="430" height="167" as="geometry" />
+          <mxGeometry x="900" y="980" width="430" height="224" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaConfig-fields" parent="class-PartidaConfig" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
           <mxGeometry y="38" width="430" height="18" as="geometry" />
@@ -302,11 +377,11 @@
         <mxCell id="class-PartidaConfig-divider" parent="class-PartidaConfig" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry y="56" width="430" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-PartidaConfig-methods" parent="class-PartidaConfig" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;{static} +builder(): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+jogadores(): List&amp;lt;Jogador&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+baralhoFactory(): BaralhoFactory&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+distribuicao(): EstrategiaDeDistribuicao&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+primeiroJogador(): int&lt;/div&gt;" vertex="1">
-          <mxGeometry y="64" width="430" height="103" as="geometry" />
+        <mxCell id="class-PartidaConfig-methods" parent="class-PartidaConfig" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;{static} +builder(): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+jogadores(): List&amp;lt;Jogador&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+baralhoFactory(): BaralhoFactory&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+distribuicao(): EstrategiaDeDistribuicao&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+regraDeValidacao(): RegraDeValidacaoStrategy&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+regraDeVitoria(): RegraDeVitoriaStrategy&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+regraDePontuacao(): RegraDePontuacaoStrategy&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+primeiroJogador(): int&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="430" height="160" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaConfigBuilder" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, final»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;PartidaConfig.Builder&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaConfigBuilder">
-          <mxGeometry x="900" y="1220" width="500" height="167" as="geometry" />
+          <mxGeometry x="900" y="1220" width="500" height="224" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaConfigBuilder-fields" parent="class-PartidaConfigBuilder" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
           <mxGeometry y="38" width="500" height="18" as="geometry" />
@@ -314,8 +389,8 @@
         <mxCell id="class-PartidaConfigBuilder-divider" parent="class-PartidaConfigBuilder" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry y="56" width="500" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-PartidaConfigBuilder-methods" parent="class-PartidaConfigBuilder" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+jogadores(jogadores: List&amp;lt;Jogador&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+baralhoFactory(baralhoFactory: BaralhoFactory&amp;lt;C&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+distribuicao(distribuicao: EstrategiaDeDistribuicao&amp;lt;C&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+primeiroJogador(primeiroJogador: int): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+build(): PartidaConfig&amp;lt;C&amp;gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry y="64" width="500" height="103" as="geometry" />
+        <mxCell id="class-PartidaConfigBuilder-methods" parent="class-PartidaConfigBuilder" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+jogadores(jogadores: List&amp;lt;Jogador&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+baralhoFactory(baralhoFactory: BaralhoFactory&amp;lt;C&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+distribuicao(distribuicao: EstrategiaDeDistribuicao&amp;lt;C&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+regraDeValidacao(regra: RegraDeValidacaoStrategy&amp;lt;C&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+regraDeVitoria(regra: RegraDeVitoriaStrategy&amp;lt;C&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+regraDePontuacao(regra: RegraDePontuacaoStrategy&amp;lt;C&amp;gt;): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+primeiroJogador(primeiroJogador: int): Builder&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+build(): PartidaConfig&amp;lt;C&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="500" height="160" as="geometry" />
         </mxCell>
         <mxCell id="class-ResultadoDoTurno" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;ResultadoDoTurno&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="ResultadoDoTurno">
           <mxGeometry x="1450" y="980" width="380" height="205" as="geometry" />
@@ -377,53 +452,53 @@
         <mxCell id="class-ResultadoDePartida-methods" parent="class-ResultadoDePartida" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+vencedores(): List&amp;lt;Jogador&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+placar(): Map&amp;lt;Jogador, Integer&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+motivo(): MotivoDeEncerramento&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+houveEmpate(): boolean&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+vencedorUnico(): Optional&amp;lt;Jogador&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+pontuacaoDe(jogador: Jogador): Optional&amp;lt;Integer&amp;gt;&lt;/div&gt;" vertex="1">
           <mxGeometry y="64" width="430" height="122" as="geometry" />
         </mxCell>
-        <mxCell id="class-RegraDeValidacaoStrategy" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, placeholder vazio»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;RegraDeValidacaoStrategy&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="RegraDeValidacaoStrategy">
-          <mxGeometry x="3120" y="980" width="300" height="90" as="geometry" />
+        <mxCell id="class-RegraDeValidacaoStrategy" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, Strategy»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;RegraDeValidacaoStrategy&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="RegraDeValidacaoStrategy">
+          <mxGeometry x="3120" y="980" width="430" height="91" as="geometry" />
         </mxCell>
         <mxCell id="class-RegraDeValidacaoStrategy-fields" parent="class-RegraDeValidacaoStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="300" height="18" as="geometry" />
+          <mxGeometry y="38" width="430" height="18" as="geometry" />
         </mxCell>
         <mxCell id="class-RegraDeValidacaoStrategy-divider" parent="class-RegraDeValidacaoStrategy" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="300" height="8" as="geometry" />
+          <mxGeometry y="56" width="430" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-RegraDeValidacaoStrategy-methods" parent="class-RegraDeValidacaoStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="300" height="26" as="geometry" />
+        <mxCell id="class-RegraDeValidacaoStrategy-methods" parent="class-RegraDeValidacaoStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+validar(contexto: ContextoDeValidacao&amp;lt;C&amp;gt;): void&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="430" height="27" as="geometry" />
         </mxCell>
-        <mxCell id="class-RegraDeVitoriaStrategy" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, placeholder vazio»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;RegraDeVitoriaStrategy&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="RegraDeVitoriaStrategy">
-          <mxGeometry x="3450" y="980" width="300" height="90" as="geometry" />
+        <mxCell id="class-RegraDeVitoriaStrategy" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, Strategy»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;RegraDeVitoriaStrategy&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="RegraDeVitoriaStrategy">
+          <mxGeometry x="3580" y="980" width="500" height="91" as="geometry" />
         </mxCell>
         <mxCell id="class-RegraDeVitoriaStrategy-fields" parent="class-RegraDeVitoriaStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="300" height="18" as="geometry" />
+          <mxGeometry y="38" width="500" height="18" as="geometry" />
         </mxCell>
         <mxCell id="class-RegraDeVitoriaStrategy-divider" parent="class-RegraDeVitoriaStrategy" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="300" height="8" as="geometry" />
+          <mxGeometry y="56" width="500" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-RegraDeVitoriaStrategy-methods" parent="class-RegraDeVitoriaStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="300" height="26" as="geometry" />
+        <mxCell id="class-RegraDeVitoriaStrategy-methods" parent="class-RegraDeVitoriaStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+avaliar(contexto: VisaoDaPartida&amp;lt;C&amp;gt;): Optional&amp;lt;DesfechoDePartida&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="500" height="27" as="geometry" />
         </mxCell>
-        <mxCell id="class-RegraDePontuacaoStrategy" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, placeholder vazio»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;RegraDePontuacaoStrategy&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="RegraDePontuacaoStrategy">
-          <mxGeometry x="3780" y="980" width="300" height="90" as="geometry" />
+        <mxCell id="class-RegraDePontuacaoStrategy" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, Strategy»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;RegraDePontuacaoStrategy&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="RegraDePontuacaoStrategy">
+          <mxGeometry x="3120" y="1130" width="620" height="91" as="geometry" />
         </mxCell>
         <mxCell id="class-RegraDePontuacaoStrategy-fields" parent="class-RegraDePontuacaoStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="300" height="18" as="geometry" />
+          <mxGeometry y="38" width="620" height="18" as="geometry" />
         </mxCell>
         <mxCell id="class-RegraDePontuacaoStrategy-divider" parent="class-RegraDePontuacaoStrategy" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="300" height="8" as="geometry" />
+          <mxGeometry y="56" width="620" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-RegraDePontuacaoStrategy-methods" parent="class-RegraDePontuacaoStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="300" height="26" as="geometry" />
+        <mxCell id="class-RegraDePontuacaoStrategy-methods" parent="class-RegraDePontuacaoStrategy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+calcular(contexto: VisaoDaPartida&amp;lt;C&amp;gt;, desfecho: DesfechoDePartida): Map&amp;lt;Jogador, Integer&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="620" height="27" as="geometry" />
         </mxCell>
-        <mxCell id="class-PartidaListener" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, placeholder vazio»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;PartidaListener&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaListener">
-          <mxGeometry x="4110" y="980" width="280" height="90" as="geometry" />
+        <mxCell id="class-PartidaListener" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, Observer»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;PartidaListener&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaListener">
+          <mxGeometry x="4110" y="1130" width="380" height="91" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaListener-fields" parent="class-PartidaListener" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="280" height="18" as="geometry" />
+          <mxGeometry y="38" width="380" height="18" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaListener-divider" parent="class-PartidaListener" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="280" height="8" as="geometry" />
+          <mxGeometry y="56" width="380" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-PartidaListener-methods" parent="class-PartidaListener" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="280" height="26" as="geometry" />
+        <mxCell id="class-PartidaListener-methods" parent="class-PartidaListener" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+aoOcorrer(evento: EventoDePartida): void&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="380" height="27" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaException" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«abstract, public»&lt;/div&gt;&lt;div style=&quot;font-style:italic;&quot;&gt;&lt;b&gt;PartidaException&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaException">
           <mxGeometry x="3300" y="1350" width="280" height="90" as="geometry" />
@@ -474,7 +549,7 @@
           <mxGeometry y="64" width="360" height="26" as="geometry" />
         </mxCell>
         <mxCell id="class-MotorDePartida" parent="package-engine" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«abstract, public, Template Method»&lt;/div&gt;&lt;div style=&quot;font-style:italic;&quot;&gt;&lt;b&gt;MotorDePartida&amp;lt;C extends Carta&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="MotorDePartida">
-          <mxGeometry x="40" y="60" width="700" height="224" as="geometry" />
+          <mxGeometry x="40" y="60" width="700" height="243" as="geometry" />
         </mxCell>
         <mxCell id="class-MotorDePartida-fields" parent="class-MotorDePartida" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
           <mxGeometry y="38" width="700" height="18" as="geometry" />
@@ -482,8 +557,8 @@
         <mxCell id="class-MotorDePartida-divider" parent="class-MotorDePartida" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry y="56" width="700" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-MotorDePartida-methods" parent="class-MotorDePartida" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+executar(): ResultadoDePartida {final}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+estado(): EstadoPartida {final}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#preparar(contexto: ContextoDePartida&amp;lt;C&amp;gt;): void&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#aposDistribuir(contexto: ContextoDePartida&amp;lt;C&amp;gt;): void&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#executarTurno(contexto: ContextoDePartida&amp;lt;C&amp;gt;): ResultadoDoTurno {abstract}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#avaliarDesfecho(contexto: VisaoDaPartida&amp;lt;C&amp;gt;): Optional&amp;lt;DesfechoDePartida&amp;gt; {abstract}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#calcularPontuacao(contexto: VisaoDaPartida&amp;lt;C&amp;gt;, desfecho: DesfechoDePartida): Map&amp;lt;Jogador, Integer&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#aoEncerrar(contexto: VisaoDaPartida&amp;lt;C&amp;gt;, resultado: ResultadoDePartida): void&lt;/div&gt;" vertex="1">
-          <mxGeometry y="64" width="700" height="160" as="geometry" />
+        <mxCell id="class-MotorDePartida-methods" parent="class-MotorDePartida" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+executar(): ResultadoDePartida {final}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+estado(): EstadoPartida {final}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+adicionarListener(listener: PartidaListener): void {final}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+removerListener(listener: PartidaListener): boolean {final}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#executarTurno(contexto: ContextoDePartida&amp;lt;C&amp;gt;): ResultadoDoTurno {abstract}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#validarJogada(contexto: VisaoDaPartida&amp;lt;C&amp;gt;, jogada: Jogada): void {final}&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#preparar(contexto: ContextoDePartida&amp;lt;C&amp;gt;): void&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#aposDistribuir(contexto: ContextoDePartida&amp;lt;C&amp;gt;): void&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;#aoEncerrar(contexto: VisaoDaPartida&amp;lt;C&amp;gt;, resultado: ResultadoDePartida): void&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="700" height="179" as="geometry" />
         </mxCell>
         <mxCell id="class-PartidaEmExecucao" parent="package-engine" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, package-private, final»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;PartidaEmExecucao&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="PartidaEmExecucao">
           <mxGeometry x="780" y="80" width="350" height="90" as="geometry" />
@@ -545,77 +620,38 @@
         <mxCell id="class-ContextoDeDistribuicaoInterno-methods" parent="class-ContextoDeDistribuicaoInterno" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
           <mxGeometry y="64" width="400" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDistribuicaoPadrao" parent="package-core" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, package-private, final, outra trilha»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;ContextoDeDistribuicaoPadrao&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="ContextoDeDistribuicaoPadrao">
-          <mxGeometry x="40" y="60" width="390" height="90" as="geometry" />
+        <mxCell id="class-ContextoDeValidacao" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, record, immutable»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;ContextoDeValidacao&amp;lt;C&amp;gt;&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="ContextoDeValidacao">
+          <mxGeometry x="3780" y="1280" width="330" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDistribuicaoPadrao-fields" parent="class-ContextoDeDistribuicaoPadrao" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="390" height="18" as="geometry" />
+        <mxCell id="class-ContextoDeValidacao-fields" parent="class-ContextoDeValidacao" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="330" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDistribuicaoPadrao-divider" parent="class-ContextoDeDistribuicaoPadrao" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="390" height="8" as="geometry" />
+        <mxCell id="class-ContextoDeValidacao-divider" parent="class-ContextoDeValidacao" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="330" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDistribuicaoPadrao-methods" parent="class-ContextoDeDistribuicaoPadrao" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="390" height="26" as="geometry" />
+        <mxCell id="class-ContextoDeValidacao-methods" parent="class-ContextoDeValidacao" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="&lt;div style=&quot;text-align:left&quot;&gt;+partida(): VisaoDaPartida&amp;lt;C&amp;gt;&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;+jogada(): Jogada&lt;/div&gt;" vertex="1">
+          <mxGeometry y="64" width="330" height="46" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDecisaoPadrao" parent="package-core" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, final, record, outra trilha»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;estrategia.ContextoDeDecisaoPadrao&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="ContextoDeDecisaoPadrao">
-          <mxGeometry x="470" y="60" width="390" height="90" as="geometry" />
+        <mxCell id="class-EventoDePartida" parent="package-api" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«interface, public, extensão»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;EventoDePartida&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="EventoDePartida">
+          <mxGeometry x="4150" y="1280" width="300" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDecisaoPadrao-fields" parent="class-ContextoDeDecisaoPadrao" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="390" height="18" as="geometry" />
+        <mxCell id="class-EventoDePartida-fields" parent="class-EventoDePartida" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="38" width="300" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDecisaoPadrao-divider" parent="class-ContextoDeDecisaoPadrao" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="390" height="8" as="geometry" />
+        <mxCell id="class-EventoDePartida-divider" parent="class-EventoDePartida" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
+          <mxGeometry y="56" width="300" height="8" as="geometry" />
         </mxCell>
-        <mxCell id="class-ContextoDeDecisaoPadrao-methods" parent="class-ContextoDeDecisaoPadrao" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="390" height="26" as="geometry" />
-        </mxCell>
-        <mxCell id="class-BaralhoBase" parent="package-core" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, placeholder legado»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;BaralhoBase&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="BaralhoBase">
-          <mxGeometry x="900" y="60" width="250" height="90" as="geometry" />
-        </mxCell>
-        <mxCell id="class-BaralhoBase-fields" parent="class-BaralhoBase" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="250" height="18" as="geometry" />
-        </mxCell>
-        <mxCell id="class-BaralhoBase-divider" parent="class-BaralhoBase" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="250" height="8" as="geometry" />
-        </mxCell>
-        <mxCell id="class-BaralhoBase-methods" parent="class-BaralhoBase" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="250" height="26" as="geometry" />
-        </mxCell>
-        <mxCell id="class-MaoDeCartasLegada" parent="package-core" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, placeholder legado»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;MaoDeCartas&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="MaoDeCartasLegada">
-          <mxGeometry x="1180" y="60" width="280" height="90" as="geometry" />
-        </mxCell>
-        <mxCell id="class-MaoDeCartasLegada-fields" parent="class-MaoDeCartasLegada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="280" height="18" as="geometry" />
-        </mxCell>
-        <mxCell id="class-MaoDeCartasLegada-divider" parent="class-MaoDeCartasLegada" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="280" height="8" as="geometry" />
-        </mxCell>
-        <mxCell id="class-MaoDeCartasLegada-methods" parent="class-MaoDeCartasLegada" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="280" height="26" as="geometry" />
-        </mxCell>
-        <mxCell id="class-Mesa" parent="package-core" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#4D4D4D;fontFamily=Helvetica;" value="&lt;div style=&quot;font-size:10px&quot;&gt;«class, public, placeholder legado»&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;b&gt;Mesa&lt;/b&gt;&lt;/div&gt;" vertex="1" cardgameElement="class" cardgameAlias="Mesa">
-          <mxGeometry x="900" y="250" width="250" height="90" as="geometry" />
-        </mxCell>
-        <mxCell id="class-Mesa-fields" parent="class-Mesa" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="38" width="250" height="18" as="geometry" />
-        </mxCell>
-        <mxCell id="class-Mesa-divider" parent="class-Mesa" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry y="56" width="250" height="8" as="geometry" />
-        </mxCell>
-        <mxCell id="class-Mesa-methods" parent="class-Mesa" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
-          <mxGeometry y="64" width="250" height="26" as="geometry" />
+        <mxCell id="class-EventoDePartida-methods" parent="class-EventoDePartida" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontFamily=Helvetica;fontSize=11;" value="" vertex="1">
+          <mxGeometry y="64" width="300" height="26" as="geometry" />
         </mxCell>
         <mxCell id="note-api-scope" parent="package-api" value="&lt;div style=&quot;text-align:left&quot;&gt;Diagrama simplificado: mostra contratos centrais, assinaturas relevantes e relações arquiteturais.&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;Não enumera todos os construtores e overloads. Em tipos genéricos, C estende Carta.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=8;fontFamily=Helvetica;fontSize=11;" vertex="1" cardgameElement="note">
           <mxGeometry x="2400" y="60" width="760" height="105" as="geometry" />
         </mxCell>
-        <mxCell id="note-rules" parent="package-api" value="&lt;div style=&quot;text-align:left&quot;&gt;Contratos de regras preservados vazios. Strategy de regras e Observer ainda não estão implementados na main.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=8;fontFamily=Helvetica;fontSize=11;" vertex="1" cardgameElement="note">
-          <mxGeometry x="3120" y="1110" width="700" height="95" as="geometry" />
+        <mxCell id="note-rules" parent="package-api" value="&lt;div style=&quot;text-align:left&quot;&gt;As três Strategies de regra são obrigatórias em PartidaConfig e o motor as consulta a cada turno. Trocar a condição de vitória é trocar um objeto — não exige subclasse.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=8;fontFamily=Helvetica;fontSize=11;" vertex="1" cardgameElement="note">
+          <mxGeometry x="2860" y="1670" width="760" height="95" as="geometry" />
         </mxCell>
-        <mxCell id="note-engine" parent="package-engine" value="&lt;div style=&quot;text-align:left&quot;&gt;MotorDePartida é o único tipo público de engine. Os demais colaboradores são detalhes package-private.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=8;fontFamily=Helvetica;fontSize=11;" vertex="1" cardgameElement="note">
+        <mxCell id="note-engine" parent="package-engine" value="&lt;div style=&quot;text-align:left&quot;&gt;MotorDePartida é o único tipo público de engine. Os demais colaboradores são detalhes package-private. O motor publica os eventos e delega validação, vitória e pontuação às Strategies.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=8;fontFamily=Helvetica;fontSize=11;" vertex="1" cardgameElement="note">
           <mxGeometry x="40" y="460" width="650" height="90" as="geometry" />
-        </mxCell>
-        <mxCell id="note-core" parent="package-core" value="&lt;div style=&quot;text-align:left&quot;&gt;Pacote transitório de outras trilhas. A Trilha A não importa core.&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=8;fontFamily=Helvetica;fontSize=11;" vertex="1" cardgameElement="note">
-          <mxGeometry x="40" y="430" width="480" height="75" as="geometry" />
         </mxCell>
         <mxCell id="relation-01-BaralhoPadrao-Baralho" edge="1" parent="1" source="class-BaralhoPadrao" target="class-Baralho" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;dashed=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
           <mxGeometry relative="1" as="geometry" />
@@ -882,52 +918,6 @@
             <mxPoint x="0" y="0" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="relation-46-ContextoDeDistribuicaoPadrao-ContextoDeDistribuicao" edge="1" parent="1" source="class-ContextoDeDistribuicaoPadrao" target="class-ContextoDeDistribuicao" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;dashed=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="relation-47-ContextoDeDistribuicaoPadrao-Baralho" edge="1" parent="1" source="class-ContextoDeDistribuicaoPadrao" target="class-Baralho" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="relation-47-ContextoDeDistribuicaoPadrao-Baralho-target-multiplicity" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-47-ContextoDeDistribuicaoPadrao-Baralho">
-          <mxGeometry x="0.82" relative="1" as="geometry">
-            <mxPoint x="0" y="0" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="relation-48-ContextoDeDistribuicaoPadrao-Jogador" edge="1" parent="1" source="class-ContextoDeDistribuicaoPadrao" target="class-Jogador" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="relation-48-ContextoDeDistribuicaoPadrao-Jogador-target-multiplicity" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-48-ContextoDeDistribuicaoPadrao-Jogador">
-          <mxGeometry x="0.82" relative="1" as="geometry">
-            <mxPoint x="0" y="0" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="relation-49-ContextoDeDistribuicaoPadrao-MaoDeCartas" edge="1" parent="1" source="class-ContextoDeDistribuicaoPadrao" target="class-MaoDeCartas" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="relation-49-ContextoDeDistribuicaoPadrao-MaoDeCartas-target-multiplicity" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-49-ContextoDeDistribuicaoPadrao-MaoDeCartas">
-          <mxGeometry x="0.82" relative="1" as="geometry">
-            <mxPoint x="0" y="0" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="relation-50-ContextoDeDecisaoPadrao-ContextoDeDecisao" edge="1" parent="1" source="class-ContextoDeDecisaoPadrao" target="class-ContextoDeDecisao" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;dashed=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="relation-51-ContextoDeDecisaoPadrao-EtapaDeTurno" edge="1" parent="1" source="class-ContextoDeDecisaoPadrao" target="class-EtapaDeTurno" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="relation-51-ContextoDeDecisaoPadrao-EtapaDeTurno-target-multiplicity" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-51-ContextoDeDecisaoPadrao-EtapaDeTurno">
-          <mxGeometry x="0.82" relative="1" as="geometry">
-            <mxPoint x="0" y="0" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="relation-52-ContextoDeDecisaoPadrao-Jogada" edge="1" parent="1" source="class-ContextoDeDecisaoPadrao" target="class-Jogada" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="relation-52-ContextoDeDecisaoPadrao-Jogada-target-multiplicity" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-52-ContextoDeDecisaoPadrao-Jogada">
-          <mxGeometry x="0.82" relative="1" as="geometry">
-            <mxPoint x="0" y="0" as="offset" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="relation-53-BaralhoVazioException-PartidaException" edge="1" parent="1" source="class-BaralhoVazioException" target="class-PartidaException" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" value="" cardgameElement="relation" cardgameRelation="--|&gt;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -937,7 +927,69 @@
         <mxCell id="relation-55-EstadoDePartidaInvalidoException-PartidaException" edge="1" parent="1" source="class-EstadoDePartidaInvalidoException" target="class-PartidaException" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;" value="" cardgameElement="relation" cardgameRelation="--|&gt;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="diagram-legend" parent="1" value="&lt;div style=&quot;text-align:left&quot;&gt;Azul: API pública&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;Amarelo: runtime da Trilha A&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;Cinza: artefatos transitórios de outras trilhas&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;Tracejada: implements/dependência · Sólida fechada: extends&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Helvetica;" vertex="1" cardgameElement="legend">
+        <mxCell id="relation-53-PartidaConfig-RegraDeValidacaoStrategy" edge="1" parent="1" source="class-PartidaConfig" target="class-RegraDeValidacaoStrategy" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-53-PartidaConfig-RegraDeValidacaoStrategy-target-multiplicity" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-53-PartidaConfig-RegraDeValidacaoStrategy">
+          <mxGeometry x="0.82" relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="relation-54-PartidaConfig-RegraDeVitoriaStrategy" edge="1" parent="1" source="class-PartidaConfig" target="class-RegraDeVitoriaStrategy" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-54-PartidaConfig-RegraDeVitoriaStrategy-target-multiplicity" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-54-PartidaConfig-RegraDeVitoriaStrategy">
+          <mxGeometry x="0.82" relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="relation-55-PartidaConfig-RegraDePontuacaoStrategy" edge="1" parent="1" source="class-PartidaConfig" target="class-RegraDePontuacaoStrategy" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-55-PartidaConfig-RegraDePontuacaoStrategy-target-multiplicity" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-55-PartidaConfig-RegraDePontuacaoStrategy">
+          <mxGeometry x="0.82" relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="relation-56-RegraDeValidacaoStrategy-ContextoDeValidacao" edge="1" parent="1" source="class-RegraDeValidacaoStrategy" target="class-ContextoDeValidacao" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-57-RegraDeVitoriaStrategy-DesfechoDePartida" edge="1" parent="1" source="class-RegraDeVitoriaStrategy" target="class-DesfechoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-58-MotorDePartida-PartidaListener" edge="1" parent="1" source="class-MotorDePartida" target="class-PartidaListener" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;" value="" cardgameElement="relation" cardgameRelation="--&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-58-MotorDePartida-PartidaListener-target-multiplicity" value="0..*" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=#FFFFFF;" vertex="1" connectable="0" parent="relation-58-MotorDePartida-PartidaListener">
+          <mxGeometry x="0.82" relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="relation-59-MotorDePartida-EventoDePartida" edge="1" parent="1" source="class-MotorDePartida" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-60-PartidaListener-EventoDePartida" edge="1" parent="1" source="class-PartidaListener" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=open;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-61-PartidaIniciada-EventoDePartida" edge="1" parent="1" source="class-PartidaIniciada" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=block;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-62-CartasDistribuidas-EventoDePartida" edge="1" parent="1" source="class-CartasDistribuidas" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=block;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-63-TurnoIniciado-EventoDePartida" edge="1" parent="1" source="class-TurnoIniciado" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=block;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-64-TurnoEncerrado-EventoDePartida" edge="1" parent="1" source="class-TurnoEncerrado" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=block;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-65-JogadaRejeitada-EventoDePartida" edge="1" parent="1" source="class-JogadaRejeitada" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=block;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="relation-66-PartidaFinalizada-EventoDePartida" edge="1" parent="1" source="class-PartidaFinalizada" target="class-EventoDePartida" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;edgeStyle=orthogonalEdgeStyle;libavoidRouting=1;endArrow=block;endFill=0;dashed=1;" value="" cardgameElement="relation" cardgameRelation="..|&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="diagram-legend" parent="1" value="&lt;div style=&quot;text-align:left&quot;&gt;Azul: API pública&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;Amarelo: runtime da Trilha A&lt;/div&gt;&lt;div style=&quot;text-align:left&quot;&gt;Tracejada: implements/dependência · Sólida fechada: extends&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#FFFFFF;strokeColor=#666666;fontFamily=Helvetica;" vertex="1" cardgameElement="legend">
           <mxGeometry x="40" y="2720" width="600" height="100" as="geometry" />
         </mxCell>
       </root>

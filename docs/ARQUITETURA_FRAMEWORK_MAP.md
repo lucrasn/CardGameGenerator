@@ -2,9 +2,9 @@
 
 **Documento canônico da arquitetura.**
 
-**Baseline:** `main`, após integração seletiva da Trilha A em 15/08/2026.
+**Baseline:** `main`, após integração das Trilhas A, B, C e D em 16/08/2026.
 
-**Validação:** 105 testes, zero falhas e zero erros.
+**Validação:** 133 testes, zero falhas e zero erros.
 
 ## 1. Objetivo e limite da promessa
 
@@ -34,12 +34,11 @@ Trinca / Blackjack ─────> cardgame.api
           └─────────────> cardgame.engine.MotorDePartida
 
 cardgame.engine ────────> cardgame.api
-auxiliares em core ─────> cardgame.api
 ```
 
 Regras mecânicas:
 
-1. `api` não importa `engine`, `core` nem jogos;
+1. `api` não importa `engine` nem jogos;
 2. `engine` não importa Trinca ou Blackjack;
 3. clientes podem estender `MotorDePartida`, mas não acessar seus colaboradores;
 4. estado mutável só é alcançado por contextos públicos estreitos;
@@ -50,6 +49,9 @@ Regras mecânicas:
 ```text
 br.edu.uepb.map.cardgame.api
   contratos e valores públicos
+  api.evento     seis eventos padrão da partida
+  api.excecao    hierarquia de exceções de domínio
+  api.estrategia estratégias de decisão reutilizáveis
 
 br.edu.uepb.map.cardgame.engine
   MotorDePartida<C>                         public
@@ -58,18 +60,15 @@ br.edu.uepb.map.cardgame.engine
   CicloDeVidaDaPartida                     package-private
   PartidaEmExecucao<C>                     package-private
   ContextoDeDistribuicaoInterno<C>         package-private
-
-br.edu.uepb.map.cardgame.core
-  auxiliares e placeholders legados de outras trilhas
 ```
 
 `GerenciadorDeTurnos` fica em `engine`, junto de quem o usa. Isso não é acoplamento
 indevido: ele é parte da implementação do motor. Deixá-lo sem `public` impede que o
 jogo cliente transforme um detalhe interno em dependência.
 
-O pacote `core` ainda existe na baseline porque contém artefatos das Trilhas B/C e
-placeholders antigos. A Trilha A não depende dele. Portanto, a afirmação correta hoje
-é “não existe `core` da Trilha A”, e não “não existe pacote `core` no projeto”.
+São exatamente dois pacotes de produção. Uma única classe pública em `engine` é o que
+torna o frozen-spot inviolável: o jogo cliente não consegue instanciar o gerenciador de
+turnos nem forçar uma transição de estado, ainda que saiba que eles existem.
 
 ## 4. Contratos implementados
 
@@ -115,16 +114,20 @@ Tipos públicos:
 
 ### 4.4 Regras, eventos e exceções — Trilha D
 
-As exceções de domínio estão implementadas. As interfaces abaixo continuam vazias na
-`main` e devem permanecer assim até a Trilha D aprovar suas assinaturas:
+As exceções de domínio, as três Strategies de regra e o protocolo de eventos estão
+implementados:
 
-- `RegraDeValidacaoStrategy`;
-- `RegraDeVitoriaStrategy`;
-- `RegraDePontuacaoStrategy`;
-- `PartidaListener`.
+| Contrato | Operação |
+|---|---|
+| `RegraDeValidacaoStrategy<C>` | `validar(ContextoDeValidacao<C>)` |
+| `RegraDeVitoriaStrategy<C>` | `avaliar(VisaoDaPartida<C>)` |
+| `RegraDePontuacaoStrategy<C>` | `calcular(VisaoDaPartida<C>, DesfechoDePartida)` |
+| `PartidaListener` | `aoOcorrer(EventoDePartida)` |
 
-`EventoDePartida` e eventos concretos ainda não existem. Portanto, Strategy de regras
-e Observer são arquitetura planejada, não padrões já demonstráveis na baseline.
+`EventoDePartida` é uma interface de extensão; `api.evento` traz seis records imutáveis
+prontos: `PartidaIniciada`, `CartasDistribuidas`, `TurnoIniciado`, `TurnoEncerrado`,
+`JogadaRejeitada` e `PartidaFinalizada`. Strategy de regras e Observer, portanto, são
+padrões demonstráveis em runtime nesta baseline, e não arquitetura planejada.
 
 ## 5. Template Method do motor
 
@@ -142,10 +145,10 @@ PREPARANDO
     │
     ▼
 EM_ANDAMENTO
-    ├─ avaliar desfecho inicial
+    ├─ avaliar desfecho inicial pela regra de vitória
     └─ repetir:
          executarTurno(contexto)
-         avaliarDesfecho(visão)
+         regraDeVitoria.avaliar(visão)
          aplicar ResultadoDoTurno
     │
     ▼
@@ -155,21 +158,24 @@ FINALIZADA
     └─ aoEncerrar(visão, resultado)
 ```
 
-Hooks obrigatórios enquanto as Strategies da Trilha D estão pendentes:
+Operação primitiva obrigatória — a única:
 
-- `executarTurno(ContextoDePartida<C>)`;
-- `avaliarDesfecho(VisaoDaPartida<C>)`.
+- `executarTurno(ContextoDePartida<C>)`.
 
 Hooks opcionais:
 
 - `preparar`;
 - `aposDistribuir`;
-- `calcularPontuacao` — zero para todos por padrão;
 - `aoEncerrar`.
 
-Quando as Strategies da Trilha D forem definidas, a equipe deverá escolher uma única
-fonte de variação. Não se deve manter simultaneamente hooks e Strategies duplicando a
-mesma decisão sem uma justificativa explícita.
+Apoio oferecido ao jogo:
+
+- `validarJogada(VisaoDaPartida<C>, Jogada)`, `final`, que delega à Strategy configurada.
+
+Vitória e pontuação **deixaram de ser hooks** e passaram a Strategies de `PartidaConfig`.
+A decisão eliminou a duplicidade que a versão anterior deste documento previa: existe
+uma única fonte de variação para cada decisão, e trocar a condição de vitória não exige
+mais criar uma subclasse de motor.
 
 ## 6. Turnos
 
@@ -225,28 +231,32 @@ framework.
 | 4 | `EstrategiaDeDecisao` | disponível |
 | 5 | subclasse de `MotorDePartida<C>` | disponível |
 | 6 | `MotivoDeEncerramento` específico | disponível |
-| 7 | validação por Strategy | contrato pendente |
-| 8 | vitória por Strategy | contrato pendente |
-| 9 | pontuação por Strategy | contrato pendente |
-| 10 | eventos/observadores | pendente |
+| 7 | `RegraDeValidacaoStrategy<C>` | disponível |
+| 8 | `RegraDeVitoriaStrategy<C>` | disponível |
+| 9 | `RegraDePontuacaoStrategy<C>` | disponível |
+| 10 | `PartidaListener` | disponível |
+| 11 | `EventoDePartida` próprio do jogo | disponível |
 
-Mesmo sem contar placeholders, há seis extensões utilizáveis. Para a defesa final,
-os pontos 7–10 só devem ser apresentados como implementados depois que possuírem
-operações, implementações concretas e testes.
+São onze extensões utilizáveis, todas com contrato definido e exercitado por teste. O
+requisito da atividade pede no mínimo cinco.
 
 ## 9. Padrões, SOLID e GRASP
 
 ### Implementados e verificáveis
 
-- **Template Method:** `MotorDePartida.executar()` fixa o algoritmo e chama hooks;
+- **Template Method:** `MotorDePartida.executar()` fixa o algoritmo e chama os hooks;
 - **Factory Method:** `BaralhoFactory.criar()` decide a composição;
-- **Strategy:** distribuição e decisão são objetos substituíveis;
+- **Strategy:** distribuição, decisão, validação, vitória e pontuação são objetos
+  substituíveis;
+- **Observer:** o motor cadastra ouvintes e publica seis eventos, isolando falhas de
+  cada um;
 - **Builder:** construção validada de `PartidaConfig` (apoio, fora da contagem GoF).
 
-### Planejados
+Quatro padrões GoF distintos dentre os estudados em sala, o que atende ao mínimo
+exigido pela atividade.
 
-- **Strategy de regras:** interfaces ainda vazias;
-- **Observer:** listener ainda vazio e eventos ausentes;
+### Ainda em avaliação
+
 - **Decorator:** somente se houver composição real de três ou mais validações.
 
 Evidências de SOLID/GRASP:
@@ -265,13 +275,14 @@ Evidências de SOLID/GRASP:
 
 ## 10. O que ainda falta provar
 
-1. Trilha D definir e testar regras e Observer;
-2. integrar esses contratos sem duplicar os hooks atuais;
-3. implementar Trinca usando apenas API/`MotorDePartida`;
-4. implementar Blackjack com diferenças suficientes;
-5. remover ou realocar placeholders legados de `core` pelos respectivos donos;
-6. executar testes arquiteturais de dependência entre pacotes;
-7. atualizar o UML final após congelar as assinaturas.
+1. implementar Trinca usando apenas `api` e `engine.MotorDePartida`;
+2. implementar Blackjack com diferenças suficientes para provar extensibilidade;
+3. zerar os sete avisos residuais de Javadoc nos contratos de cartas e distribuição;
+4. executar testes arquiteturais automatizados de dependência entre pacotes;
+5. decidir sobre Decorator segundo o critério objetivo já acordado.
+
+O código de teste espelha os pacotes de produção: não existe mais pacote de teste sem
+equivalente em `src/main`.
 
 ## 11. Critério de “caminho certo”
 

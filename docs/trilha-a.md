@@ -5,8 +5,9 @@
 **Status:** parte reutilizável da Trilha A concluída. O engine já integra as
 Strategies de validação, vitória e pontuação e está pronto para ser validado pelos
 clientes concretos; Trinca e Blackjack pertencem à Trilha E e ainda não estão
-implementados na `main`. A publicação dos eventos da Trilha D pelo motor também
-permanece pendente.
+implementados na `main`. A publicação dos eventos da Trilha D pelo motor já está
+implementada: `MotorDePartida` cadastra observadores e publica os seis eventos padrão
+ao longo do ciclo.
 
 Este texto reúne a justificativa técnica da Trilha A e um roteiro para sua defesa na
 apresentação. As decisões seguem `ARQUITETURA_FRAMEWORK_MAP.md`,
@@ -46,7 +47,7 @@ O mapeamento atual é intencional:
 | `cardgame.api` | `EstadoPartida`, `PartidaConfig`, `VisaoDaPartida`, `ContextoDePartida`, `ResultadoDoTurno`, `DesfechoDePartida`, `ResultadoDePartida`, `MotivoDeEncerramento`, `MotivoPadrao` | contratos e valores públicos usados para configurar, especializar e consultar uma partida |
 | `cardgame.engine` | `MotorDePartida` | único tipo público do runtime e ponto de extensão por herança |
 | `cardgame.engine` | `GerenciadorDeTurnos`, `SentidoDeRotacao`, `CicloDeVidaDaPartida`, `PartidaEmExecucao`, `ContextoDeDistribuicaoInterno` | colaboradores package-private que somente o motor deve manipular |
-| `cardgame.core` | nenhum tipo da Trilha A | auxiliares de outras trilhas não são dependência do motor nem dos clientes |
+| `cardgame.api.evento` | nenhum tipo da Trilha A | eventos da Trilha D publicados pelo motor |
 
 Colocar os colaboradores internos junto de `MotorDePartida` não cria uma dependência
 arquitetural indevida: eles formam a implementação coesa do runtime. Deixá-los sem
@@ -297,9 +298,10 @@ dois clientes da Trilha E compilarem e executarem importando apenas `api` e
 
 O padrão principal da Trilha A é **Template Method**. `PartidaConfig.Builder` é um
 apoio de construção; Factory Method e Strategy são colaborações pertencentes às
-outras trilhas. O enum de ciclo não é apresentado como State, e a mera existência de
-`PartidaListener` e dos eventos ainda não comprova Observer no runtime enquanto o
-motor não publicar esses eventos.
+outras trilhas. O enum de ciclo não é apresentado como State. **Observer** está
+comprovado no runtime: o motor mantém a lista de observadores, publica os seis eventos
+padrão e isola falhas de cada ouvinte, com testes cobrindo ordem de notificação,
+descadastro durante o callback e ouvinte que lança exceção.
 
 | Princípio | Decisão de modelagem |
 |---|---|

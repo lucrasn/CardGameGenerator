@@ -6,23 +6,35 @@ usa padrões GoF, SOLID e GRASP como decisões verificáveis no código.
 
 ## Estado atual
 
-A `main` contém uma baseline integrada das Trilhas A, B e C:
+A `main` contém a parte reutilizável das Trilhas A, B, C e D integrada:
 
-- `cardgame.api`: contratos públicos de cartas, jogadores, configuração, contexto e
-  resultado;
+- `cardgame.api`: contratos públicos de cartas, jogadores, configuração, contexto,
+  regras, eventos e resultado;
 - `cardgame.engine.MotorDePartida<C>`: Template Method público do ciclo de vida;
 - colaboradores internos de estado e turnos sem `public` no pacote `engine`;
 - baralho e distribuição genéricos da Trilha B;
 - jogadores e estratégias de decisão da Trilha C;
-- exceções de domínio da Trilha D.
+- regras, eventos e exceções de domínio da Trilha D.
 
-As interfaces `RegraDeValidacaoStrategy`, `RegraDeVitoriaStrategy`,
-`RegraDePontuacaoStrategy` e `PartidaListener` ainda são placeholders vazios da
-Trilha D. O motor não inventa métodos para esses contratos: até que sejam definidos,
-avaliação e pontuação entram por hooks protegidos. Observer e eventos permanecem
-pendentes.
+As três Strategies de regra — `RegraDeValidacaoStrategy`, `RegraDeVitoriaStrategy` e
+`RegraDePontuacaoStrategy` — são obrigatórias em `PartidaConfig` e o motor as consulta
+durante a execução. O Observer está implementado: `MotorDePartida` cadastra
+observadores e publica os seis eventos de `cardgame.api.evento`.
 
-A suíte atual executa 105 testes com sucesso.
+Falta a camada de aplicação: Trinca e Blackjack ainda não existem na `main`.
+
+A suíte atual executa 133 testes com sucesso.
+
+### Padrões GoF em runtime
+
+| Padrão | Onde |
+|---|---|
+| Template Method | `MotorDePartida.executar()`, `final` |
+| Factory Method | `BaralhoFactory.criar()` |
+| Strategy | distribuição, decisão, validação, vitória e pontuação |
+| Observer | `MotorDePartida` + `PartidaListener` + `api.evento` |
+
+`PartidaConfig.Builder` é decisão auxiliar de construção e fica fora dessa contagem.
 
 ## Arquitetura
 
@@ -38,8 +50,9 @@ Somente `MotorDePartida` é público em `engine`. `GerenciadorDeTurnos`,
 `SentidoDeRotacao`, `CicloDeVidaDaPartida`, `PartidaEmExecucao` e o adaptador de
 distribuição são detalhes do runtime.
 
-O pacote legado `core` ainda contém artefatos de outras trilhas. A Trilha A não
-depende dele e removeu suas versões antigas de estado, motor, turnos e resultado.
+São dois pacotes de produção, e a fronteira entre eles é garantida pelo compilador:
+uma única classe pública em `engine` significa que nenhum jogo cliente consegue
+alcançar o gerenciador de turnos ou forçar uma transição de estado.
 
 ## Executar
 
@@ -62,8 +75,10 @@ Para validar também a documentação da API:
 - `docs/modelo-conceitual-framework.md`: vocabulário independente de jogos;
 - `docs/padroes-de-projeto.md`: padrões, SOLID e GRASP;
 - `docs/divisao-responsabilidades.md`: fronteiras entre as trilhas;
-- `docs/diagrama-classes.puml`: diagrama do estado atual, incluindo pendências.
-- `docs/trilha-a.md`: decisões, evidências e limitações do motor.
+- `docs/diagrama-classes.puml`: diagrama de classes em PlantUML;
+- `docs/DiagramaDeClasses.drawio.xml`: o mesmo diagrama em draw.io;
+- `docs/trilha-a.md`: decisões, evidências e limitações do motor;
+- `docs/trilha-c.md`: decisões de jogadores e estratégias de decisão.
 
 Trinca e Blackjack serão clientes de validação, não fontes de regras codificadas no
 framework. Um mecanismo só entra no núcleo quando for reutilizável entre jogos com
