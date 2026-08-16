@@ -8,12 +8,15 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import br.edu.uepb.map.cardgame.api.Baralho;
 import br.edu.uepb.map.cardgame.api.BaralhoPadrao;
+import br.edu.uepb.map.cardgame.api.Carta;
+import br.edu.uepb.map.cardgame.api.ContextoDeDistribuicao;
 import br.edu.uepb.map.cardgame.api.DistribuicaoAlternada;
 import br.edu.uepb.map.cardgame.api.Jogador;
+import br.edu.uepb.map.cardgame.api.MaoDeCartas;
 import br.edu.uepb.map.cardgame.api.MaoDeCartasPadrao;
 import br.edu.uepb.map.cardgame.api.apoio.CartaFalsa;
 import br.edu.uepb.map.cardgame.api.excecao.BaralhoVazioException;
@@ -39,7 +42,7 @@ class DistribuicaoAlternadaTest {
                 comNumero(4), comNumero(5), comNumero(6)));
         var maoAna = new MaoDeCartasPadrao<CartaFalsa>();
         var maoBruno = new MaoDeCartasPadrao<CartaFalsa>();
-        var contexto = new ContextoDeDistribuicaoPadrao<>(
+        var contexto = new ContextoDeDistribuicaoFalso<>(
                 baralho, List.of(ana, bruno), List.of(maoAna, maoBruno));
 
         new DistribuicaoAlternada<CartaFalsa>(3).distribuir(contexto);
@@ -55,7 +58,7 @@ class DistribuicaoAlternadaTest {
         var baralho = new BaralhoPadrao<>(List.of(comNumero(1), comNumero(2), comNumero(3)));
         var maoAna = new MaoDeCartasPadrao<CartaFalsa>();
         var maoBruno = new MaoDeCartasPadrao<CartaFalsa>();
-        var contexto = new ContextoDeDistribuicaoPadrao<>(
+        var contexto = new ContextoDeDistribuicaoFalso<>(
                 baralho, List.of(ana, bruno), List.of(maoAna, maoBruno));
 
         assertThrows(BaralhoVazioException.class,
@@ -66,47 +69,41 @@ class DistribuicaoAlternadaTest {
         assertEquals(0, maoBruno.quantidade());
     }
 
-    @Nested
-    @DisplayName("Validação do contexto")
-    class ValidacaoDoContexto {
+    private static final class ContextoDeDistribuicaoFalso<C extends Carta>
+            implements ContextoDeDistribuicao<C> {
 
-        @Test
-        @DisplayName("um jogador externo não pode receber carta")
-        void rejeitaJogadorExterno() {
-            var contexto = contextoMinimo();
-            Jogador externo = new JogadorFalso("Externo");
+        private final Baralho<C> baralho;
+        private final List<Jogador> jogadores;
+        private final List<MaoDeCartas<C>> maos;
 
-            assertThrows(IllegalArgumentException.class,
-                    () -> contexto.entregarProximaCarta(externo));
+        private ContextoDeDistribuicaoFalso(
+                Baralho<C> baralho,
+                List<Jogador> jogadores,
+                List<MaoDeCartas<C>> maos) {
+            this.baralho = baralho;
+            this.jogadores = List.copyOf(jogadores);
+            this.maos = List.copyOf(maos);
         }
 
-        @Test
-        @DisplayName("a lista de jogadores é um snapshot imutável")
-        void jogadoresSaoImutaveis() {
-            var contexto = contextoMinimo();
-
-            assertThrows(UnsupportedOperationException.class,
-                    () -> contexto.jogadores().add(new JogadorFalso("Externo")));
+        @Override
+        public List<Jogador> jogadores() {
+            return jogadores;
         }
 
-        @Test
-        @DisplayName("uma carta não pode começar em duas zonas")
-        void rejeitaCartaEmDuasZonas() {
-            CartaFalsa carta = comNumero(1);
-            var baralho = new BaralhoPadrao<>(List.of(carta));
-            var maoAna = new MaoDeCartasPadrao<>(List.of(carta));
-            var maoBruno = new MaoDeCartasPadrao<CartaFalsa>();
-
-            assertThrows(IllegalArgumentException.class,
-                    () -> new ContextoDeDistribuicaoPadrao<>(
-                            baralho, List.of(ana, bruno), List.of(maoAna, maoBruno)));
+        @Override
+        public int cartasDisponiveis() {
+            return baralho.quantidade();
         }
 
-        private ContextoDeDistribuicaoPadrao<CartaFalsa> contextoMinimo() {
-            return new ContextoDeDistribuicaoPadrao<>(
-                    new BaralhoPadrao<>(List.of(comNumero(1))),
-                    List.of(ana, bruno),
-                    List.of(new MaoDeCartasPadrao<>(), new MaoDeCartasPadrao<>()));
+        @Override
+        public void entregarProximaCarta(Jogador jogador) {
+            for (int indice = 0; indice < jogadores.size(); indice++) {
+                if (jogadores.get(indice).id().equals(jogador.id())) {
+                    maos.get(indice).adicionar(baralho.comprar());
+                    return;
+                }
+            }
+            throw new IllegalArgumentException("O jogador não pertence ao contexto de teste.");
         }
     }
 }

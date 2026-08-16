@@ -69,7 +69,7 @@ Tipos principais:
 - `MaoDeCartas<C>` e `MaoDeCartasPadrao<C>`;
 - `ContextoDeDistribuicao<C>`;
 - `EstrategiaDeDistribuicao<C>` e `DistribuicaoAlternada<C>`;
-- implementação auxiliar do contexto de distribuição mantida pela trilha.
+- o contexto concreto de distribuição pertence ao runtime interno do engine.
 
 Responsabilidades:
 
