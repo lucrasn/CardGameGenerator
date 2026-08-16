@@ -1,7 +1,6 @@
 package br.edu.uepb.map.cardgame.engine;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,9 +10,11 @@ import java.util.UUID;
 import br.edu.uepb.map.cardgame.api.Baralho;
 import br.edu.uepb.map.cardgame.api.Carta;
 import br.edu.uepb.map.cardgame.api.ContextoDePartida;
+import br.edu.uepb.map.cardgame.api.ContextoDeValidacao;
 import br.edu.uepb.map.cardgame.api.DesfechoDePartida;
 import br.edu.uepb.map.cardgame.api.EstadoPartida;
 import br.edu.uepb.map.cardgame.api.Jogador;
+import br.edu.uepb.map.cardgame.api.Jogada;
 import br.edu.uepb.map.cardgame.api.PartidaConfig;
 import br.edu.uepb.map.cardgame.api.ResultadoDePartida;
 import br.edu.uepb.map.cardgame.api.ResultadoDoTurno;
@@ -25,13 +26,9 @@ import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
  * Engine público e abstrato que controla o ciclo de vida de uma partida.
  *
  * <p>{@link #executar()} é o Template Method final: preparar, distribuir, executar
- * turnos, avaliar o desfecho, pontuar e encerrar. O jogo concreto fornece somente
- * os passos variáveis por hooks protegidos e nunca manipula o gerenciador de turnos.
- *
- * <p>Enquanto as Strategies de regra da Trilha D ainda são contratos vazios, os
- * hooks {@link #avaliarDesfecho(VisaoDaPartida)} e
- * {@link #calcularPontuacao(VisaoDaPartida, DesfechoDePartida)} mantêm o motor
- * executável sem assumir assinaturas que pertencem a outra trilha.
+ * turnos, avaliar o desfecho, pontuar e encerrar. O jogo concreto fornece os passos
+ * variáveis do turno por hooks protegidos; validação, vitória e pontuação são
+ * delegadas às Strategies presentes na configuração.
  *
  * <p>Uma instância representa uma única execução e não é segura para acesso
  * concorrente. Se um hook propagar uma falha inesperada, o motor conserva o estado
@@ -52,7 +49,7 @@ public abstract class MotorDePartida<C extends Carta> {
     /**
      * Cria um motor configurado, ainda não executado.
      *
-     * @param configuracao participantes, baralho e distribuição
+     * @param configuracao participantes, baralho, distribuição e regras
      * @throws NullPointerException se a configuração for nula
      */
     protected MotorDePartida(PartidaConfig<C> configuracao) {
@@ -66,7 +63,7 @@ public abstract class MotorDePartida<C extends Carta> {
      * @return resultado imutável
      * @throws EstadoDePartidaInvalidoException se chamado mais de uma vez
      * @throws IllegalStateException se um participante não produzir um turno válido
-     *         após o limite interno de tentativas ou se os hooks violarem as
+     *         após o limite interno de tentativas ou se as Strategies violarem as
      *         invariantes de vencedor e placar
      */
     public final ResultadoDePartida executar() {
@@ -144,9 +141,10 @@ public abstract class MotorDePartida<C extends Carta> {
      * Executa um turno completo sem avançar ou finalizar diretamente.
      *
      * <p>Quando uma ação for inválida, a implementação deve lançar
-     * {@link JogadaInvalidaException} antes de realizar mutações irreversíveis. O
-     * engine repete o hook com o mesmo jogador e número de turno, mas não executa
-     * rollback do estado do cliente.
+     * {@link JogadaInvalidaException} antes de realizar mutações irreversíveis. Para
+     * isso, deve chamar {@link #validarJogada(VisaoDaPartida, Jogada)} para cada ação
+     * recebida. O engine repete o hook com o mesmo jogador e número de turno, mas não
+     * executa rollback do estado do cliente.
      *
      * @param contexto operações genéricas controladas
      * @return diretiva de controle não nula a ser aplicada pelo engine
@@ -155,33 +153,19 @@ public abstract class MotorDePartida<C extends Carta> {
     protected abstract ResultadoDoTurno executarTurno(ContextoDePartida<C> contexto);
 
     /**
-     * Avalia se o estado corrente encerra a partida.
+     * Valida uma ação pela Strategy configurada para o jogo.
      *
-     * @param contexto visão somente leitura
-     * @return {@link Optional} não nulo contendo o desfecho quando a partida terminou;
-     *         vazio caso contrário
+     * <p>O jogo concreto deve chamar este método antes de alterar o estado em razão
+     * da jogada. Se a regra rejeitar a ação, o motor repetirá o turno.
+     *
+     * @param contexto visão somente leitura do estado atual
+     * @param jogada ação que se pretende aplicar
+     * @throws NullPointerException se o contexto ou a jogada forem nulos
+     * @throws JogadaInvalidaException se a Strategy rejeitar a ação
      */
-    protected abstract Optional<DesfechoDePartida> avaliarDesfecho(
-            VisaoDaPartida<C> contexto);
-
-    /**
-     * Calcula o placar que será incorporado ao resultado final.
-     *
-     * <p>A chamada ocorre enquanto o contexto ainda está em
-     * {@link EstadoPartida#EM_ANDAMENTO}; a transição para
-     * {@link EstadoPartida#FINALIZADA} acontece somente depois que o placar é validado
-     * e o resultado é criado. A implementação padrão atribui zero a todos.
-     *
-     * @param contexto visão somente leitura imediatamente antes da finalização
-     * @param desfecho desfecho já validado
-     * @return mapa não nulo contendo exatamente todos os participantes, sem chaves ou
-     *         pontuações nulas
-     */
-    protected Map<Jogador, Integer> calcularPontuacao(
-            VisaoDaPartida<C> contexto, DesfechoDePartida desfecho) {
-        Map<Jogador, Integer> placar = new LinkedHashMap<>();
-        contexto.jogadores().forEach(jogador -> placar.put(jogador, 0));
-        return placar;
+    protected final void validarJogada(VisaoDaPartida<C> contexto, Jogada jogada) {
+        configuracao.regraDeValidacao().validar(
+                new ContextoDeValidacao<>(contexto, jogada));
     }
 
     /**
@@ -216,7 +200,8 @@ public abstract class MotorDePartida<C extends Carta> {
 
     private Optional<DesfechoDePartida> avaliar(PartidaEmExecucao<C> partida) {
         Optional<DesfechoDePartida> avaliacao = Objects.requireNonNull(
-                avaliarDesfecho(partida), "A avaliação de desfecho não pode devolver null.");
+                configuracao.regraDeVitoria().avaliar(partida),
+                "A avaliação de desfecho não pode devolver null.");
         avaliacao.ifPresent(desfecho -> validarVencedores(partida, desfecho));
         return avaliacao;
     }
@@ -236,7 +221,7 @@ public abstract class MotorDePartida<C extends Carta> {
     private ResultadoDePartida finalizar(
             PartidaEmExecucao<C> partida, DesfechoDePartida desfecho) {
         Map<Jogador, Integer> placar = Objects.requireNonNull(
-                calcularPontuacao(partida, desfecho),
+                configuracao.regraDePontuacao().calcular(partida, desfecho),
                 "O cálculo de pontuação não pode devolver null.");
         validarPlacar(partida, placar);
         ResultadoDePartida resultado = new ResultadoDePartida(
