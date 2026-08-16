@@ -1,4 +1,4 @@
-package br.edu.uepb.map.cardgame.core;
+package br.edu.uepb.map.cardgame.api;
 
 import static br.edu.uepb.map.cardgame.api.apoio.CartaFalsa.comNumero;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,17 +10,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import br.edu.uepb.map.cardgame.api.Baralho;
-import br.edu.uepb.map.cardgame.api.BaralhoPadrao;
-import br.edu.uepb.map.cardgame.api.Carta;
-import br.edu.uepb.map.cardgame.api.ContextoDeDistribuicao;
-import br.edu.uepb.map.cardgame.api.DistribuicaoAlternada;
-import br.edu.uepb.map.cardgame.api.Jogador;
-import br.edu.uepb.map.cardgame.api.MaoDeCartas;
-import br.edu.uepb.map.cardgame.api.MaoDeCartasPadrao;
 import br.edu.uepb.map.cardgame.api.apoio.CartaFalsa;
+import br.edu.uepb.map.cardgame.api.apoio.JogadorFalso;
 import br.edu.uepb.map.cardgame.api.excecao.BaralhoVazioException;
-import br.edu.uepb.map.cardgame.core.apoio.JogadorFalso;
 
 @DisplayName("DistribuicaoAlternada — estratégia sobre contexto controlado")
 class DistribuicaoAlternadaTest {

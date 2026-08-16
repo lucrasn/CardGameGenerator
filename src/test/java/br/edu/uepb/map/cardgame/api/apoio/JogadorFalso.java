@@ -1,4 +1,4 @@
-package br.edu.uepb.map.cardgame.core.apoio;
+package br.edu.uepb.map.cardgame.api.apoio;
 
 import br.edu.uepb.map.cardgame.api.Jogador;
 import br.edu.uepb.map.cardgame.api.EstrategiaDeDecisao;
@@ -6,9 +6,9 @@ import br.edu.uepb.map.cardgame.api.EstrategiaDeDecisao;
 import java.util.UUID;
 
 /**
- * Dublê de teste para {@link Jogador}, usado pelos testes do {@code core}.
+ * Dublê de teste para {@link Jogador}, usado pelos testes de {@code api}.
  *
- * <p>Existe para que a Trilha A consiga testar o motor e o gerenciador de turnos sem
+ * <p>Existe para que os testes de distribuição e de regras exercitem os contratos sem
  * depender da implementação real de jogador, que pertence a outra trilha. Fica em
  * {@code src/test}, portanto não entra no artefato de produção.
  *
