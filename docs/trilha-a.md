@@ -335,15 +335,17 @@ Os testes diretamente ligados à Trilha A cobrem:
 - integração das três Strategies de regras;
 - repetição da mesma vez depois de `JogadaInvalidaException`;
 - encerramento antes do primeiro turno;
-- rejeição de vencedor externo e placar incompleto.
+- rejeição de vencedor externo e placar incompleto;
+- direção das dependências e superfície pública do engine por análise de bytecode.
 
 Não é necessário duplicar nesses testes as regras completas de Trinca e Blackjack.
 Formação de combinações, reciclagem do descarte, valor do Ás, política da casa e
 condições concretas de vitória pertencem aos testes de aceitação da Trilha E.
 
-Após esta revisão, `./mvnw clean test` executa **133 testes**, sem falhas, erros ou
-testes ignorados. Desse total, **68 testes** exercitam diretamente os tipos públicos e
-internos atribuídos à Trilha A.
+Após esta revisão, `./mvnw clean test` executa **136 testes**, sem falhas, erros ou
+testes ignorados. Desse total, **70 testes** exercitam diretamente os tipos públicos e
+internos atribuídos à Trilha A, e outros **3 testes arquiteturais** protegem as
+fronteiras que envolvem o engine.
 
 O Javadoc dos tipos públicos e hooks protegidos da Trilha A registra finalidade,
 estado esperado, parâmetros, retornos, exceções, imutabilidade, execução única e
@@ -356,12 +358,11 @@ A parte de Lucas no framework está concluída. Permanecem fora desta entrega:
 
 - implementação de `MotorDeTrinca`, `MotorDeBlackjack` e seus tipos — Trilha E;
 - testes de aceitação completos dos dois clientes — Trilha E;
-- publicação e ordem de notificação de `PartidaListener` pelo motor — integração com
-  a Trilha D;
-- sincronização dos documentos arquiteturais e diagramas que ainda mostram os hooks
-  antigos de vitória e pontuação — responsabilidade consolidada da equipe;
-- comprovação final de que nenhum cliente precisa importar detalhes de `engine` ou
-  `core`.
+- validação final da suficiência da API pelos dois clientes concretos.
+
+A direção das dependências já não depende de inspeção manual:
+`FronteirasArquiteturaisTest` falha o build se `api` conhecer o engine ou jogos, se o
+engine conhecer clientes, ou se um colaborador interno se tornar público.
 
 O limite operacional também deve ser declarado: o runtime é síncrono, uma instância
 serve para uma única partida e mutações feitas por um hook antes de uma falha não são

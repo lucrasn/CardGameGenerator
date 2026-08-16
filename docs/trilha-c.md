@@ -291,9 +291,9 @@ Não é necessário duplicar nos testes unitários da Trilha C as regras complet
 jogos. Distribuição, formação de combinações, reciclagem do descarte, Ás, estouro e
 desfecho são testes de aceitação dos clientes da Trilha E.
 
-Após esta revisão, a suíte integrada executa **111 testes**, sem falhas ou erros. O
+Após esta revisão, a suíte integrada executa **136 testes**, sem falhas ou erros. O
 Javadoc dos tipos públicos da Trilha C inclui finalidade, contratos, parâmetros,
-retornos, exceções relevantes, autoria, versão e data. A geração estrita também não
+retornos, exceções relevantes, autoria e versão. A geração estrita também não
 produz avisos.
 
 ## 11. Limite da entrega
@@ -302,8 +302,7 @@ A parte de Allan no framework está concluída. Permanecem fora desta entrega:
 
 - implementação de `MotorDeTrinca`, `MotorDeBlackjack` e seus tipos — Trilha E;
 - testes de aceitação completos dos dois clientes — Trilha E;
-- UML e relatório consolidados — Trilha E;
-- regras, eventos, Observer e exceções de domínio — Trilha D.
+- UML e relatório consolidados — Trilha E.
 
 Para resumir na apresentação: **o jogador preserva identidade; a Strategy varia a
 decisão; o contexto limita o que pode ser visto; a jogada mantém o domínio tipado; o

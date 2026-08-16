@@ -177,4 +177,6 @@ Antes de mesclar uma trilha:
 - [ ] Javadoc e UML representam o código atual;
 - [ ] pendências são marcadas como pendências, não como padrões implementados.
 
-Baseline verificada nesta integração: **133 testes, zero falhas e zero erros**.
+Baseline verificada nesta integração: **136 testes, zero falhas e zero erros**. Três
+deles analisam as fronteiras de packages no bytecode e falham o build em caso de
+dependência proibida ou exposição indevida do `engine`.

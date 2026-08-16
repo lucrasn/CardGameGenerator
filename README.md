@@ -23,7 +23,7 @@ observadores e publica os seis eventos de `cardgame.api.evento`.
 
 Falta a camada de aplicação: Trinca e Blackjack ainda não existem na `main`.
 
-A suíte atual executa 133 testes com sucesso.
+A suíte atual executa 136 testes com sucesso.
 
 ### Padrões GoF em runtime
 
@@ -53,6 +53,10 @@ distribuição são detalhes do runtime.
 São dois pacotes de produção, e a fronteira entre eles é garantida pelo compilador:
 uma única classe pública em `engine` significa que nenhum jogo cliente consegue
 alcançar o gerenciador de turnos ou forçar uma transição de estado.
+
+`FronteirasArquiteturaisTest` usa ArchUnit para analisar o bytecode de produção. O
+build falha se `api` depender de `engine` ou de clientes, se `engine` depender de um
+jogo concreto, ou se outro tipo público aparecer em `engine`.
 
 ## Executar
 

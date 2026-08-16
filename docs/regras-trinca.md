@@ -96,10 +96,10 @@ do turno.
 ## 8. Eventos esperados pela aplicação de console
 
 O cliente de console deverá observar a partida; ele não deve ser chamado diretamente
-pelo motor. Na baseline atual, `PartidaListener` está vazio, não existe
-`EventoDePartida` e `ContextoDePartida` ainda não publica eventos. Início/fim de
-partida, início/fim de turno e rejeição de jogada são eventos planejados da Trilha D.
-Eventos futuros não deverão vazar cartas da mão de um jogador ao adversário.
+pelo motor. Na baseline atual, o cliente pode cadastrar um `PartidaListener` e receber
+os seis eventos publicados por `MotorDePartida`: início de partida, cartas
+distribuídas, início e fim de turno, jogada rejeitada e partida finalizada. Os records
+de evento não expõem cartas privadas da mão de um jogador ao adversário.
 
 ## 9. Implicações para a API pública
 

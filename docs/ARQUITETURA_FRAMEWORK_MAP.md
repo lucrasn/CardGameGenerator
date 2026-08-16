@@ -4,7 +4,7 @@
 
 **Baseline:** `main`, após integração das Trilhas A, B, C e D em 16/08/2026.
 
-**Validação:** 133 testes, zero falhas e zero erros.
+**Validação:** 136 testes, zero falhas e zero erros.
 
 ## 1. Objetivo e limite da promessa
 
@@ -278,11 +278,12 @@ Evidências de SOLID/GRASP:
 1. implementar Trinca usando apenas `api` e `engine.MotorDePartida`;
 2. implementar Blackjack com diferenças suficientes para provar extensibilidade;
 3. zerar os sete avisos residuais de Javadoc nos contratos de cartas e distribuição;
-4. executar testes arquiteturais automatizados de dependência entre pacotes;
-5. decidir sobre Decorator segundo o critério objetivo já acordado.
+4. decidir sobre Decorator segundo o critério objetivo já acordado.
 
-O código de teste espelha os pacotes de produção: não existe mais pacote de teste sem
-equivalente em `src/main`.
+As fronteiras não dependem mais de inspeção por `grep`.
+`FronteirasArquiteturaisTest` analisa o bytecode com ArchUnit e falha o build se a
+API conhecer o engine ou clientes, se o engine conhecer jogos concretos, ou se outro
+tipo público surgir no pacote do runtime.
 
 ## 11. Critério de “caminho certo”
 

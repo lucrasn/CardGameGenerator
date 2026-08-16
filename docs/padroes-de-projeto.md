@@ -239,7 +239,9 @@ O engine depende de `Baralho`, `BaralhoFactory`, `EstrategiaDeDistribuicao`,
 
 ## 12. Evidência automatizada
 
-A baseline executa **133 testes**. Há testes para ciclo, turnos, Template Method,
+A baseline executa **136 testes**. Há testes para ciclo, turnos, Template Method,
 invariantes, encapsulamento, Factory, distribuição, decisão, as três Strategies de
-regra e a publicação de eventos. Faltam apenas os testes de aceitação dos dois clientes
-concretos, que ainda não existem na `main`.
+regra, publicação de eventos e fronteiras arquiteturais. Os três testes com ArchUnit
+fazem o build falhar se a direção de dependências ou a visibilidade do engine for
+violada. Faltam apenas os testes de aceitação dos dois clientes concretos, que ainda
+não existem na `main`.

@@ -249,5 +249,10 @@ descadastra durante o callback não provoca `ConcurrentModificationException`.
 - Trinca e Blackjack reutilizam o mesmo algoritmo de ciclo de vida;
 - novos jogos não exigem condicionais por tipo dentro do framework.
 
-Estado medido nesta versão: **133 testes aprovados**. Os testes dos clientes concretos
+As regras sobre dependências de `api`, dependências de `engine` e visibilidade dos
+internos são verificadas sobre o bytecode por `FronteirasArquiteturaisTest`. Uma
+violação faz `./mvnw test` e o build falharem, mesmo que a dependência não apareça
+como um `import` explícito.
+
+Estado medido nesta versão: **136 testes aprovados**. Os testes dos clientes concretos
 ainda são entrega futura.
