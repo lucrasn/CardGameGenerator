@@ -16,7 +16,6 @@ import br.edu.uepb.map.cardgame.api.Jogador;
  * @param motivo explicação não vazia da regra violada
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record JogadaRejeitada(long numeroDoTurno, Jogador jogador, String motivo)
         implements EventoDePartida {

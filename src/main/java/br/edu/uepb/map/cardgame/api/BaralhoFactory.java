@@ -9,7 +9,6 @@ package br.edu.uepb.map.cardgame.api;
  *
  * @param <C> tipo de carta produzido pela fábrica
  * @author Júlio
- * @since 1.0
  */
 @FunctionalInterface
 public interface BaralhoFactory<C extends Carta> {

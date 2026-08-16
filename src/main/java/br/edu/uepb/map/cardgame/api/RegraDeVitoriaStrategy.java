@@ -11,7 +11,6 @@ import java.util.Optional;
  * @param <C> tipo de carta usado pela partida
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 @FunctionalInterface
 public interface RegraDeVitoriaStrategy<C extends Carta> {

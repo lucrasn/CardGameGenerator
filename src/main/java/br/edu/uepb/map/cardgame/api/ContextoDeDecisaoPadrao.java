@@ -16,7 +16,6 @@ import java.util.Objects;
  * @param jogadasPermitidas snapshot das ações disponíveis
  * @author Allan Guilherme da S. Vieira
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record ContextoDeDecisaoPadrao(
         EtapaDeTurno etapa,

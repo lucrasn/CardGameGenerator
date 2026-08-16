@@ -7,7 +7,6 @@ package br.edu.uepb.map.cardgame.api.excecao;
  * se deve reconstruir o baralho, encerrar a partida ou adotar outra regra.
  *
  * @author Lívia
- * @since 1.0
  */
 public final class BaralhoVazioException extends PartidaException {
 

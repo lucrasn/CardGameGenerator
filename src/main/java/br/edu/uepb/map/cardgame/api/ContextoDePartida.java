@@ -18,7 +18,6 @@ import br.edu.uepb.map.cardgame.api.excecao.EstadoDePartidaInvalidoException;
  *
  * @author Lucas N. de Araújo
  * @version 0.0.1
- * @since 2026-06-15
  */
 public interface ContextoDePartida<C extends Carta> extends VisaoDaPartida<C> {
 

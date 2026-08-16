@@ -12,7 +12,6 @@ import br.edu.uepb.map.cardgame.api.Jogador;
  * @param jogadores participantes na ordem configurada para os turnos
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record PartidaIniciada(List<Jogador> jogadores) implements EventoDePartida {
 

@@ -9,7 +9,6 @@ import java.util.UUID;
  *
  * @param <C> tipo de carta da mão
  * @author Júlio
- * @since 1.0
  */
 public interface MaoDeCartas<C extends Carta> {
 

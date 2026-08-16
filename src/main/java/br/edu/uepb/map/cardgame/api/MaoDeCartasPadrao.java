@@ -17,7 +17,6 @@ import java.util.UUID;
  *
  * @param <C> tipo de carta da mão
  * @author Júlio
- * @since 1.0
  */
 public final class MaoDeCartasPadrao<C extends Carta> implements MaoDeCartas<C> {
 

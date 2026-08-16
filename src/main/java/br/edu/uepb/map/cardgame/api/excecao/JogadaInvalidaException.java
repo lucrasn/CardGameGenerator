@@ -7,7 +7,6 @@ package br.edu.uepb.map.cardgame.api.excecao;
  * que a aplicação cliente informe o problema e solicite outra jogada.
  *
  * @author Lívia
- * @since 1.0
  */
 public final class JogadaInvalidaException extends PartidaException {
 

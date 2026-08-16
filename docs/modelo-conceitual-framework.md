@@ -114,9 +114,10 @@ O encerramento tem duas fases conceituais:
 Separar esses valores evita que detecção de vitória e cálculo de pontuação sejam
 confundidos. `MotivoDeEncerramento` é aberto para vocabulários de jogos novos.
 
-Na baseline atual, detecção e pontuação são hooks do motor. A intenção arquitetural é
-que a Trilha D defina Strategies independentes, mas esses contratos ainda estão
-vazios e não integram o agregado.
+Na baseline atual, detecção e pontuação são Strategies independentes e obrigatórias
+em `PartidaConfig`. O motor consulta a regra de vitória após a distribuição e ao fim
+de cada turno; quando há desfecho, consulta a regra de pontuação antes de produzir o
+resultado imutável.
 
 ## 9. Decisão do jogador
 
@@ -149,9 +150,6 @@ Hot-spots disponíveis:
 - estratégia de decisão;
 - subclasse de motor;
 - motivo de encerramento.
-
-Hot-spots pendentes:
-
 - regras de validação, vitória e pontuação;
 - eventos e observadores.
 

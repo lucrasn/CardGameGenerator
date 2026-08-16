@@ -11,7 +11,6 @@ import java.util.List;
  *
  * @param <C> tipo de carta distribuído
  * @author Júlio
- * @since 1.0
  */
 public interface ContextoDeDistribuicao<C extends Carta> {
 

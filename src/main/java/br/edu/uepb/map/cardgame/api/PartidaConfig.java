@@ -17,7 +17,6 @@ import java.util.UUID;
  *
  * @author Lucas N. de Araújo
  * @version 0.0.1
- * @since 2026-06-15
  */
 public final class PartidaConfig<C extends Carta> {
 

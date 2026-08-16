@@ -11,7 +11,6 @@ import br.edu.uepb.map.cardgame.api.EventoDePartida;
  * @param cartasRestantesNoBaralho quantidade de cartas disponíveis após a distribuição
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record CartasDistribuidas(int cartasRestantesNoBaralho)
         implements EventoDePartida {

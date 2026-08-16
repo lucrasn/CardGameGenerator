@@ -14,7 +14,6 @@ import br.edu.uepb.map.cardgame.api.ResultadoDoTurno;
  * @param resultado diretiva produzida pelo turno antes de ser aplicada pelo motor
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record TurnoEncerrado(
         long numeroDoTurno, Jogador jogador, ResultadoDoTurno resultado)

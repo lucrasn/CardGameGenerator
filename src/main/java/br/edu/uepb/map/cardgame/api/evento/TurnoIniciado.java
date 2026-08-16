@@ -12,7 +12,6 @@ import br.edu.uepb.map.cardgame.api.Jogador;
  * @param jogador participante que possui a vez
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record TurnoIniciado(long numeroDoTurno, Jogador jogador)
         implements EventoDePartida {

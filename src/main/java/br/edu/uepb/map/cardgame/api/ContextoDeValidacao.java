@@ -14,7 +14,6 @@ import java.util.Objects;
  * @param jogada ação que será validada
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record ContextoDeValidacao<C extends Carta>(
         VisaoDaPartida<C> partida, Jogada jogada) {
