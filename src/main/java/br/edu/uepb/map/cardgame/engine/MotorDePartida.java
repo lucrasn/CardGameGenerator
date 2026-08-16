@@ -38,7 +38,8 @@ import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
  * <p>{@link #executar()} é o Template Method final: preparar, distribuir, executar
  * turnos, avaliar o desfecho, pontuar e encerrar. O jogo concreto fornece os passos
  * variáveis do turno por hooks protegidos; validação, vitória e pontuação são
- * delegadas às Strategies presentes na configuração.
+ * delegadas às Strategies presentes na configuração. Eventos específicos do jogo
+ * podem ser integrados ao Observer por {@link #publicarEvento(EventoDePartida)}.
  *
  * <p>Uma instância representa uma única execução e não é segura para acesso
  * concorrente. Se um hook propagar uma falha inesperada, o motor conserva o estado
@@ -89,13 +90,13 @@ public abstract class MotorDePartida<C extends Carta> {
                 configuracao.jogadores(), configuracao.primeiroJogador());
         PartidaEmExecucao<C> partida = new PartidaEmExecucao<>(
                 configuracao.jogadores(), baralho, turnos, ciclo);
-        publicar(new PartidaIniciada(partida.jogadores()));
+        publicarEvento(new PartidaIniciada(partida.jogadores()));
 
         baralho.embaralhar();
         preparar(partida);
         configuracao.distribuicao().distribuir(new ContextoDeDistribuicaoInterno<>(partida));
         aposDistribuir(partida);
-        publicar(new CartasDistribuidas(partida.quantidadeNoBaralho()));
+        publicarEvento(new CartasDistribuidas(partida.quantidadeNoBaralho()));
 
         ciclo.transicionarPara(EstadoPartida.EM_ANDAMENTO);
         Optional<DesfechoDePartida> desfechoInicial = avaliar(partida);
@@ -106,9 +107,9 @@ public abstract class MotorDePartida<C extends Carta> {
         long numeroDoTurno = 1;
         while (true) {
             partida.definirNumeroDoTurno(numeroDoTurno);
-            publicar(new TurnoIniciado(numeroDoTurno, partida.jogadorAtual()));
+            publicarEvento(new TurnoIniciado(numeroDoTurno, partida.jogadorAtual()));
             ResultadoDoTurno resultadoDoTurno = executarAteJogadaValida(partida);
-            publicar(new TurnoEncerrado(
+            publicarEvento(new TurnoEncerrado(
                     numeroDoTurno, partida.jogadorAtual(), resultadoDoTurno));
 
             Optional<DesfechoDePartida> desfecho = avaliar(partida);
@@ -224,6 +225,33 @@ public abstract class MotorDePartida<C extends Carta> {
     }
 
     /**
+     * Publica um evento padrão ou específico do jogo para os observadores cadastrados.
+     *
+     * <p>Subclasses podem chamar este ponto de extensão durante seus hooks para integrar
+     * eventos próprios ao mesmo fluxo de notificação do motor. Os listeners recebem o
+     * evento na ordem de cadastro; a iteração usa um snapshot, e a falha de um listener
+     * não interrompe a partida nem impede a notificação dos demais. O método é
+     * {@code final} para conservar essa política no framework.
+     *
+     * <p>O evento deve ser imutável e não deve revelar informações privadas de um
+     * participante a observadores sem autorização.
+     *
+     * @param evento fato não nulo ocorrido durante a partida
+     * @throws NullPointerException se o evento for nulo
+     */
+    protected final void publicarEvento(EventoDePartida evento) {
+        EventoDePartida eventoValido = Objects.requireNonNull(
+                evento, "O evento não pode ser nulo.");
+        for (PartidaListener listener : List.copyOf(listeners)) {
+            try {
+                listener.aoOcorrer(eventoValido);
+            } catch (RuntimeException excecaoDoListener) {
+                // Um observador defeituoso não pode interromper o motor nem os demais.
+            }
+        }
+    }
+
+    /**
      * Reage ao encerramento depois que o resultado e o estado final existem.
      *
      * <p>O contexto está em {@link EstadoPartida#FINALIZADA} e rejeita mutações.
@@ -243,7 +271,7 @@ public abstract class MotorDePartida<C extends Carta> {
                         executarTurno(partida), "O turno não pode devolver uma diretiva nula.");
             } catch (JogadaInvalidaException excecao) {
                 ultimaRecusa = excecao;
-                publicar(new JogadaRejeitada(
+                publicarEvento(new JogadaRejeitada(
                         partida.numeroDoTurno(), partida.jogadorAtual(),
                         motivoDaRejeicao(excecao)));
             }
@@ -285,7 +313,7 @@ public abstract class MotorDePartida<C extends Carta> {
         ResultadoDePartida resultado = new ResultadoDePartida(
                 desfecho.vencedores(), placar, desfecho.motivo());
         ciclo.transicionarPara(EstadoPartida.FINALIZADA);
-        publicar(new PartidaFinalizada(resultado));
+        publicarEvento(new PartidaFinalizada(resultado));
         aoEncerrar(partida, resultado);
         return resultado;
     }
@@ -321,16 +349,6 @@ public abstract class MotorDePartida<C extends Carta> {
         if (!resultado.repetirJogador()) {
             turnos.pularProximos(resultado.jogadoresAPular());
             turnos.avancar();
-        }
-    }
-
-    private void publicar(EventoDePartida evento) {
-        for (PartidaListener listener : List.copyOf(listeners)) {
-            try {
-                listener.aoOcorrer(evento);
-            } catch (RuntimeException excecaoDoListener) {
-                // Um observador defeituoso não pode interromper o motor nem os demais.
-            }
         }
     }
 

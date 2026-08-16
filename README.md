@@ -19,11 +19,12 @@ A `main` contém a parte reutilizável das Trilhas A, B, C e D integrada:
 As três Strategies de regra — `RegraDeValidacaoStrategy`, `RegraDeVitoriaStrategy` e
 `RegraDePontuacaoStrategy` — são obrigatórias em `PartidaConfig` e o motor as consulta
 durante a execução. O Observer está implementado: `MotorDePartida` cadastra
-observadores e publica os seis eventos de `cardgame.api.evento`.
+observadores, publica os seis eventos padrão de `cardgame.api.evento` e permite que
+subclasses publiquem eventos próprios pelo ponto protegido `publicarEvento`.
 
 Falta a camada de aplicação: Trinca e Blackjack ainda não existem na `main`.
 
-A suíte atual executa 136 testes com sucesso.
+A suíte atual executa 137 testes com sucesso.
 
 ### Padrões GoF em runtime
 
@@ -74,6 +75,8 @@ Para validar também a documentação da API:
 
 ## Documentação
 
+- [Manual do cliente](docs/manual-do-cliente.md): guia de uso da API e de criação de
+  jogos clientes;
 - `docs/ARQUITETURA_FRAMEWORK_MAP.md`: mapa canônico e status da baseline;
 - `docs/especificacao_arquitetural.md`: contratos e invariantes;
 - `docs/modelo-conceitual-framework.md`: vocabulário independente de jogos;

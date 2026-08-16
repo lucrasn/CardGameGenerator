@@ -8,7 +8,8 @@ não estão implementados na `main`.
 
 Este texto reúne a justificativa técnica da Trilha C e um roteiro para sua defesa na
 apresentação. As decisões seguem `divisao-responsabilidades.md`,
-`padroes-de-projeto.md`, `regras-trinca.md` e `regras-blackjack-basico.md`.
+`padroes-de-projeto.md` e `regras-blackjack-basico.md`. A especificação da Trinca
+permanece na branch do cliente.
 
 ## 1. Responsabilidade e resultado
 
@@ -291,7 +292,7 @@ Não é necessário duplicar nos testes unitários da Trilha C as regras complet
 jogos. Distribuição, formação de combinações, reciclagem do descarte, Ás, estouro e
 desfecho são testes de aceitação dos clientes da Trilha E.
 
-Após esta revisão, a suíte integrada executa **136 testes**, sem falhas ou erros. O
+Na baseline integrada atual, a suíte executa **137 testes**, sem falhas ou erros. O
 Javadoc dos tipos públicos da Trilha C inclui finalidade, contratos, parâmetros,
 retornos, exceções relevantes, autoria e versão. A geração estrita também não
 produz avisos.
