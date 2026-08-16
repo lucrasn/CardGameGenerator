@@ -1,6 +1,8 @@
 package br.edu.uepb.map.cardgame.engine;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,12 +15,20 @@ import br.edu.uepb.map.cardgame.api.ContextoDePartida;
 import br.edu.uepb.map.cardgame.api.ContextoDeValidacao;
 import br.edu.uepb.map.cardgame.api.DesfechoDePartida;
 import br.edu.uepb.map.cardgame.api.EstadoPartida;
+import br.edu.uepb.map.cardgame.api.EventoDePartida;
 import br.edu.uepb.map.cardgame.api.Jogador;
 import br.edu.uepb.map.cardgame.api.Jogada;
 import br.edu.uepb.map.cardgame.api.PartidaConfig;
+import br.edu.uepb.map.cardgame.api.PartidaListener;
 import br.edu.uepb.map.cardgame.api.ResultadoDePartida;
 import br.edu.uepb.map.cardgame.api.ResultadoDoTurno;
 import br.edu.uepb.map.cardgame.api.VisaoDaPartida;
+import br.edu.uepb.map.cardgame.api.evento.CartasDistribuidas;
+import br.edu.uepb.map.cardgame.api.evento.JogadaRejeitada;
+import br.edu.uepb.map.cardgame.api.evento.PartidaFinalizada;
+import br.edu.uepb.map.cardgame.api.evento.PartidaIniciada;
+import br.edu.uepb.map.cardgame.api.evento.TurnoEncerrado;
+import br.edu.uepb.map.cardgame.api.evento.TurnoIniciado;
 import br.edu.uepb.map.cardgame.api.excecao.EstadoDePartidaInvalidoException;
 import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
 
@@ -42,9 +52,12 @@ import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
 public abstract class MotorDePartida<C extends Carta> {
 
     private static final int MAXIMO_DE_TENTATIVAS_POR_TURNO = 100;
+    private static final String MOTIVO_PADRAO_DE_REJEICAO =
+            "A jogada informada é inválida.";
 
     private final PartidaConfig<C> configuracao;
     private final CicloDeVidaDaPartida ciclo = new CicloDeVidaDaPartida();
+    private final List<PartidaListener> listeners = new ArrayList<>();
 
     /**
      * Cria um motor configurado, ainda não executado.
@@ -77,11 +90,13 @@ public abstract class MotorDePartida<C extends Carta> {
                 configuracao.jogadores(), configuracao.primeiroJogador());
         PartidaEmExecucao<C> partida = new PartidaEmExecucao<>(
                 configuracao.jogadores(), baralho, turnos, ciclo);
+        publicar(new PartidaIniciada(partida.jogadores()));
 
         baralho.embaralhar();
         preparar(partida);
         configuracao.distribuicao().distribuir(new ContextoDeDistribuicaoInterno<>(partida));
         aposDistribuir(partida);
+        publicar(new CartasDistribuidas(partida.quantidadeNoBaralho()));
 
         ciclo.transicionarPara(EstadoPartida.EM_ANDAMENTO);
         Optional<DesfechoDePartida> desfechoInicial = avaliar(partida);
@@ -92,7 +107,10 @@ public abstract class MotorDePartida<C extends Carta> {
         long numeroDoTurno = 1;
         while (true) {
             partida.definirNumeroDoTurno(numeroDoTurno);
+            publicar(new TurnoIniciado(numeroDoTurno, partida.jogadorAtual()));
             ResultadoDoTurno resultadoDoTurno = executarAteJogadaValida(partida);
+            publicar(new TurnoEncerrado(
+                    numeroDoTurno, partida.jogadorAtual(), resultadoDoTurno));
 
             Optional<DesfechoDePartida> desfecho = avaliar(partida);
             if (desfecho.isPresent()) {
@@ -111,6 +129,44 @@ public abstract class MotorDePartida<C extends Carta> {
      */
     public final EstadoPartida estado() {
         return ciclo.estado();
+    }
+
+    /**
+     * Cadastra um observador para os próximos eventos desta partida.
+     *
+     * <p>A mesma instância é cadastrada uma única vez. Os listeners são chamados na
+     * ordem de cadastro.
+     *
+     * @param listener observador que receberá os eventos
+     * @throws NullPointerException se o listener for nulo
+     */
+    public final void adicionarListener(PartidaListener listener) {
+        Objects.requireNonNull(listener, "O listener não pode ser nulo.");
+        boolean jaCadastrado = listeners.stream()
+                .anyMatch(cadastrado -> cadastrado == listener);
+        if (!jaCadastrado) {
+            listeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove uma instância previamente cadastrada.
+     *
+     * <p>A remoção durante um callback afeta apenas os eventos seguintes.
+     *
+     * @param listener observador que deixará de receber eventos
+     * @return {@code true} se a instância estava cadastrada
+     * @throws NullPointerException se o listener for nulo
+     */
+    public final boolean removerListener(PartidaListener listener) {
+        Objects.requireNonNull(listener, "O listener não pode ser nulo.");
+        for (int indice = 0; indice < listeners.size(); indice++) {
+            if (listeners.get(indice) == listener) {
+                listeners.remove(indice);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -188,6 +244,9 @@ public abstract class MotorDePartida<C extends Carta> {
                         executarTurno(partida), "O turno não pode devolver uma diretiva nula.");
             } catch (JogadaInvalidaException excecao) {
                 ultimaRecusa = excecao;
+                publicar(new JogadaRejeitada(
+                        partida.numeroDoTurno(), partida.jogadorAtual(),
+                        motivoDaRejeicao(excecao)));
             }
         }
         throw new IllegalStateException(
@@ -227,6 +286,7 @@ public abstract class MotorDePartida<C extends Carta> {
         ResultadoDePartida resultado = new ResultadoDePartida(
                 desfecho.vencedores(), placar, desfecho.motivo());
         ciclo.transicionarPara(EstadoPartida.FINALIZADA);
+        publicar(new PartidaFinalizada(resultado));
         aoEncerrar(partida, resultado);
         return resultado;
     }
@@ -263,5 +323,23 @@ public abstract class MotorDePartida<C extends Carta> {
             turnos.pularProximos(resultado.jogadoresAPular());
             turnos.avancar();
         }
+    }
+
+    private void publicar(EventoDePartida evento) {
+        for (PartidaListener listener : List.copyOf(listeners)) {
+            try {
+                listener.aoOcorrer(evento);
+            } catch (RuntimeException excecaoDoListener) {
+                // Um observador defeituoso não pode interromper o motor nem os demais.
+            }
+        }
+    }
+
+    private static String motivoDaRejeicao(JogadaInvalidaException excecao) {
+        String mensagem = excecao.getMessage();
+        if (mensagem == null || mensagem.isBlank()) {
+            return MOTIVO_PADRAO_DE_REJEICAO;
+        }
+        return mensagem;
     }
 }

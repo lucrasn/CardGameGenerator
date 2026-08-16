@@ -7,7 +7,7 @@ import br.edu.uepb.map.cardgame.api.EventoDePartida;
 import br.edu.uepb.map.cardgame.api.Jogador;
 
 /**
- * Evento publicado quando a partida entra em andamento.
+ * Evento publicado quando a execução da partida é iniciada.
  *
  * @param jogadores participantes na ordem configurada para os turnos
  * @author Lívia
