@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
@@ -24,11 +26,21 @@ class PartidaConfigTest {
                 new JogadorDeTeste("Ana"), new JogadorDeTeste("Bruno")));
         BaralhoFactory<CartaFalsa> fabrica = () -> new BaralhoPadrao<>(List.of());
         EstrategiaDeDistribuicao<CartaFalsa> distribuicao = contexto -> { };
+        RegraDeValidacaoStrategy<CartaFalsa> validacao = contexto -> { };
+        RegraDeVitoriaStrategy<CartaFalsa> vitoria = contexto -> Optional.empty();
+        RegraDePontuacaoStrategy<CartaFalsa> pontuacao = (contexto, desfecho) -> {
+            var placar = new LinkedHashMap<Jogador, Integer>();
+            contexto.jogadores().forEach(jogador -> placar.put(jogador, 0));
+            return placar;
+        };
 
         PartidaConfig<CartaFalsa> config = PartidaConfig.<CartaFalsa>builder()
                 .jogadores(jogadores)
                 .baralhoFactory(fabrica)
                 .distribuicao(distribuicao)
+                .regraDeValidacao(validacao)
+                .regraDeVitoria(vitoria)
+                .regraDePontuacao(pontuacao)
                 .primeiroJogador(1)
                 .build();
         jogadores.add(new JogadorDeTeste("Carla"));
@@ -37,6 +49,9 @@ class PartidaConfigTest {
         assertEquals(1, config.primeiroJogador());
         assertSame(fabrica, config.baralhoFactory());
         assertSame(distribuicao, config.distribuicao());
+        assertSame(validacao, config.regraDeValidacao());
+        assertSame(vitoria, config.regraDeVitoria());
+        assertSame(pontuacao, config.regraDePontuacao());
         assertThrows(UnsupportedOperationException.class,
                 () -> config.jogadores().add(new JogadorDeTeste("Davi")));
     }
@@ -68,6 +83,13 @@ class PartidaConfigTest {
         return PartidaConfig.<CartaFalsa>builder()
                 .jogadores(jogadores)
                 .baralhoFactory(() -> new BaralhoPadrao<>(List.of()))
-                .distribuicao(contexto -> { });
+                .distribuicao(contexto -> { })
+                .regraDeValidacao(contexto -> { })
+                .regraDeVitoria(contexto -> Optional.empty())
+                .regraDePontuacao((contexto, desfecho) -> {
+                    var placar = new LinkedHashMap<Jogador, Integer>();
+                    contexto.jogadores().forEach(jogador -> placar.put(jogador, 0));
+                    return placar;
+                });
     }
 }

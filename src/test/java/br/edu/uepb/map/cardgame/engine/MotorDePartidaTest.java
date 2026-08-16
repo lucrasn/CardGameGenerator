@@ -21,8 +21,12 @@ import br.edu.uepb.map.cardgame.api.DesfechoDePartida;
 import br.edu.uepb.map.cardgame.api.DistribuicaoAlternada;
 import br.edu.uepb.map.cardgame.api.EstadoPartida;
 import br.edu.uepb.map.cardgame.api.Jogador;
+import br.edu.uepb.map.cardgame.api.Jogada;
 import br.edu.uepb.map.cardgame.api.MotivoPadrao;
 import br.edu.uepb.map.cardgame.api.PartidaConfig;
+import br.edu.uepb.map.cardgame.api.RegraDePontuacaoStrategy;
+import br.edu.uepb.map.cardgame.api.RegraDeValidacaoStrategy;
+import br.edu.uepb.map.cardgame.api.RegraDeVitoriaStrategy;
 import br.edu.uepb.map.cardgame.api.ResultadoDePartida;
 import br.edu.uepb.map.cardgame.api.ResultadoDoTurno;
 import br.edu.uepb.map.cardgame.api.VisaoDaPartida;
@@ -39,7 +43,7 @@ class MotorDePartidaTest {
     void executaTemplateMethod() throws NoSuchMethodException {
         List<Jogador> jogadores = jogadores("Ana", "Bruno");
         MotorControlado motor = new MotorControlado(
-                configuracao(jogadores, 1), 2, List.of(ResultadoDoTurno.avancar()), false);
+                configuracao(jogadores, 1, 2), List.of(ResultadoDoTurno.avancar()));
 
         ResultadoDePartida resultado = motor.executar();
 
@@ -64,10 +68,8 @@ class MotorDePartidaTest {
     void aplicaDiretivasDeTurno() {
         List<Jogador> jogadores = jogadores("Ana", "Bruno", "Carla");
         MotorControlado motor = new MotorControlado(
-                configuracao(jogadores, 0),
-                3,
-                List.of(ResultadoDoTurno.inverter(), ResultadoDoTurno.pular(1)),
-                false);
+                configuracao(jogadores, 0, 3),
+                List.of(ResultadoDoTurno.inverter(), ResultadoDoTurno.pular(1)));
 
         motor.executar();
 
@@ -78,12 +80,21 @@ class MotorDePartidaTest {
     @DisplayName("jogada inválida repete o mesmo turno e o mesmo participante")
     void repeteJogadaInvalida() {
         List<Jogador> jogadores = jogadores("Ana", "Bruno");
+        int[] validacoes = {0};
+        RegraDeValidacaoStrategy<CartaFalsa> validacao = contexto -> {
+            validacoes[0]++;
+            if (validacoes[0] == 1) {
+                throw new JogadaInvalidaException("tentativa controlada");
+            }
+        };
         MotorControlado motor = new MotorControlado(
-                configuracao(jogadores, 0), 1, List.of(ResultadoDoTurno.avancar()), true);
+                configuracao(jogadores, 0, 1, validacao),
+                List.of(ResultadoDoTurno.avancar()));
 
         motor.executar();
 
         assertEquals(2, motor.tentativas);
+        assertEquals(2, validacoes[0]);
         assertEquals(List.of("Ana"), motor.ordemDosTurnos);
     }
 
@@ -92,7 +103,7 @@ class MotorDePartidaTest {
     void encerraAntesDoPrimeiroTurno() {
         List<Jogador> jogadores = jogadores("Ana", "Bruno");
         MotorControlado motor = new MotorControlado(
-                configuracao(jogadores, 0), 0, List.of(), false);
+                configuracao(jogadores, 0, 0), List.of());
 
         ResultadoDePartida resultado = motor.executar();
 
@@ -101,56 +112,77 @@ class MotorDePartidaTest {
     }
 
     @Test
-    @DisplayName("rejeita vencedor externo e placar incompleto")
-    void validaSaidasDosHooks() {
+    @DisplayName("rejeita saídas inválidas das Strategies de vitória e pontuação")
+    void validaSaidasDasStrategies() {
         List<Jogador> jogadores = jogadores("Ana", "Bruno");
         Jogador externo = new JogadorDeTeste("Externo");
-        PartidaConfig<CartaFalsa> config = configuracao(jogadores, 0);
-
-        MotorDePartida<CartaFalsa> vencedorExterno = new MotorDePartida<>(config) {
-            @Override
-            protected ResultadoDoTurno executarTurno(ContextoDePartida<CartaFalsa> contexto) {
-                return ResultadoDoTurno.avancar();
-            }
-
-            @Override
-            protected Optional<DesfechoDePartida> avaliarDesfecho(
-                    VisaoDaPartida<CartaFalsa> contexto) {
-                return contexto.numeroDoTurno() == 0
+        RegraDeVitoriaStrategy<CartaFalsa> vitoriaComJogadorExterno = contexto ->
+                contexto.numeroDoTurno() == 0
                         ? Optional.empty()
                         : Optional.of(new DesfechoDePartida(
                                 List.of(externo), MotivoPadrao.VITORIA));
-            }
-        };
+        RegraDeVitoriaStrategy<CartaFalsa> vitoriaValida = contexto ->
+                contexto.numeroDoTurno() == 0
+                        ? Optional.empty()
+                        : Optional.of(new DesfechoDePartida(
+                                List.of(jogadores.getFirst()), MotivoPadrao.VITORIA));
+        RegraDePontuacaoStrategy<CartaFalsa> placarIncompleto =
+                (contexto, desfecho) -> Map.of(jogadores.getFirst(), 1);
 
-        MotorDePartida<CartaFalsa> placarIncompleto = new MotorDePartida<>(config) {
+        MotorDePartida<CartaFalsa> vencedorExterno = new MotorDePartida<>(
+                configuracao(jogadores, 0, vitoriaComJogadorExterno,
+                        pontuacaoPadrao())) {
             @Override
             protected ResultadoDoTurno executarTurno(ContextoDePartida<CartaFalsa> contexto) {
                 return ResultadoDoTurno.avancar();
             }
+        };
 
+        MotorDePartida<CartaFalsa> motorComPlacarIncompleto = new MotorDePartida<>(
+                configuracao(jogadores, 0, vitoriaValida, placarIncompleto)) {
             @Override
-            protected Optional<DesfechoDePartida> avaliarDesfecho(
-                    VisaoDaPartida<CartaFalsa> contexto) {
-                return contexto.numeroDoTurno() == 0
-                        ? Optional.empty()
-                        : Optional.of(new DesfechoDePartida(
-                                List.of(jogadores.getFirst()), MotivoPadrao.VITORIA));
-            }
-
-            @Override
-            protected Map<Jogador, Integer> calcularPontuacao(
-                    VisaoDaPartida<CartaFalsa> contexto, DesfechoDePartida desfecho) {
-                return Map.of(jogadores.getFirst(), 1);
+            protected ResultadoDoTurno executarTurno(ContextoDePartida<CartaFalsa> contexto) {
+                return ResultadoDoTurno.avancar();
             }
         };
 
         assertThrows(IllegalStateException.class, vencedorExterno::executar);
-        assertThrows(IllegalStateException.class, placarIncompleto::executar);
+        assertThrows(IllegalStateException.class, motorComPlacarIncompleto::executar);
     }
 
     private static PartidaConfig<CartaFalsa> configuracao(
-            List<Jogador> jogadores, int primeiroJogador) {
+            List<Jogador> jogadores, int primeiroJogador, long turnoDeEncerramento) {
+        return configuracao(jogadores, primeiroJogador, turnoDeEncerramento,
+                contexto -> { });
+    }
+
+    private static PartidaConfig<CartaFalsa> configuracao(
+            List<Jogador> jogadores, int primeiroJogador, long turnoDeEncerramento,
+            RegraDeValidacaoStrategy<CartaFalsa> validacao) {
+        RegraDeVitoriaStrategy<CartaFalsa> vitoria = contexto -> {
+            if (contexto.numeroDoTurno() < turnoDeEncerramento) {
+                return Optional.empty();
+            }
+            return Optional.of(new DesfechoDePartida(
+                    List.of(contexto.jogadorAtual()), MotivoPadrao.VITORIA));
+        };
+        return configuracao(jogadores, primeiroJogador, validacao, vitoria,
+                pontuacaoPadrao());
+    }
+
+    private static PartidaConfig<CartaFalsa> configuracao(
+            List<Jogador> jogadores, int primeiroJogador,
+            RegraDeVitoriaStrategy<CartaFalsa> vitoria,
+            RegraDePontuacaoStrategy<CartaFalsa> pontuacao) {
+        return configuracao(jogadores, primeiroJogador, contexto -> { },
+                vitoria, pontuacao);
+    }
+
+    private static PartidaConfig<CartaFalsa> configuracao(
+            List<Jogador> jogadores, int primeiroJogador,
+            RegraDeValidacaoStrategy<CartaFalsa> validacao,
+            RegraDeVitoriaStrategy<CartaFalsa> vitoria,
+            RegraDePontuacaoStrategy<CartaFalsa> pontuacao) {
         List<CartaFalsa> cartas = new ArrayList<>();
         for (int numero = 1; numero <= jogadores.size() * 3; numero++) {
             cartas.add(CartaFalsa.comNumero(numero));
@@ -159,8 +191,20 @@ class MotorDePartidaTest {
                 .jogadores(jogadores)
                 .baralhoFactory(() -> new BaralhoPadrao<>(cartas))
                 .distribuicao(new DistribuicaoAlternada<>(1))
+                .regraDeValidacao(validacao)
+                .regraDeVitoria(vitoria)
+                .regraDePontuacao(pontuacao)
                 .primeiroJogador(primeiroJogador)
                 .build();
+    }
+
+    private static RegraDePontuacaoStrategy<CartaFalsa> pontuacaoPadrao() {
+        return (contexto, desfecho) -> {
+            Map<Jogador, Integer> placar = new LinkedHashMap<>();
+            contexto.jogadores().forEach(jogador -> placar.put(
+                    jogador, desfecho.vencedores().contains(jogador) ? 10 : 0));
+            return placar;
+        };
     }
 
     private static List<Jogador> jogadores(String... nomes) {
@@ -173,9 +217,9 @@ class MotorDePartidaTest {
 
     private static final class MotorControlado extends MotorDePartida<CartaFalsa> {
 
-        private final long turnoDeEncerramento;
+        private static final Jogada JOGADA_CONTROLADA = new Jogada() { };
+
         private final List<ResultadoDoTurno> diretrizes;
-        private final boolean rejeitarPrimeiraTentativa;
         private final List<String> etapas = new ArrayList<>();
         private final List<String> ordemDosTurnos = new ArrayList<>();
         private int turnosExecutados;
@@ -183,13 +227,9 @@ class MotorDePartidaTest {
         private ContextoDePartida<CartaFalsa> contextoFinal;
 
         MotorControlado(PartidaConfig<CartaFalsa> configuracao,
-                        long turnoDeEncerramento,
-                        List<ResultadoDoTurno> diretrizes,
-                        boolean rejeitarPrimeiraTentativa) {
+                        List<ResultadoDoTurno> diretrizes) {
             super(configuracao);
-            this.turnoDeEncerramento = turnoDeEncerramento;
             this.diretrizes = List.copyOf(diretrizes);
-            this.rejeitarPrimeiraTentativa = rejeitarPrimeiraTentativa;
         }
 
         @Override
@@ -206,9 +246,7 @@ class MotorDePartidaTest {
         @Override
         protected ResultadoDoTurno executarTurno(ContextoDePartida<CartaFalsa> contexto) {
             tentativas++;
-            if (rejeitarPrimeiraTentativa && tentativas == 1) {
-                throw new JogadaInvalidaException("tentativa controlada");
-            }
+            validarJogada(contexto, JOGADA_CONTROLADA);
             ordemDosTurnos.add(contexto.jogadorAtual().nome());
             etapas.add("turno:" + contexto.jogadorAtual().nome() + ":" + contexto.numeroDoTurno());
             ResultadoDoTurno resultado = diretrizes.isEmpty()
@@ -216,25 +254,6 @@ class MotorDePartidaTest {
                     : diretrizes.get(Math.min(turnosExecutados, diretrizes.size() - 1));
             turnosExecutados++;
             return resultado;
-        }
-
-        @Override
-        protected Optional<DesfechoDePartida> avaliarDesfecho(
-                VisaoDaPartida<CartaFalsa> contexto) {
-            if (contexto.numeroDoTurno() < turnoDeEncerramento) {
-                return Optional.empty();
-            }
-            return Optional.of(new DesfechoDePartida(
-                    List.of(contexto.jogadorAtual()), MotivoPadrao.VITORIA));
-        }
-
-        @Override
-        protected Map<Jogador, Integer> calcularPontuacao(
-                VisaoDaPartida<CartaFalsa> contexto, DesfechoDePartida desfecho) {
-            Map<Jogador, Integer> placar = new LinkedHashMap<>();
-            contexto.jogadores().forEach(jogador -> placar.put(
-                    jogador, desfecho.vencedores().contains(jogador) ? 10 : 0));
-            return placar;
         }
 
         @Override

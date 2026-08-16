@@ -9,10 +9,9 @@ import java.util.UUID;
 /**
  * Configuração imutável das colaborações necessárias ao ciclo de vida da partida.
  *
- * <p>O Builder evita um construtor posicional longo. Fábrica e distribuição são
- * pontos de extensão fornecidos pela Trilha B. Regras e eventos não aparecem neste
- * contrato enquanto as interfaces correspondentes da Trilha D ainda não definem
- * operações; isso preserva a propriedade dos contratos entre as trilhas.
+ * <p>O Builder evita um construtor posicional longo. Fábrica, distribuição e regras
+ * são pontos de extensão obrigatórios: cada jogo informa como criar e distribuir o
+ * baralho, validar jogadas, reconhecer a vitória e calcular a pontuação.
  *
  * @param <C> tipo de carta usado pela partida
  *
@@ -25,6 +24,9 @@ public final class PartidaConfig<C extends Carta> {
     private final List<Jogador> jogadores;
     private final BaralhoFactory<C> baralhoFactory;
     private final EstrategiaDeDistribuicao<C> distribuicao;
+    private final RegraDeValidacaoStrategy<C> regraDeValidacao;
+    private final RegraDeVitoriaStrategy<C> regraDeVitoria;
+    private final RegraDePontuacaoStrategy<C> regraDePontuacao;
     private final int primeiroJogador;
 
     private PartidaConfig(Builder<C> builder) {
@@ -33,6 +35,12 @@ public final class PartidaConfig<C extends Carta> {
                 builder.baralhoFactory, "A fábrica de baralho é obrigatória.");
         this.distribuicao = Objects.requireNonNull(
                 builder.distribuicao, "A estratégia de distribuição é obrigatória.");
+        this.regraDeValidacao = Objects.requireNonNull(
+                builder.regraDeValidacao, "A regra de validação é obrigatória.");
+        this.regraDeVitoria = Objects.requireNonNull(
+                builder.regraDeVitoria, "A regra de vitória é obrigatória.");
+        this.regraDePontuacao = Objects.requireNonNull(
+                builder.regraDePontuacao, "A regra de pontuação é obrigatória.");
         if (builder.primeiroJogador < 0 || builder.primeiroJogador >= jogadores.size()) {
             throw new IllegalArgumentException("O índice do primeiro jogador é inválido: "
                     + builder.primeiroJogador + ".");
@@ -96,6 +104,33 @@ public final class PartidaConfig<C extends Carta> {
     }
 
     /**
+     * Consulta a regra que validará cada jogada antes de sua aplicação.
+     *
+     * @return estratégia de validação configurada
+     */
+    public RegraDeValidacaoStrategy<C> regraDeValidacao() {
+        return regraDeValidacao;
+    }
+
+    /**
+     * Consulta a regra que decidirá quando a partida terminou.
+     *
+     * @return estratégia de vitória configurada
+     */
+    public RegraDeVitoriaStrategy<C> regraDeVitoria() {
+        return regraDeVitoria;
+    }
+
+    /**
+     * Consulta a regra que calculará o placar final.
+     *
+     * @return estratégia de pontuação configurada
+     */
+    public RegraDePontuacaoStrategy<C> regraDePontuacao() {
+        return regraDePontuacao;
+    }
+
+    /**
      * Consulta a posição de quem começará a partida.
      *
      * @return índice do primeiro participante na lista
@@ -114,6 +149,9 @@ public final class PartidaConfig<C extends Carta> {
         private List<Jogador> jogadores;
         private BaralhoFactory<C> baralhoFactory;
         private EstrategiaDeDistribuicao<C> distribuicao;
+        private RegraDeValidacaoStrategy<C> regraDeValidacao;
+        private RegraDeVitoriaStrategy<C> regraDeVitoria;
+        private RegraDePontuacaoStrategy<C> regraDePontuacao;
         private int primeiroJogador;
 
         private Builder() {
@@ -153,6 +191,41 @@ public final class PartidaConfig<C extends Carta> {
         }
 
         /**
+         * Define como as jogadas serão validadas.
+         *
+         * @param regraDeValidacao estratégia de validação de jogadas
+         * @return este Builder
+         */
+        public Builder<C> regraDeValidacao(
+                RegraDeValidacaoStrategy<C> regraDeValidacao) {
+            this.regraDeValidacao = regraDeValidacao;
+            return this;
+        }
+
+        /**
+         * Define como o encerramento da partida será reconhecido.
+         *
+         * @param regraDeVitoria estratégia de vitória
+         * @return este Builder
+         */
+        public Builder<C> regraDeVitoria(RegraDeVitoriaStrategy<C> regraDeVitoria) {
+            this.regraDeVitoria = regraDeVitoria;
+            return this;
+        }
+
+        /**
+         * Define como o placar final será calculado.
+         *
+         * @param regraDePontuacao estratégia de pontuação
+         * @return este Builder
+         */
+        public Builder<C> regraDePontuacao(
+                RegraDePontuacaoStrategy<C> regraDePontuacao) {
+            this.regraDePontuacao = regraDePontuacao;
+            return this;
+        }
+
+        /**
          * Define quem começa a partida.
          *
          * @param primeiroJogador índice inicial, zero por padrão
@@ -167,8 +240,8 @@ public final class PartidaConfig<C extends Carta> {
          * Valida e cria a configuração.
          *
          * @return configuração imutável
-         * @throws NullPointerException se jogadores, fábrica, distribuição, algum
-         *         jogador ou alguma identidade forem nulos
+         * @throws NullPointerException se jogadores, fábrica, distribuição, regras,
+         *         algum jogador ou alguma identidade forem nulos
          * @throws IllegalArgumentException se houver menos de dois jogadores,
          *         identidades repetidas ou índice inicial fora da lista
          */
