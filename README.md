@@ -74,6 +74,8 @@ Para validar também a documentação da API:
 
 ## Documentação
 
+- [Manual do cliente](docs/manual-do-cliente.md): guia de uso da API e de criação de
+  jogos clientes;
 - `docs/ARQUITETURA_FRAMEWORK_MAP.md`: mapa canônico e status da baseline;
 - `docs/especificacao_arquitetural.md`: contratos e invariantes;
 - `docs/modelo-conceitual-framework.md`: vocabulário independente de jogos;

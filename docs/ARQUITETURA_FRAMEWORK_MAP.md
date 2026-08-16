@@ -6,6 +6,11 @@
 
 **Validação:** 136 testes, zero falhas e zero erros.
 
+**Documentação complementar:**
+
+- [Manual do cliente](manual-do-cliente.md): guia prático da API, dos pontos de
+  extensão e das limitações atuais do framework.
+
 ## 1. Objetivo e limite da promessa
 
 O framework pretende apoiar uma família ampla de jogos de cartas, não garantir
