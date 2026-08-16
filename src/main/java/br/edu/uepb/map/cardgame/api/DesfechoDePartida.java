@@ -14,7 +14,6 @@ import java.util.UUID;
  *
  * @author Lucas N. de Araújo
  * @version 0.0.1
- * @since 2026-06-15
  */
 public record DesfechoDePartida(List<Jogador> vencedores, MotivoDeEncerramento motivo) {
 

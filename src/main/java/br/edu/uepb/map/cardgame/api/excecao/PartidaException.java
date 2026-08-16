@@ -8,7 +8,6 @@ package br.edu.uepb.map.cardgame.api.excecao;
  * falha de domínio do framework.
  *
  * @author Lívia
- * @since 1.0
  */
 public abstract class PartidaException extends RuntimeException {
 

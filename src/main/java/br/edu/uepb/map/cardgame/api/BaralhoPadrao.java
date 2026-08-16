@@ -22,7 +22,6 @@ import br.edu.uepb.map.cardgame.api.excecao.BaralhoVazioException;
  *
  * @param <C> tipo de carta armazenado
  * @author Júlio
- * @since 1.0
  */
 public final class BaralhoPadrao<C extends Carta> implements Baralho<C> {
 

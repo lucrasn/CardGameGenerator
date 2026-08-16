@@ -30,7 +30,6 @@ import br.edu.uepb.map.cardgame.api.Jogador;
  *
  * @author Lucas N. de Araújo
  * @version 0.0.1
- * @since 2026-06-15
  */
 final class GerenciadorDeTurnos {
 

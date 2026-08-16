@@ -13,7 +13,6 @@ import java.util.List;
  *
  * @author Lucas N. de Araújo
  * @version 0.0.1
- * @since 2026-06-15
  */
 public interface VisaoDaPartida<C extends Carta> {
 

@@ -8,7 +8,6 @@ package br.edu.uepb.map.cardgame.api;
  *
  * @author Allan Guilherme da S. Vieira
  * @version 0.0.1
- * @since 2026-08-15
  */
 public interface Jogada {
 }

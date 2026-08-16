@@ -11,7 +11,6 @@ import br.edu.uepb.map.cardgame.api.ResultadoDePartida;
  * @param resultado resultado imutável produzido pelo motor
  * @author Lívia
  * @version 0.0.1
- * @since 2026-08-15
  */
 public record PartidaFinalizada(ResultadoDePartida resultado)
         implements EventoDePartida {

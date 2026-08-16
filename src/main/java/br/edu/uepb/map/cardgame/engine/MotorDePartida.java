@@ -47,7 +47,6 @@ import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
  * @param <C> tipo de carta usado pela partida
  * @author Lucas N. de Araújo
  * @version 0.0.1
- * @since 2026-06-15
  */
 public abstract class MotorDePartida<C extends Carta> {
 

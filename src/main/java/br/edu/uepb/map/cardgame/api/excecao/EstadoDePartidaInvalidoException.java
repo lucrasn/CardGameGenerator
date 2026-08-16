@@ -7,7 +7,6 @@ package br.edu.uepb.map.cardgame.api.excecao;
  * realizar uma jogada antes do início dos turnos ou depois do encerramento.
  *
  * @author Lívia
- * @since 1.0
  */
 public final class EstadoDePartidaInvalidoException extends PartidaException {
 
