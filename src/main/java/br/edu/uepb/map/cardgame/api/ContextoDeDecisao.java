@@ -5,9 +5,9 @@ import java.util.List;
 /**
  * Visão mínima e somente leitura oferecida a uma estratégia de decisão.
  *
- * <p>Jogos podem fornecer subinterfaces com informações públicas adicionais. O
- * contrato base nunca revela mãos adversárias, a ordem do baralho ou estado interno
- * mutável.
+ * <p><strong>Porta de contexto da Strategy.</strong> Jogos podem fornecer
+ * subinterfaces com informações públicas adicionais. O contrato base nunca revela
+ * mãos adversárias, a ordem do baralho ou estado interno mutável.
  *
  * @author Allan Guilherme da S. Vieira
  * @version 0.0.1

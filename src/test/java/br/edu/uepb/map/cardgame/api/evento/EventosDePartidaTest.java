@@ -50,6 +50,16 @@ class EventosDePartidaTest {
     }
 
     @Test
+    @DisplayName("cartas distribuídas informa apenas a quantidade restante no baralho")
+    void cartasDistribuidasNaoExpoeMaosPrivadas() {
+        var evento = new CartasDistribuidas(12);
+
+        assertEquals(12, evento.cartasRestantesNoBaralho());
+        assertThrows(IllegalArgumentException.class,
+                () -> new CartasDistribuidas(-1));
+    }
+
+    @Test
     @DisplayName("turno iniciado informa número e jogador")
     void turnoIniciadoInformaDados() {
         var evento = new TurnoIniciado(1, ana);

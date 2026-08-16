@@ -1,6 +1,7 @@
 package br.edu.uepb.map.cardgame.engine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,10 +21,12 @@ import br.edu.uepb.map.cardgame.api.ContextoDePartida;
 import br.edu.uepb.map.cardgame.api.DesfechoDePartida;
 import br.edu.uepb.map.cardgame.api.DistribuicaoAlternada;
 import br.edu.uepb.map.cardgame.api.EstadoPartida;
+import br.edu.uepb.map.cardgame.api.EventoDePartida;
 import br.edu.uepb.map.cardgame.api.Jogador;
 import br.edu.uepb.map.cardgame.api.Jogada;
 import br.edu.uepb.map.cardgame.api.MotivoPadrao;
 import br.edu.uepb.map.cardgame.api.PartidaConfig;
+import br.edu.uepb.map.cardgame.api.PartidaListener;
 import br.edu.uepb.map.cardgame.api.RegraDePontuacaoStrategy;
 import br.edu.uepb.map.cardgame.api.RegraDeValidacaoStrategy;
 import br.edu.uepb.map.cardgame.api.RegraDeVitoriaStrategy;
@@ -31,6 +34,12 @@ import br.edu.uepb.map.cardgame.api.ResultadoDePartida;
 import br.edu.uepb.map.cardgame.api.ResultadoDoTurno;
 import br.edu.uepb.map.cardgame.api.VisaoDaPartida;
 import br.edu.uepb.map.cardgame.api.apoio.CartaFalsa;
+import br.edu.uepb.map.cardgame.api.evento.CartasDistribuidas;
+import br.edu.uepb.map.cardgame.api.evento.JogadaRejeitada;
+import br.edu.uepb.map.cardgame.api.evento.PartidaFinalizada;
+import br.edu.uepb.map.cardgame.api.evento.PartidaIniciada;
+import br.edu.uepb.map.cardgame.api.evento.TurnoEncerrado;
+import br.edu.uepb.map.cardgame.api.evento.TurnoIniciado;
 import br.edu.uepb.map.cardgame.api.excecao.EstadoDePartidaInvalidoException;
 import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
 import br.edu.uepb.map.cardgame.apoio.JogadorDeTeste;
@@ -148,6 +157,80 @@ class MotorDePartidaTest {
 
         assertThrows(IllegalStateException.class, vencedorExterno::executar);
         assertThrows(IllegalStateException.class, motorComPlacarIncompleto::executar);
+    }
+
+    @Test
+    @DisplayName("publica os eventos na ordem do ciclo para todos os listeners")
+    void publicaEventosNaOrdemDoCiclo() {
+        List<Jogador> jogadores = jogadores("Ana", "Bruno");
+        int[] validacoes = {0};
+        RegraDeValidacaoStrategy<CartaFalsa> validacao = contexto -> {
+            if (validacoes[0]++ == 0) {
+                throw new JogadaInvalidaException("Carta não permitida.");
+            }
+        };
+        MotorControlado motor = new MotorControlado(
+                configuracao(jogadores, 0, 1, validacao),
+                List.of(ResultadoDoTurno.avancar()));
+        List<EventoDePartida> recebidosPeloPrimeiro = new ArrayList<>();
+        List<EventoDePartida> recebidosPeloSegundo = new ArrayList<>();
+        PartidaListener primeiro = recebidosPeloPrimeiro::add;
+
+        motor.adicionarListener(primeiro);
+        motor.adicionarListener(primeiro);
+        motor.adicionarListener(recebidosPeloSegundo::add);
+        motor.executar();
+
+        List<String> ordemEsperada = List.of(
+                PartidaIniciada.class.getName(),
+                CartasDistribuidas.class.getName(),
+                TurnoIniciado.class.getName(),
+                JogadaRejeitada.class.getName(),
+                TurnoEncerrado.class.getName(),
+                PartidaFinalizada.class.getName());
+        assertEquals(ordemEsperada, tiposDe(recebidosPeloPrimeiro));
+        assertEquals(ordemEsperada, tiposDe(recebidosPeloSegundo));
+        assertEquals(4, ((CartasDistribuidas) recebidosPeloPrimeiro.get(1))
+                .cartasRestantesNoBaralho());
+        assertEquals("Carta não permitida.",
+                ((JogadaRejeitada) recebidosPeloPrimeiro.get(3)).motivo());
+    }
+
+    @Test
+    @DisplayName("permite remoção durante callback e isola falha de listener")
+    void removeListenerDuranteCallbackEIsolaFalha() {
+        List<Jogador> jogadores = jogadores("Ana", "Bruno");
+        MotorControlado motor = new MotorControlado(
+                configuracao(jogadores, 0, 0), List.of());
+        int[] chamadasDoRemovido = {0};
+        List<EventoDePartida> recebidosPeloSaudavel = new ArrayList<>();
+        PartidaListener[] autorremovivel = new PartidaListener[1];
+        autorremovivel[0] = evento -> {
+            chamadasDoRemovido[0]++;
+            motor.removerListener(autorremovivel[0]);
+        };
+
+        motor.adicionarListener(autorremovivel[0]);
+        motor.adicionarListener(evento -> {
+            throw new IllegalStateException("falha controlada do observador");
+        });
+        motor.adicionarListener(recebidosPeloSaudavel::add);
+
+        ResultadoDePartida resultado = motor.executar();
+
+        assertEquals(1, chamadasDoRemovido[0]);
+        assertEquals(List.of(
+                PartidaIniciada.class.getName(),
+                CartasDistribuidas.class.getName(),
+                PartidaFinalizada.class.getName()), tiposDe(recebidosPeloSaudavel));
+        assertSame(jogadores.getFirst(), resultado.vencedorUnico().orElseThrow());
+        assertFalse(motor.removerListener(autorremovivel[0]));
+        assertThrows(NullPointerException.class, () -> motor.adicionarListener(null));
+        assertThrows(NullPointerException.class, () -> motor.removerListener(null));
+    }
+
+    private static List<String> tiposDe(List<EventoDePartida> eventos) {
+        return eventos.stream().map(evento -> evento.getClass().getName()).toList();
     }
 
     private static PartidaConfig<CartaFalsa> configuracao(

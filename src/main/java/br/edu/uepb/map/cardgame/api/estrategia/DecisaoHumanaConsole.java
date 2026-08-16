@@ -28,14 +28,18 @@ public final class DecisaoHumanaConsole implements EstrategiaDeDecisao {
      * Cria uma estratégia que descreve cada ação por {@link Object#toString()}.
      *
      * @param entradaSaida porta usada para interagir com a pessoa
+     * @throws NullPointerException se a porta for nula
      */
     public DecisaoHumanaConsole(EntradaSaida entradaSaida) {
         this(entradaSaida, Object::toString);
     }
 
     /**
+     * Cria uma estratégia com uma representação textual específica para as ações.
+     *
      * @param entradaSaida porta usada para interagir com a pessoa
      * @param descricaoDaJogada conversor de uma ação para texto apresentável
+     * @throws NullPointerException se algum colaborador for nulo
      */
     public DecisaoHumanaConsole(
             EntradaSaida entradaSaida,

@@ -10,9 +10,10 @@ import java.util.UUID;
  * pelo estado da partida, permitindo que um mesmo jogador possua diferentes
  * quantidades de mãos em jogos distintos.
  *
- * <p><strong>Frozen-spot.</strong> Humano, bot e dealer usam esta mesma implementação;
- * o comportamento variável fica em {@link EstrategiaDeDecisao}. Dessa forma, o
- * framework reutiliza a identidade do participante sem criar subclasses por perfil.
+ * <p><strong>Componente reutilizável.</strong> Humano, bot e casa podem usar esta
+ * mesma implementação; o comportamento variável fica em
+ * {@link EstrategiaDeDecisao}. Dessa forma, o framework reutiliza a identidade do
+ * participante sem criar subclasses por perfil.
  *
  * @author Allan Guilherme da S. Vieira
  * @version 0.0.1

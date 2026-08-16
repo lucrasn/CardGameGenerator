@@ -24,7 +24,10 @@ public final class DecisaoGulosa implements EstrategiaDeDecisao {
     private final ToIntFunction<? super Jogada> avaliador;
 
     /**
+     * Cria uma estratégia com a função de avaliação fornecida pelo cliente.
+     *
      * @param avaliador função que atribui um valor imediato a cada ação
+     * @throws NullPointerException se o avaliador for nulo
      */
     public DecisaoGulosa(ToIntFunction<? super Jogada> avaliador) {
         this.avaliador = Objects.requireNonNull(avaliador, "avaliador");

@@ -1,6 +1,7 @@
 package br.edu.uepb.map.cardgame.api.estrategia;
 
 import br.edu.uepb.map.cardgame.api.ContextoDeDecisao;
+import br.edu.uepb.map.cardgame.api.ContextoDeDecisaoPadrao;
 import br.edu.uepb.map.cardgame.api.EntradaSaida;
 import br.edu.uepb.map.cardgame.api.EtapaDeTurno;
 import br.edu.uepb.map.cardgame.api.Jogada;
@@ -51,20 +52,41 @@ class DecisaoHumanaConsoleTest {
         );
     }
 
+    @Test
+    void rejeitaColaboradoresContextoOuDescricaoNulos() {
+        EntradaSaida entradaSaida = new EntradaSaidaFalsa(0);
+
+        assertThrows(
+                NullPointerException.class,
+                () -> new DecisaoHumanaConsole(null)
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> new DecisaoHumanaConsole(entradaSaida, null)
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> new DecisaoHumanaConsole(entradaSaida).decidir(null)
+        );
+
+        DecisaoHumanaConsole descricaoNula = new DecisaoHumanaConsole(
+                entradaSaida,
+                jogada -> null
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> descricaoNula.decidir(contextoCom(new Acao("comprar")))
+        );
+    }
+
     private static ContextoDeDecisao contextoCom(Jogada... jogadas) {
-        return new ContextoFalso(List.of(jogadas));
+        return new ContextoDeDecisaoPadrao(
+                EtapaTeste.DECISAO,
+                List.of(jogadas)
+        );
     }
 
     private record Acao(String descricao) implements Jogada {
-    }
-
-    private record ContextoFalso(List<Jogada> jogadasPermitidas)
-            implements ContextoDeDecisao {
-
-        @Override
-        public EtapaDeTurno etapa() {
-            return EtapaTeste.DECISAO;
-        }
     }
 
     private enum EtapaTeste implements EtapaDeTurno {

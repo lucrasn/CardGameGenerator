@@ -1,6 +1,7 @@
 package br.edu.uepb.map.cardgame.api.estrategia;
 
 import br.edu.uepb.map.cardgame.api.ContextoDeDecisao;
+import br.edu.uepb.map.cardgame.api.ContextoDeDecisaoPadrao;
 import br.edu.uepb.map.cardgame.api.EtapaDeTurno;
 import br.edu.uepb.map.cardgame.api.Jogada;
 import org.junit.jupiter.api.Test;
@@ -69,20 +70,25 @@ class DecisoesAutomatizadasTest {
         );
     }
 
+    @Test
+    void rejeitamColaboradoresOuContextoNulos() {
+        assertThrows(NullPointerException.class, () -> new DecisaoAleatoria(null));
+        assertThrows(NullPointerException.class, () -> new DecisaoGulosa(null));
+        assertThrows(
+                NullPointerException.class,
+                () -> new DecisaoAleatoria(new Random(1)).decidir(null)
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> new DecisaoGulosa(jogada -> 0).decidir(null)
+        );
+    }
+
     private record Acao(String descricao, int valor) implements Jogada {
     }
 
     private static ContextoDeDecisao contextoCom(Jogada... jogadas) {
-        return new ContextoFalso(List.of(jogadas));
-    }
-
-    private record ContextoFalso(List<Jogada> jogadasPermitidas)
-            implements ContextoDeDecisao {
-
-        @Override
-        public EtapaDeTurno etapa() {
-            return EtapaTeste.DECISAO;
-        }
+        return new ContextoDeDecisaoPadrao(EtapaTeste.DECISAO, List.of(jogadas));
     }
 
     private enum EtapaTeste implements EtapaDeTurno {
