@@ -208,6 +208,7 @@ package "br.edu.uepb.map.cardgame.engine" as engine #FCF3CF {
         +removerListener(listener: PartidaListener): boolean {final}
         #executarTurno(contexto: ContextoDePartida<C>): ResultadoDoTurno {abstract}
         #validarJogada(contexto: VisaoDaPartida<C>, jogada: Jogada): void {final}
+        #publicarEvento(evento: EventoDePartida): void {final}
         #preparar(contexto: ContextoDePartida<C>): void
         #aposDistribuir(contexto: ContextoDePartida<C>): void
         #aoEncerrar(contexto: VisaoDaPartida<C>, resultado: ResultadoDePartida): void
@@ -291,8 +292,9 @@ EstadoDePartidaInvalidoException --|> PartidaException
 
 note right of MotorDePartida
   Único tipo público de engine.
-  Publica eventos e delega validação,
-  vitória e pontuação às Strategies.
+  Publica eventos padrão e próprios;
+  delega validação, vitória e
+  pontuação às Strategies.
 end note
 
 note top of api

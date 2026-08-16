@@ -4,7 +4,8 @@ package br.edu.uepb.map.cardgame.api;
  * Observador interessado nos eventos publicados por uma partida.
  *
  * <p>Implementações podem atualizar o console, registrar um histórico ou alimentar
- * uma interface gráfica sem criar dependência dessas tecnologias dentro do motor.
+ * uma interface gráfica a partir de eventos padrão ou específicos do jogo, sem criar
+ * dependência dessas tecnologias dentro do motor.
  *
  * @author Lívia
  * @version 0.0.1

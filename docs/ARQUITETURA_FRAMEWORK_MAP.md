@@ -4,7 +4,7 @@
 
 **Baseline:** `main`, após integração das Trilhas A, B, C e D em 16/08/2026.
 
-**Validação:** 136 testes, zero falhas e zero erros.
+**Validação:** 137 testes, zero falhas e zero erros.
 
 **Documentação complementar:**
 
@@ -131,8 +131,11 @@ implementados:
 
 `EventoDePartida` é uma interface de extensão; `api.evento` traz seis records imutáveis
 prontos: `PartidaIniciada`, `CartasDistribuidas`, `TurnoIniciado`, `TurnoEncerrado`,
-`JogadaRejeitada` e `PartidaFinalizada`. Strategy de regras e Observer, portanto, são
-padrões demonstráveis em runtime nesta baseline, e não arquitetura planejada.
+`JogadaRejeitada` e `PartidaFinalizada`. Subclasses publicam eventos específicos do jogo
+pelo método protegido e final `MotorDePartida.publicarEvento`, reutilizando a mesma
+ordem e o mesmo isolamento de falhas dos listeners. Strategy de regras e Observer,
+portanto, são padrões demonstráveis em runtime nesta baseline, e não arquitetura
+planejada.
 
 ## 5. Template Method do motor
 
@@ -176,6 +179,8 @@ Hooks opcionais:
 Apoio oferecido ao jogo:
 
 - `validarJogada(VisaoDaPartida<C>, Jogada)`, `final`, que delega à Strategy configurada.
+- `publicarEvento(EventoDePartida)`, `final`, que entrega eventos próprios aos
+  observers cadastrados no motor.
 
 Vitória e pontuação **deixaram de ser hooks** e passaram a Strategies de `PartidaConfig`.
 A decisão eliminou a duplicidade que a versão anterior deste documento previa: existe
@@ -253,8 +258,8 @@ requisito da atividade pede no mínimo cinco.
 - **Factory Method:** `BaralhoFactory.criar()` decide a composição;
 - **Strategy:** distribuição, decisão, validação, vitória e pontuação são objetos
   substituíveis;
-- **Observer:** o motor cadastra ouvintes e publica seis eventos, isolando falhas de
-  cada um;
+- **Observer:** o motor cadastra ouvintes, publica seis eventos padrão e recebe eventos
+  próprios das subclasses, isolando falhas de cada ouvinte;
 - **Builder:** construção validada de `PartidaConfig` (apoio, fora da contagem GoF).
 
 Quatro padrões GoF distintos dentre os estudados em sala, o que atende ao mínimo

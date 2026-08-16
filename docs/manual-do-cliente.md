@@ -61,7 +61,7 @@ mecanismos uma vez e deixa você escrever apenas o que é do seu jogo.
 | Conservação de cartas | uma carta nunca está em duas mãos, nem numa mão e no baralho ao mesmo tempo |
 | Encapsulamento | ninguém altera uma mão ou o baralho por fora das operações permitidas |
 | Baralho e mão | comprar, colocar no topo/base, embaralhar, buscar, remover |
-| Eventos | seis avisos publicados nos momentos certos, com falha de ouvinte isolada |
+| Eventos | seis avisos padrão, publicação de eventos próprios e falha de ouvinte isolada |
 | Resultado | vencedores, placar e motivo, validados e imutáveis |
 | Exceções | uma hierarquia de domínio, com mensagens |
 
@@ -825,6 +825,7 @@ public abstract class MotorDePartida<C extends Carta> {
 
     // você pode chamar, mas não sobrescrever:
     protected final void validarJogada(VisaoDaPartida<C> contexto, Jogada jogada);
+    protected final void publicarEvento(EventoDePartida evento);
     public final ResultadoDePartida executar();
     public final EstadoPartida estado();
     public final void adicionarListener(PartidaListener listener);
@@ -903,7 +904,7 @@ public interface PartidaListener {
 É o padrão **Observer**. Serve para interface gráfica, log, narração, estatística,
 replay — qualquer coisa que precise *saber* o que acontece sem *interferir*.
 
-Seis eventos são publicados:
+Seis eventos padrão são publicados automaticamente:
 
 | Evento | Quando | O que traz |
 |---|---|---|
@@ -958,10 +959,22 @@ ResultadoDePartida resultado = motor.executar();
    erros no seu listener passam despercebidos. Trate suas próprias exceções se precisar
    vê-las.
 
-**Eventos próprios.** `EventoDePartida` é uma interface aberta, então você *pode* declarar
-tipos novos. O que você não pode é fazer o motor publicá-los: os pontos de publicação são
-internos e fixos nos seis acima. Para avisos próprios, mantenha sua própria lista de
-ouvintes dentro da sua subclasse do motor.
+**Eventos próprios.** `EventoDePartida` é uma interface aberta. Declare o fato no pacote
+do seu jogo e chame `publicarEvento` de dentro da subclasse do motor:
+
+```java
+public record CartaDescartada(UUID cartaId, Jogador jogador)
+        implements EventoDePartida { }
+
+// Dentro de preparar, aposDistribuir, executarTurno ou aoEncerrar:
+publicarEvento(new CartaDescartada(
+        cartaDescartada.id(), contexto.jogadorAtual()));
+```
+
+O evento chega aos mesmos listeners, na posição exata em que a chamada ocorreu. O método
+é `protected`, então somente o motor e suas subclasses o acessam, e é `final` para que o
+jogo não substitua as garantias de ordem, snapshot e isolamento de falhas. Passe sempre
+um evento não nulo, imutável e sem dados privados que o observador não possa receber.
 
 ---
 
@@ -1202,7 +1215,6 @@ construção — e cada uma tem um motivo.
 | Sobrescrever `executar()` | é o Template Method: a ordem das etapas é o contrato do framework |
 | Alcançar o gerenciador de turnos ou o estado interno | são classes sem `public` no pacote `engine`; o compilador barra |
 | Alterar uma mão pela lista devolvida por `maoDe()` | é um snapshot imutável; use `adicionarNaMao` / `removerDaMao` |
-| Fazer o motor publicar um evento seu | os pontos de publicação são internos; mantenha sua própria lista de ouvintes |
 | Reexecutar um motor | uma instância, uma partida; construa outro motor |
 | Desfazer o que um turno rejeitado já alterou | não há rollback; valide antes de alterar |
 | Ter várias mãos por jogador no contexto | o contexto oferece uma mão por jogador; zonas extras são suas (6.2) |
@@ -1210,7 +1222,7 @@ construção — e cada uma tem um motivo.
 | Persistir e retomar uma partida | não há serialização de estado; a partida vive na memória |
 | Remover ou acrescentar jogadores no meio | a lista é fixada na configuração |
 
-As sete primeiras são **decisões de projeto**: o framework abre mão de flexibilidade em
+As seis primeiras são **decisões de projeto**: o framework abre mão de flexibilidade em
 troca de garantia. Se o cliente pudesse avançar a vez, a ordem da mesa deixaria de ser
 confiável; se pudesse forçar `FINALIZADA`, o resultado deixaria de ser validado. Esse é o
 trato — e é o que faz valer a pena usar um framework em vez de escrever tudo do zero.
@@ -1257,7 +1269,7 @@ São **47 tipos públicos**, distribuídos assim:
 | Pacote | Tipos | Conteúdo |
 |---|---|---|
 | `cardgame.api` | 32 | todos os contratos e valores |
-| `cardgame.api.evento` | 6 | os eventos publicados pelo motor |
+| `cardgame.api.evento` | 6 | os eventos padrão publicados automaticamente pelo motor |
 | `cardgame.api.excecao` | 4 | `PartidaException` e três filhas |
 | `cardgame.api.estrategia` | 3 | estratégias de decisão prontas |
 | `cardgame.api.io` | 1 | `ControleEntradaSaida` |

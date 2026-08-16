@@ -146,6 +146,8 @@ public abstract class MotorDePartida<C extends Carta> {
     protected final void validarJogada(
             VisaoDaPartida<C> contexto, Jogada jogada);
 
+    protected final void publicarEvento(EventoDePartida evento);
+
     protected void preparar(ContextoDePartida<C> contexto);
     protected void aposDistribuir(ContextoDePartida<C> contexto);
     protected void aoEncerrar(
@@ -239,6 +241,12 @@ A notificação percorre uma cópia da lista de ouvintes e isola cada um em seu 
 `try/catch`. Um ouvinte com defeito não interrompe a partida, e um ouvinte que se
 descadastra durante o callback não provoca `ConcurrentModificationException`.
 
+Os seis eventos acima são os marcos padrão do ciclo. Dentro dos hooks, subclasses
+podem intercalar eventos específicos do jogo chamando o método protegido e final
+`publicarEvento(EventoDePartida)`. O método rejeita `null` e conserva a mesma política
+de ordem, snapshot e isolamento; apenas o conteúdo e o momento do evento específico
+ficam sob responsabilidade do jogo cliente.
+
 ## 12. Critérios de aceitação arquitetural
 
 - `./mvnw test` passa;
@@ -254,5 +262,5 @@ internos são verificadas sobre o bytecode por `FronteirasArquiteturaisTest`. Um
 violação faz `./mvnw test` e o build falharem, mesmo que a dependência não apareça
 como um `import` explícito.
 
-Estado medido nesta versão: **136 testes aprovados**. Os testes dos clientes concretos
+Estado medido nesta versão: **137 testes aprovados**. Os testes dos clientes concretos
 ainda são entrega futura.

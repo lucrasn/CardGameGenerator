@@ -6,14 +6,14 @@
 Strategies de validação, vitória e pontuação e está pronto para ser validado pelos
 clientes concretos; Trinca e Blackjack pertencem à Trilha E e ainda não estão
 implementados na `main`. A publicação dos eventos da Trilha D pelo motor já está
-implementada: `MotorDePartida` cadastra observadores e publica os seis eventos padrão
-ao longo do ciclo.
+implementada: `MotorDePartida` cadastra observadores, publica os seis eventos padrão
+ao longo do ciclo e permite que subclasses publiquem eventos específicos do jogo.
 
 Este texto reúne a justificativa técnica da Trilha A e um roteiro para sua defesa na
 apresentação. As decisões seguem `ARQUITETURA_FRAMEWORK_MAP.md`,
 `divisao-responsabilidades.md`, `especificacao_arquitetural.md`,
-`padroes-de-projeto.md`, `regras-trinca.md` e `regras-blackjack-basico.md`, com as
-assinaturas conferidas contra o código atual.
+`padroes-de-projeto.md` e `regras-blackjack-basico.md`, com as assinaturas conferidas
+contra o código atual. A especificação da Trinca permanece na branch do cliente.
 
 ## 1. Responsabilidade e resultado
 
@@ -69,6 +69,7 @@ o algoritmo da partida e pode ser executado uma única vez.
 | operação primitiva obrigatória | `executarTurno(ContextoDePartida<C>)` |
 | hooks opcionais | `preparar`, `aposDistribuir` e `aoEncerrar` |
 | validação oferecida à subclasse | `validarJogada(VisaoDaPartida<C>, Jogada)` |
+| publicação oferecida à subclasse | `publicarEvento(EventoDePartida)` |
 | variações por composição | fábrica, distribuição e Strategies de regras em `PartidaConfig` |
 | infraestrutura fixa | ciclo de vida, agregado da execução e gerenciador de turnos |
 
@@ -300,8 +301,9 @@ O padrão principal da Trilha A é **Template Method**. `PartidaConfig.Builder` 
 apoio de construção; Factory Method e Strategy são colaborações pertencentes às
 outras trilhas. O enum de ciclo não é apresentado como State. **Observer** está
 comprovado no runtime: o motor mantém a lista de observadores, publica os seis eventos
-padrão e isola falhas de cada ouvinte, com testes cobrindo ordem de notificação,
-descadastro durante o callback e ouvinte que lança exceção.
+padrão, aceita eventos específicos das subclasses e isola falhas de cada ouvinte. Os
+testes cobrem ordem de notificação, evento próprio, descadastro durante o callback e
+ouvinte que lança exceção.
 
 | Princípio | Decisão de modelagem |
 |---|---|
@@ -336,14 +338,15 @@ Os testes diretamente ligados à Trilha A cobrem:
 - repetição da mesma vez depois de `JogadaInvalidaException`;
 - encerramento antes do primeiro turno;
 - rejeição de vencedor externo e placar incompleto;
+- publicação de evento próprio pela subclasse, com método protegido e final;
 - direção das dependências e superfície pública do engine por análise de bytecode.
 
 Não é necessário duplicar nesses testes as regras completas de Trinca e Blackjack.
 Formação de combinações, reciclagem do descarte, valor do Ás, política da casa e
 condições concretas de vitória pertencem aos testes de aceitação da Trilha E.
 
-Após esta revisão, `./mvnw clean test` executa **136 testes**, sem falhas, erros ou
-testes ignorados. Desse total, **70 testes** exercitam diretamente os tipos públicos e
+Após esta revisão, `./mvnw clean test` executa **137 testes**, sem falhas, erros ou
+testes ignorados. Desse total, **71 testes** exercitam diretamente os tipos públicos e
 internos atribuídos à Trilha A, e outros **3 testes arquiteturais** protegem as
 fronteiras que envolvem o engine.
 

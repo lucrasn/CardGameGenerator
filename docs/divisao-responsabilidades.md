@@ -123,7 +123,8 @@ Estado atual: **concluída**.
 - as três Strategies de regra têm operação definida e são obrigatórias em
   `PartidaConfig`;
 - `EventoDePartida` e os seis eventos padrão existem em `api.evento`;
-- Observer implementado, com o motor publicando os eventos.
+- Observer implementado, com o motor publicando os marcos padrão e oferecendo às
+  subclasses o ponto protegido `publicarEvento` para eventos específicos dos jogos.
 
 A integração eliminou os hooks provisórios: vitória e pontuação, que eram métodos
 protegidos do motor, passaram a Strategies da configuração. Existe uma única fonte de
@@ -177,6 +178,6 @@ Antes de mesclar uma trilha:
 - [ ] Javadoc e UML representam o código atual;
 - [ ] pendências são marcadas como pendências, não como padrões implementados.
 
-Baseline verificada nesta integração: **136 testes, zero falhas e zero erros**. Três
+Baseline verificada nesta integração: **137 testes, zero falhas e zero erros**. Três
 deles analisam as fronteiras de packages no bytecode e falham o build em caso de
 dependência proibida ou exposição indevida do `engine`.

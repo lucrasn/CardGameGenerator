@@ -123,7 +123,7 @@ Notificar console, interface gráfica ou telemetria sem acoplá-los ao motor.
 |---|---|
 | Subject | `MotorDePartida<C>` |
 | Observer | `PartidaListener` |
-| Notification | `EventoDePartida` e os seis records de `api.evento` |
+| Notification | `EventoDePartida`, seis records padrão e eventos próprios dos jogos |
 
 ### Decisões tomadas na implementação
 
@@ -134,6 +134,7 @@ Notificar console, interface gráfica ou telemetria sem acoplá-los ao motor.
 | iteração | sobre `List.copyOf(listeners)` |
 | falha de um ouvinte | isolada em `try/catch` de `RuntimeException` |
 | conteúdo dos eventos | records imutáveis, sem mão de jogador nem ordem do baralho |
+| extensão pelo jogo | `publicarEvento` protegido e final reutiliza a infraestrutura do motor |
 
 A cópia da lista permite que um ouvinte se descadastre dentro do próprio callback sem
 provocar `ConcurrentModificationException`. O isolamento impede que um console com
@@ -234,12 +235,12 @@ O engine depende de `Baralho`, `BaralhoFactory`, `EstrategiaDeDistribuicao`,
 | Como muda o baralho? | nova `BaralhoFactory<C>` |
 | Como muda a distribuição? | nova `EstrategiaDeDistribuicao<C>` |
 | Como troca humano por bot? | nova `EstrategiaDeDecisao` |
-| Observer já existe? | sim; o motor publica seis eventos e isola falhas de ouvintes |
+| Observer já existe? | sim; publica seis eventos padrão, aceita eventos próprios e isola falhas de ouvintes |
 | Por que não State? | estados só restringem transições, sem comportamento próprio |
 
 ## 12. Evidência automatizada
 
-A baseline executa **136 testes**. Há testes para ciclo, turnos, Template Method,
+A baseline executa **137 testes**. Há testes para ciclo, turnos, Template Method,
 invariantes, encapsulamento, Factory, distribuição, decisão, as três Strategies de
 regra, publicação de eventos e fronteiras arquiteturais. Os três testes com ArchUnit
 fazem o build falhar se a direção de dependências ou a visibilidade do engine for
