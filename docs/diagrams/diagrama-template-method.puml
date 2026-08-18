@@ -1,0 +1,58 @@
+@startuml
+' Recorte simplificado para o slide 7 — Template Method.
+' Mostra somente o algoritmo invariável e os pontos de extensão reais.
+
+!pragma layout smetana
+top to bottom direction
+
+skinparam backgroundColor #FFFFFF
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam classFontSize 17
+skinparam classBorderColor #333333
+skinparam arrowColor #333333
+skinparam noteBackgroundColor #FFF9D6
+skinparam noteBorderColor #777777
+hide empty fields
+
+abstract class "MotorDePartida<C extends Carta>" as MotorDePartida \
+        << (A,#7EA6B2) AbstractClass, Template Method >> #FFF2CC {
+    +executar(): ResultadoDePartida {final}
+    .. hooks opcionais ..
+    #preparar(ctx: ContextoDePartida<C>): void
+    #aposDistribuir(ctx: ContextoDePartida<C>): void
+    #aoEncerrar(visao: VisaoDaPartida<C>, resultado: ResultadoDePartida): void
+    .. operação primitiva ..
+    #executarTurno(ctx: ContextoDePartida<C>): ResultadoDoTurno {abstract}
+}
+
+class "trinca.MotorTrinca" as MotorTrinca \
+        << (C,#A9D5B0) ConcreteClass >> #F8CECC {
+    #aposDistribuir(...): void
+    #executarTurno(...): ResultadoDoTurno
+}
+
+class "blackjack.MotorBlackjack" as MotorBlackjack \
+        << (C,#A9D5B0) ConcreteClass >> #F8CECC {
+    #executarTurno(...): ResultadoDoTurno
+    #aoEncerrar(...): void
+}
+
+MotorDePartida <|-- MotorTrinca
+MotorDePartida <|-- MotorBlackjack
+
+note right of MotorDePartida
+  <b>Frozen spot:</b> executar() é final e conserva
+  a sequência completa do ciclo da partida.
+
+  <b>Hot spots:</b> uma operação primitiva obrigatória
+  e três hooks opcionais protegidos.
+
+  Vitória, validação e pontuação entram por Strategy;
+  não são operações abstratas deste Template Method.
+end note
+
+@enduml

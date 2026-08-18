@@ -1,0 +1,75 @@
+@startuml
+' Recorte do diagrama de classes para o slide do padrão Observer.
+' Mantém a mesma linguagem visual dos diagramas de Template Method,
+' Factory Method e Strategy usados na apresentação.
+
+!pragma layout smetana
+top to bottom direction
+
+skinparam backgroundColor #FFFFFF
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam classFontSize 17
+skinparam classBorderColor #333333
+skinparam arrowColor #333333
+skinparam noteBackgroundColor #FFF9D6
+skinparam noteBorderColor #777777
+hide empty fields
+
+abstract class "MotorDePartida<C extends Carta>" as MotorDePartida \
+        << (A,#7EA6B2) Subject >> #FFF2CC {
+    +adicionarListener(listener: PartidaListener): void {final}
+    +removerListener(listener: PartidaListener): boolean {final}
+    #publicarEvento(evento: EventoDePartida): void {final}
+}
+
+interface PartidaListener << (I,#B4A7D6) Observer >> #DAE8FC {
+    +aoOcorrer(evento: EventoDePartida): void
+}
+
+interface EventoDePartida << (I,#B4A7D6) Notification, extensão >> #DAE8FC
+
+class "blackjack.ApresentadorBlackjackConsole" as ApresentadorBlackjackConsole \
+        << (C,#A9D5B0) ConcreteObserver >> #F8CECC {
+    +aoOcorrer(evento: EventoDePartida): void
+}
+
+class "evento.TurnoIniciado" as TurnoIniciado \
+        << (C,#A9D5B0) evento padrão, record >> #F8CECC
+
+class "blackjack.evento.CartaPedidaBlackjack" as CartaPedidaBlackjack \
+        << (C,#A9D5B0) extensão do cliente, record >> #F8CECC
+
+MotorDePartida "1" --> "0..*" PartidaListener : notifica
+MotorDePartida ..> EventoDePartida : publica
+PartidaListener ..> EventoDePartida : recebe
+ApresentadorBlackjackConsole ..|> PartidaListener
+TurnoIniciado ..|> EventoDePartida
+CartaPedidaBlackjack ..|> EventoDePartida
+
+note right of MotorDePartida
+  <b>publicarEvento() é protegido e final.</b>
+  O framework conserva a ordem, usa um snapshot
+  dos listeners e isola a falha de cada observador.
+end note
+
+note right of EventoDePartida
+  <b>Eventos padrão do framework:</b>
+  PartidaIniciada, CartasDistribuidas,
+  TurnoIniciado, TurnoEncerrado,
+  JogadaRejeitada e PartidaFinalizada.
+
+  <b>Extensão comprovada no Blackjack:</b>
+  CartaPedidaBlackjack, ParticipanteParouBlackjack
+  e MaoDaCasaReveladaBlackjack.
+end note
+
+note left of ApresentadorBlackjackConsole
+  O Blackjack usa um observador concreto;
+  a Trinca registra uma lambda no mesmo contrato.
+end note
+
+@enduml

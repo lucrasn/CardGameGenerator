@@ -82,8 +82,8 @@ Para validar também a documentação da API:
 - `docs/modelo-conceitual-framework.md`: vocabulário independente de jogos;
 - `docs/padroes-de-projeto.md`: padrões, SOLID e GRASP;
 - `docs/divisao-responsabilidades.md`: fronteiras entre as trilhas;
-- `docs/diagrama-classes.puml`: diagrama de classes em PlantUML;
-- `docs/DiagramaDeClasses.drawio.xml`: o mesmo diagrama em draw.io;
+- `docs/diagrams/diagrama-classes.puml`: diagrama de classes em PlantUML;
+- `docs/diagrams/DiagramaDeClasses.drawio.xml`: o mesmo diagrama em draw.io;
 - `docs/trilha-a.md`: decisões, evidências e limitações do motor;
 - `docs/trilha-c.md`: decisões de jogadores e estratégias de decisão;
 - [`docs/roteiro-apresentacao-gof-solid-grasp.md`](docs/roteiro-apresentacao-gof-solid-grasp.md):

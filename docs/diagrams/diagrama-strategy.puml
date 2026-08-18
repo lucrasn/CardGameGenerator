@@ -1,0 +1,58 @@
+@startuml
+' Recorte simplificado para o slide 9 — Strategy.
+' Usa uma família completa como exemplo e cita as demais aplicações reais.
+
+!pragma layout smetana
+left to right direction
+
+skinparam backgroundColor #FFFFFF
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam classFontSize 17
+skinparam classBorderColor #333333
+skinparam arrowColor #333333
+skinparam noteBackgroundColor #FFF9D6
+skinparam noteBorderColor #777777
+hide empty fields
+
+class JogadorPadrao << (C,#A9D5B0) Context >> #FFF2CC {
+    +estrategiaDeDecisao(): EstrategiaDeDecisao
+    +alterarEstrategiaDeDecisao(nova: EstrategiaDeDecisao): void
+}
+
+interface EstrategiaDeDecisao << (I,#B4A7D6) Strategy >> #DAE8FC {
+    +decidir(ctx: ContextoDeDecisao): Jogada
+}
+
+interface ContextoDeDecisao << (I,#B4A7D6) porta estreita >> #DAE8FC {
+    +etapa(): EtapaDeTurno
+    +jogadasPermitidas(): List<Jogada>
+}
+
+class "trinca.DecisaoHumanaTrincaConsole" as DecisaoHumanaTrinca \
+        << (C,#A9D5B0) ConcreteStrategy >> #F8CECC
+
+class "blackjack.EstrategiaCasaBlackjack" as EstrategiaCasaBlackjack \
+        << (C,#A9D5B0) ConcreteStrategy >> #F8CECC
+
+JogadorPadrao "0..*" o-- "1" EstrategiaDeDecisao : compõe
+DecisaoHumanaTrinca ..|> EstrategiaDeDecisao
+EstrategiaCasaBlackjack ..|> EstrategiaDeDecisao
+EstrategiaDeDecisao ..> ContextoDeDecisao : recebe
+
+note bottom of JogadorPadrao
+  <b>Composição, não herança.</b>
+  Humano e casa reutilizam JogadorPadrao;
+  somente o comportamento é substituído.
+end note
+
+note right of ContextoDeDecisao
+  A Strategy recebe apenas uma visão mínima (ISP).
+  O mesmo desenho aparece em distribuição,
+  validação, vitória e pontuação.
+end note
+
+@enduml

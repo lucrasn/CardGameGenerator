@@ -1,0 +1,66 @@
+@startuml
+' Recorte simplificado para o slide 8 — Factory Method.
+' Usa somente fábricas e produtos existentes no projeto.
+
+!pragma layout smetana
+top to bottom direction
+
+skinparam backgroundColor #FFFFFF
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam classFontSize 17
+skinparam classBorderColor #333333
+skinparam arrowColor #333333
+skinparam noteBackgroundColor #FFF9D6
+skinparam noteBorderColor #777777
+hide empty fields
+
+abstract class "MotorDePartida<C extends Carta>" as MotorDePartida \
+        << (A,#7EA6B2) Client >> #FFF2CC
+
+interface "BaralhoFactory<C extends Carta>" as BaralhoFactory \
+        << (I,#B4A7D6) Creator, Factory Method >> #DAE8FC {
+    +criar(): Baralho<C>
+}
+
+interface "Baralho<C extends Carta>" as Baralho \
+        << (I,#B4A7D6) Product >> #DAE8FC {
+    +quantidade(): int
+    +comprar(): C
+    +embaralhar(): void
+}
+
+class "BaralhoPadrao<C>" as BaralhoPadrao \
+        << (C,#A9D5B0) ConcreteProduct >> #E2F0D9
+
+class "trinca.BaralhoTrincaFactory" as BaralhoTrincaFactory \
+        << (C,#A9D5B0) ConcreteCreator >> #F8CECC {
+    +criar(): Baralho<CartaTrinca>
+}
+
+class "blackjack.BaralhoBlackjackFactory" as BaralhoBlackjackFactory \
+        << (C,#A9D5B0) ConcreteCreator >> #F8CECC {
+    +criar(): Baralho<CartaBlackjack>
+}
+
+MotorDePartida ..> BaralhoFactory : solicita criar()
+BaralhoFactory ..> Baralho : cria
+Baralho <|.. BaralhoPadrao
+BaralhoFactory <|.. BaralhoTrincaFactory
+BaralhoFactory <|.. BaralhoBlackjackFactory
+
+note right of BaralhoFactory
+  O engine conhece apenas o contrato de criação.
+  Cada cliente escolhe o tipo e a composição das cartas
+  sem alterar nenhuma linha de MotorDePartida.
+end note
+
+note bottom of BaralhoPadrao
+  As duas fábricas atuais criam 52 cartas, mas de tipos
+  próprios e independentes, usando BaralhoPadrao como produto.
+end note
+
+@enduml
