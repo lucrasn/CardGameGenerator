@@ -1347,7 +1347,7 @@ ResultadoDePartida resultado = new MeuMotor(config).executar();
 - `docs/especificacao_arquitetural.md` — os contratos e invariantes em detalhe
 - `docs/padroes-de-projeto.md` — os padrões GoF, SOLID e GRASP por trás das decisões
 - `docs/ARQUITETURA_FRAMEWORK_MAP.md` — o mapa da arquitetura e o estado da baseline
-- `docs/diagrama-classes.puml` — o diagrama de classes
+- `diagrams/diagrama-classes.puml` — o diagrama de classes
 - `./mvnw javadoc:javadoc` — a documentação completa da API
 
 Encontrou um limite que este manual não previu? Isso é informação útil: a fronteira do
