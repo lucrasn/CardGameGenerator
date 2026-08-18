@@ -10,6 +10,7 @@ import java.io.UncheckedIOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -48,6 +49,23 @@ class ControleEntradaSaidaTest {
     }
 
     @Test
+    void solicitaInteiroSemRenderizarOpcoesERepeteAteEntrarNoIntervalo() {
+        StringWriter saida = new StringWriter();
+        ControleEntradaSaida controle = new ControleEntradaSaida(
+                new StringReader("texto\n1\n6\n4\n"),
+                saida
+        );
+
+        int quantidade = controle.solicitarInteiro(
+                "Digite a quantidade:", 2, 5);
+
+        assertEquals(4, quantidade);
+        assertTrue(saida.toString().contains("Digite a quantidade:"));
+        assertTrue(saida.toString().contains("Valor inválido"));
+        assertFalse(saida.toString().contains("1 -"));
+    }
+
+    @Test
     void rejeitaListaVaziaEFimPrematuroDaEntrada() {
         ControleEntradaSaida controle = new ControleEntradaSaida(
                 new StringReader(""),
@@ -61,6 +79,10 @@ class ControleEntradaSaidaTest {
         assertThrows(
                 IllegalStateException.class,
                 () -> controle.solicitarOpcao("Escolha:", List.of("Comprar"))
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> controle.solicitarInteiro("Quantidade:", 5, 2)
         );
     }
 
@@ -94,6 +116,10 @@ class ControleEntradaSaidaTest {
                         "Escolha:",
                         java.util.Arrays.asList("Comprar", null)
                 )
+        );
+        assertThrows(
+                NullPointerException.class,
+                () -> controle.solicitarInteiro(null, 2, 5)
         );
     }
 

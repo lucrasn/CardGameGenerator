@@ -997,6 +997,17 @@ int escolha = io.solicitarOpcao("O que fazer?", List.of("Comprar", "Passar"));
 
 Ele já trata entrada não numérica e fora da faixa, repetindo a pergunta.
 
+Quando a aplicação precisa ler um número diretamente, sem apresentar alternativas,
+o adaptador concreto também oferece um intervalo validado:
+
+```java
+ControleEntradaSaida console = new ControleEntradaSaida();
+int quantidade = console.solicitarInteiro("Quantidade de jogadores:", 2, 5);
+```
+
+Essa operação permanece no adaptador concreto; decisões reutilizáveis continuam
+dependendo somente da interface pequena `EntradaSaida`.
+
 **Por que uma interface para algo tão simples?** Por causa dos testes. Com a interface, você
 troca o console por um dublê e testa o jogo inteiro sem digitar nada:
 
