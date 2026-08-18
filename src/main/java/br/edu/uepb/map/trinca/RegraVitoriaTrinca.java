@@ -8,9 +8,20 @@ import br.edu.uepb.map.cardgame.api.MotivoPadrao;
 import br.edu.uepb.map.cardgame.api.RegraDeVitoriaStrategy;
 import br.edu.uepb.map.cardgame.api.VisaoDaPartida;
 
-/** Reconhece a vitória de quem completar a mão ao final do turno. */
+/**
+ * Regra que reconhece a vitória ao final de um turno da Trinca.
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
+ */
 public final class RegraVitoriaTrinca implements RegraDeVitoriaStrategy<CartaTrinca> {
 
+    /**
+     * Avalia se a mão do jogador atual pode ser totalmente dividida em combinações.
+     *
+     * @param contexto visão somente de leitura da partida
+     * @return desfecho de vitória quando a mão estiver completa; vazio caso contrário
+     */
     @Override
     public Optional<DesfechoDePartida> avaliar(VisaoDaPartida<CartaTrinca> contexto) {
         if (contexto.numeroDoTurno() > 0

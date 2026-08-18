@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,12 +15,25 @@ import br.edu.uepb.map.cardgame.api.ResultadoDePartida;
 import br.edu.uepb.map.cardgame.api.evento.JogadaRejeitada;
 import br.edu.uepb.map.cardgame.api.io.ControleEntradaSaida;
 
-/** Ponto de entrada da demonstração entre jogadores humanos em console. */
+/**
+ * Ponto de entrada da aplicação Trinca executada no console.
+ *
+ * <p>A classe configura os jogadores, inicia rodadas por meio do
+ * {@link MotorTrinca} e mantém o placar acumulado entre as partidas.</p>
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
+ */
 public final class AplicacaoTrinca {
 
     private AplicacaoTrinca() {
     }
 
+    /**
+     * Inicia a aplicação interativa da Trinca.
+     *
+     * @param args argumentos da linha de comando; não são utilizados
+     */
     public static void main(String[] args) {
         ControleEntradaSaida io = new ControleEntradaSaida();
         io.exibir(CorTerminal.AZUL_CELESTE.aplicarComDestaque(
@@ -52,6 +66,20 @@ public final class AplicacaoTrinca {
         return motor.executar();
     }
 
+/**
+ * Configura uma lista de jogadores com nomes padrão e decisões humanas via console.
+ *
+ * <p>Cada jogador recebe um nome no formato {@code "Jogador N"} e uma cor
+ * terminal distinta para destacar suas interações no console.</p>
+ *
+ * @param io                    componente de entrada e saída utilizado para interação
+ * @param quantidadeDeJogadores número de jogadores a configurar; deve estar entre
+ *                              {@link MotorTrinca#MINIMO_DE_JOGADORES} e
+ *                              {@link MotorTrinca#MAXIMO_DE_JOGADORES}
+ * @return lista imutável de jogadores configurados
+ * @throws NullPointerException     se {@code io} for {@code null}
+ * @throws IllegalArgumentException se {@code quantidadeDeJogadores} estiver fora do intervalo permitido
+ */
     static List<Jogador> configurarJogadores(ControleEntradaSaida io) {
         Objects.requireNonNull(io, "A entrada e saída não pode ser nula.");
         int quantidade = io.solicitarInteiro(
@@ -82,6 +110,18 @@ public final class AplicacaoTrinca {
         return List.copyOf(jogadores);
     }
 
+/**
+ * Exibe o resultado da partida e o placar acumulado até a rodada corrente.
+ *
+ * <p>Lista os vencedores da rodada (ou informa ausência de vencedor) e
+ * em seguida imprime a pontuação acumulada de cada jogador.</p>
+ *
+ * @param io              componente de entrada e saída utilizado para exibição
+ * @param resultado       resultado da partida recém-encerrada
+ * @param jogadores       lista de jogadores participantes, na ordem de exibição
+ * @param placarAcumulado mapa de {@link UUID} do jogador para pontuação total acumulada
+ * @param rodada          número sequencial da rodada recém-encerrada
+ */
     private static void exibirResultado(
             EntradaSaida io,
             ResultadoDePartida resultado,
@@ -107,6 +147,20 @@ public final class AplicacaoTrinca {
         }
     }
 
+    /**
+ * Acumula a pontuação obtida na partida ao placar total de cada jogador.
+ *
+ * <p>Para cada jogador presente em {@code jogadores}, soma a pontuação
+ * retornada por {@link ResultadoDePartida#pontuacaoDe(Jogador)} ao valor
+ * já registrado em {@code placarAcumulado}.</p>
+ *
+ * @param placarAcumulado mapa de {@link UUID} do jogador para pontuação acumulada;
+ *                        será modificado in-place
+ * @param resultado       resultado da partida cujas pontuações serão somadas
+ * @param jogadores       lista de jogadores cujos pontos devem ser acumulados
+ * @throws NullPointerException   se {@code placarAcumulado} ou {@code resultado} forem {@code null}
+ * @throws NoSuchElementException se algum jogador não possuir pontuação registrada no resultado
+ */
     static void acumularPontuacao(
             Map<UUID, Integer> placarAcumulado,
             ResultadoDePartida resultado,
@@ -119,6 +173,14 @@ public final class AplicacaoTrinca {
         }
     }
 
+    /**
+ * Pergunta ao usuário se deseja iniciar uma nova rodada.
+ *
+ * @param io componente de entrada e saída utilizado para solicitar a resposta
+ * @return {@code true} se o usuário optar por jogar novamente; {@code false} caso contrário
+ * @throws NullPointerException  se {@code io} for {@code null}
+ * @throws IllegalStateException se o componente de E/S retornar um índice de opção inválido
+ */
     static boolean desejaJogarNovamente(EntradaSaida io) {
         Objects.requireNonNull(io, "A entrada e saída não pode ser nula.");
         List<String> opcoes = List.of("Sim, jogar outra rodada", "Não, encerrar");
@@ -127,6 +189,16 @@ public final class AplicacaoTrinca {
         return escolha == 0;
     }
 
+    /**
+ * Aplica o destaque de cor ao texto caso o jogador utilize decisão humana via console.
+ *
+ * <p>Se a estratégia de decisão do jogador não for uma instância de
+ * {@link DecisaoHumanaTrincaConsole}, o texto é retornado sem modificação.</p>
+ *
+ * @param jogador jogador cujo estilo de cor será aplicado
+ * @param texto   texto a ser formatado
+ * @return texto formatado com a cor do jogador, ou o texto original sem formatação
+ */
     private static String destacar(Jogador jogador, String texto) {
         if (jogador.estrategiaDeDecisao() instanceof DecisaoHumanaTrincaConsole decisao) {
             return decisao.destacar(texto);
@@ -134,6 +206,14 @@ public final class AplicacaoTrinca {
         return texto;
     }
 
+    /**
+ * Valida se o índice selecionado está dentro dos limites de uma lista de opções.
+ *
+ * @param indice               índice retornado pelo componente de entrada e saída
+ * @param quantidadeDeOpcoes   número total de opções disponíveis
+ * @throws IllegalStateException se {@code indice} for negativo ou maior ou igual a
+ *                               {@code quantidadeDeOpcoes}
+ */
     private static void validarIndice(int indice, int quantidadeDeOpcoes) {
         if (indice < 0 || indice >= quantidadeDeOpcoes) {
             throw new IllegalStateException(

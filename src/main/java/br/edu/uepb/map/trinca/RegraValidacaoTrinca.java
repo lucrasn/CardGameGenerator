@@ -8,16 +8,36 @@ import br.edu.uepb.map.cardgame.api.Jogada;
 import br.edu.uepb.map.cardgame.api.RegraDeValidacaoStrategy;
 import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
 
-/** Valida as ações tipadas da Trinca antes de cada mutação. */
+/**
+ * Regra que valida as ações tipadas da Trinca antes de cada mutação.
+ *
+ * <p>A validação considera a quantidade de cartas da mão e a disponibilidade
+ * das cartas no monte, no descarte e na mão do jogador atual.</p>
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
+ */
 public final class RegraValidacaoTrinca
         implements RegraDeValidacaoStrategy<CartaTrinca> {
 
     private final MesaTrinca mesa;
 
+    /**
+     * Cria a regra vinculada às zonas específicas da partida.
+     *
+     * @param mesa mesa que mantém a pilha de descarte
+     * @throws NullPointerException se a mesa for nula
+     */
     RegraValidacaoTrinca(MesaTrinca mesa) {
         this.mesa = Objects.requireNonNull(mesa, "A mesa não pode ser nula.");
     }
 
+    /**
+     * Valida uma compra no monte, uma compra no descarte ou um descarte da mão.
+     *
+     * @param contexto contexto da jogada que será validada
+     * @throws JogadaInvalidaException se a ação violar as regras da Trinca
+     */
     @Override
     public void validar(ContextoDeValidacao<CartaTrinca> contexto) {
         Jogada jogada = contexto.jogada();

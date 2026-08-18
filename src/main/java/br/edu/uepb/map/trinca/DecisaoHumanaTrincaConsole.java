@@ -14,7 +14,15 @@ import br.edu.uepb.map.cardgame.api.EntradaSaida;
 import br.edu.uepb.map.cardgame.api.EstrategiaDeDecisao;
 import br.edu.uepb.map.cardgame.api.Jogada;
 
-/** Decisão humana que apresenta as informações públicas do turno da Trinca. */
+/**
+ * Estratégia de decisão humana para partidas de Trinca no console.
+ *
+ * <p>A estratégia apresenta a mão, as combinações reconhecidas e as jogadas
+ * permitidas, além de solicitar ao participante a ação que será executada.</p>
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
+ */
 public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
 
     private static final String SEPARADOR = "═".repeat(58);
@@ -23,15 +31,34 @@ public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
     private final CorTerminal cor;
     private OrdenacaoDaMao ordenacao;
 
-    /** Cria uma decisão sem cores, ordenada por valor crescente. */
+    /**
+     * Cria uma decisão sem cores e ordenada por valor crescente.
+     *
+     * @param entradaSaida canal usado para interagir com o participante
+     * @throws NullPointerException se o canal de entrada e saída for nulo
+     */
     public DecisaoHumanaTrincaConsole(EntradaSaida entradaSaida) {
         this(entradaSaida, CorTerminal.SEM_COR, OrdenacaoDaMao.POR_VALOR);
     }
 
+    /**
+     * Cria uma decisão com a cor atribuída ao participante.
+     *
+     * @param entradaSaida canal usado para interagir com o participante
+     * @param cor cor usada para destacar suas informações
+     */
     DecisaoHumanaTrincaConsole(EntradaSaida entradaSaida, CorTerminal cor) {
         this(entradaSaida, cor, OrdenacaoDaMao.POR_VALOR);
     }
 
+    /**
+     * Cria uma decisão com apresentação visual configurada.
+     *
+     * @param entradaSaida canal usado para interagir com o participante
+     * @param cor cor usada para destacar suas informações
+     * @param ordenacao ordenação inicial da mão
+     * @throws NullPointerException se algum argumento for nulo
+     */
     DecisaoHumanaTrincaConsole(
             EntradaSaida entradaSaida, CorTerminal cor, OrdenacaoDaMao ordenacao) {
         this.entradaSaida = Objects.requireNonNull(
@@ -41,6 +68,16 @@ public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
                 ordenacao, "A ordenação da mão não pode ser nula.");
     }
 
+    /**
+     * Exibe o estado disponível e solicita uma das jogadas permitidas.
+     *
+     * @param contextoBase contexto de decisão específico da Trinca
+     * @return jogada selecionada pelo participante
+     * @throws NullPointerException se o contexto for nulo
+     * @throws IllegalArgumentException se o contexto não pertencer à Trinca
+     * @throws IllegalStateException se não houver jogadas permitidas ou se a
+     *         entrada devolver uma opção inválida
+     */
     @Override
     public Jogada decidir(ContextoDeDecisao contextoBase) {
         Objects.requireNonNull(contextoBase, "O contexto não pode ser nulo.");
@@ -107,14 +144,30 @@ public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
         }
     }
 
+    /**
+     * Retorna a cor associada ao participante.
+     *
+     * @return cor usada na apresentação
+     */
     CorTerminal cor() {
         return cor;
     }
 
+    /**
+     * Retorna a ordenação atual da mão.
+     *
+     * @return modo de ordenação em uso
+     */
     OrdenacaoDaMao ordenacao() {
         return ordenacao;
     }
 
+    /**
+     * Aplica a cor do participante com destaque ao texto informado.
+     *
+     * @param texto conteúdo que será destacado
+     * @return texto com a formatação da cor do participante
+     */
     String destacar(String texto) {
         return cor.aplicarComDestaque(texto);
     }

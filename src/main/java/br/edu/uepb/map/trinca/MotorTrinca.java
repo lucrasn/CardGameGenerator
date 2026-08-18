@@ -13,7 +13,15 @@ import br.edu.uepb.map.cardgame.api.ResultadoDoTurno;
 import br.edu.uepb.map.cardgame.api.excecao.JogadaInvalidaException;
 import br.edu.uepb.map.cardgame.engine.MotorDePartida;
 
-/** Motor concreto que implementa compra, reciclagem e descarte da Trinca. */
+/**
+ * Motor concreto que especializa o ciclo de partida para a Trinca.
+ *
+ * <p>A classe configura as regras do jogo e implementa as etapas de compra,
+ * reciclagem do descarte e escolha da carta descartada.</p>
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
+ */
 public final class MotorTrinca extends MotorDePartida<CartaTrinca> {
 
     static final int MINIMO_DE_JOGADORES = 2;
@@ -55,11 +63,22 @@ public final class MotorTrinca extends MotorDePartida<CartaTrinca> {
         return new MotorTrinca(configuracao, mesa);
     }
 
+    /**
+     * Coloca a primeira carta do baralho na pilha de descarte.
+     *
+     * @param contexto contexto mutável da partida após a distribuição inicial
+     */
     @Override
     protected void aposDistribuir(ContextoDePartida<CartaTrinca> contexto) {
         mesa.descartar(contexto.comprarDoBaralho());
     }
 
+    /**
+     * Executa as decisões de compra e descarte do jogador atual.
+     *
+     * @param contexto contexto mutável da partida
+     * @return resultado que solicita o avanço para o próximo turno
+     */
     @Override
     protected ResultadoDoTurno executarTurno(ContextoDePartida<CartaTrinca> contexto) {
         Jogador jogador = contexto.jogadorAtual();
@@ -102,6 +121,12 @@ public final class MotorTrinca extends MotorDePartida<CartaTrinca> {
         return carta;
     }
 
+    /**
+     * Move o descarte para o baralho, embaralha as cartas e restabelece seu topo.
+     *
+     * @param contexto contexto mutável que contém o baralho da partida
+     * @param mesa zonas específicas da Trinca
+     */
     static void reciclarDescarte(
             ContextoDePartida<CartaTrinca> contexto, MesaTrinca mesa) {
         List<CartaTrinca> recicladas = mesa.retirarTodasParaReciclagem();

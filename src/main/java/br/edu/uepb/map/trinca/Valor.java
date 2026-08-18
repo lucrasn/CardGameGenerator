@@ -1,6 +1,11 @@
 package br.edu.uepb.map.trinca;
 
-/** Valores das cartas francesas, em ordem crescente. */
+/**
+ * Valores das cartas francesas, em ordem crescente.
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
+ */
 public enum Valor {
     AS(1, "A"), DOIS(2, "2"), TRES(3, "3"), QUATRO(4, "4"),
     CINCO(5, "5"), SEIS(6, "6"), SETE(7, "7"), OITO(8, "8"),
@@ -14,10 +19,20 @@ public enum Valor {
         this.simbolo = simbolo;
     }
 
+    /**
+     * Retorna a posição natural do valor nas sequências.
+     *
+     * @return número de 1 a 13 associado ao valor
+     */
     public int ordem() {
         return ordem;
     }
 
+    /**
+     * Retorna a representação curta do valor.
+     *
+     * @return símbolo usado para exibir a carta
+     */
     public String simbolo() {
         return simbolo;
     }

@@ -10,12 +10,26 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-/** Reconhece partições completas da mão em trincas e sequências. */
+/**
+ * Utilitário para reconhecer e organizar combinações da Trinca.
+ *
+ * <p>Uma combinação pode ser formada por três cartas de mesmo valor e naipes
+ * distintos ou por uma sequência de ao menos três cartas do mesmo naipe.</p>
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
+ */
 public final class CombinacoesTrinca {
 
     private CombinacoesTrinca() {
     }
 
+    /**
+     * Verifica se as nove cartas podem ser totalmente divididas em combinações.
+     *
+     * @param mao cartas que formam a mão avaliada
+     * @return {@code true} se a mão for vencedora; {@code false} caso contrário
+     */
     public static boolean ehMaoVencedora(List<CartaTrinca> mao) {
         return mao != null && mao.size() == 9 && podeParticionar(List.copyOf(mao));
     }
@@ -26,6 +40,10 @@ public final class CombinacoesTrinca {
      * <p>Os grupos devolvidos são disjuntos e cada um é uma trinca ou sequência válida.
      * Em empates, a solução com mais grupos é preferida para deixar as combinações
      * menores mais explícitas no console.
+     *
+     * @param mao cartas que serão agrupadas
+     * @return grupos disjuntos que representam as combinações encontradas
+     * @throws NullPointerException se a mão for nula
      */
     static List<List<CartaTrinca>> agruparCombinacoes(List<CartaTrinca> mao) {
         return agruparCombinacoes(mao, Optional.empty());
@@ -35,6 +53,12 @@ public final class CombinacoesTrinca {
      * Organiza a mão priorizando, quando possível, um grupo que contenha a carta
      * indicada. A prioridade resolve ambiguidades visuais após uma compra sem mudar
      * as regras usadas para reconhecer uma mão vencedora.
+     *
+     * @param mao cartas que serão agrupadas
+     * @param cartaPrioritariaId identificador da carta que deve ser priorizada
+     * @return grupos disjuntos que representam as combinações encontradas
+     * @throws NullPointerException se algum argumento for nulo
+     * @throws IllegalArgumentException se a mão possuir mais de dez cartas
      */
     static List<List<CartaTrinca>> agruparCombinacoes(
             List<CartaTrinca> mao, Optional<UUID> cartaPrioritariaId) {
@@ -162,6 +186,12 @@ public final class CombinacoesTrinca {
         return false;
     }
 
+    /**
+     * Verifica se um grupo de cartas forma uma trinca ou uma sequência válida.
+     *
+     * @param cartas grupo avaliado
+     * @return {@code true} se o grupo representar uma combinação válida
+     */
     static boolean ehCombinacaoValida(List<CartaTrinca> cartas) {
         return ehTrinca(cartas) || ehSequencia(cartas);
     }

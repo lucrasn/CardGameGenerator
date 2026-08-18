@@ -19,6 +19,9 @@ import br.edu.uepb.map.cardgame.api.Jogador;
  * @param topoDoDescarte carta pública disponível no descarte, quando houver
  * @param cartaComprada carta incorporada à mão nesta compra, presente somente na
  *        etapa de descarte
+ *
+ * @author Raffael Wagner Rolim Siqueira
+ * @version 0.0.1
  */
 public record ContextoDecisaoTrinca(
         EtapaTrinca etapa,
@@ -30,6 +33,16 @@ public record ContextoDecisaoTrinca(
         Optional<CartaTrinca> cartaComprada
 ) implements ContextoDeDecisao {
 
+    /**
+     * Cria um contexto sem registrar uma carta comprada na etapa atual.
+     *
+     * @param etapa fase atual de compra ou descarte
+     * @param jogadasPermitidas ações que podem ser escolhidas
+     * @param jogador participante que possui a vez
+     * @param numeroDoTurno número positivo do turno atual
+     * @param mao snapshot da mão do participante
+     * @param topoDoDescarte carta pública disponível no descarte, quando houver
+     */
     public ContextoDecisaoTrinca(
             EtapaTrinca etapa,
             List<Jogada> jogadasPermitidas,
@@ -41,6 +54,13 @@ public record ContextoDecisaoTrinca(
                 topoDoDescarte, Optional.empty());
     }
 
+    /**
+     * Valida os componentes e cria cópias imutáveis das coleções recebidas.
+     *
+     * @throws NullPointerException se algum componente obrigatório for nulo
+     * @throws IllegalArgumentException se o turno não for positivo ou se a carta
+     *         comprada for incompatível com a etapa ou com a mão
+     */
     public ContextoDecisaoTrinca {
         Objects.requireNonNull(etapa, "A etapa não pode ser nula.");
         jogadasPermitidas = List.copyOf(jogadasPermitidas);
