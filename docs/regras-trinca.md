@@ -3,7 +3,7 @@
 **Status:** regras aprovadas e aplicação cliente implementada na branch
 `trilha-E/trinca`; o framework reutilizável permanece na `main`
 
-**Validação:** 20 testes da Trinca e 157 testes na suíte integrada, sem falhas.
+**Validação:** 22 testes da Trinca e 160 testes na suíte integrada, sem falhas.
 
 **Objetivo:** definir a variante de nove cartas que a equipe adotou como a Trinca
 oficial do projeto.
@@ -84,9 +84,11 @@ e sempre permanece a alternativa de comprar a carta visível do descarte.
 
 ## 6. Pontuação
 
-Esta primeira versão é de uma única rodada: vitória concede **1 ponto** ao vencedor e
-os demais recebem **0 ponto**. O cálculo pertence a uma implementação de
-`RegraDePontuacaoStrategy` fornecida pelo cliente e registrada em `PartidaConfig`.
+Cada rodada concede **1 ponto** ao vencedor e **0 ponto** aos demais. Depois de mostrar
+o vencedor, a aplicação oferece uma nova rodada com os mesmos participantes e mantém
+um placar acumulado. Uma nova instância de `MotorTrinca` e um novo baralho são criados
+a cada rodada. O cálculo de cada resultado pertence à `RegraDePontuacaoStrategy`; a
+aplicação apenas soma esses resultados enquanto o grupo escolher continuar.
 
 ## 7. Regras de validação separadas
 
@@ -110,8 +112,9 @@ Ao iniciar a aplicação:
    contraste entre si; vermelho não pertence a essa paleta;
 3. todas as mãos começam ordenadas por valor crescente.
 
-A numeração do primeiro menu coincide com a quantidade real: digitar `2` cria dois
-jogadores, digitar `3` cria três, e assim por diante até `5`.
+A quantidade não usa menu: a aplicação mostra `Digite a quantidade de jogadores
+(mínimo 2 e máximo 5):` e lê diretamente um inteiro no intervalo. Entradas não
+numéricas ou fora da faixa repetem a pergunta sem iniciar a partida.
 
 No início de cada turno, o terminal é limpo, solicita a troca de pessoa e então mostra
 automaticamente um separador colorido e a mão do participante correto. Combinações
@@ -121,6 +124,17 @@ crescente e agrupamento por naipe. A última escolha fica guardada separadamente
 cada participante e será usada em seu próximo turno. Depois da compra, a mão de dez
 cartas é reapresentada para que uma nova combinação apareça antes da escolha do
 descarte.
+
+Na reapresentação, a carta que acabou de entrar na mão é identificada explicitamente
+como `CARTA COMPRADA NESTA JOGADA` e também recebe uma marca em sua opção de descarte.
+Isso ocorre tanto para compras do monte quanto para compras do descarte, mesmo quando
+a carta não completa nenhuma combinação.
+
+A troca usa as sequências ANSI para apagar a tela visível, reposicionar o cursor e
+solicitar ao terminal a remoção do histórico de rolagem. A mesma limpeza ocorre antes
+do resultado, evitando que outra pessoa recupere a mão anterior apenas usando o
+scroll. Esse isolamento depende de um emulador de terminal compatível com ANSI e com
+o comando `CSI 3 J`.
 
 Se a carta recém-comprada completar uma trinca ou sequência, essa nova combinação é
 anunciada e destacada em vermelho. O destaque vermelho também aparece nas opções de
@@ -181,11 +195,15 @@ tipo desse pacote que o cliente conhece é `MotorDePartida`.
    console e não alteram as regras nem o engine.
 10. Uma combinação completada pela carta comprada aparece em vermelho somente até o
     descarte e suas cartas continuam protegidas pela confirmação dupla.
+11. Depois do vencedor, o grupo pode iniciar outra rodada e o placar soma os resultados
+    até a escolha de encerrar.
+12. A troca de jogador apaga a tela e o histórico de rolagem antes de revelar a próxima
+    mão.
 
 ## 11. Decisões deliberadamente fora do escopo
 
 Não fazem parte da primeira versão: coringas, compra de múltiplas cartas, blefe,
-tempo limite, pontuação acumulada em várias rodadas e regras regionais alternativas.
+tempo limite e regras regionais alternativas.
 
 ## 12. Decisões da equipe
 

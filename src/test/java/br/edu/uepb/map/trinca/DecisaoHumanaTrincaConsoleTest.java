@@ -40,11 +40,12 @@ class DecisaoHumanaTrincaConsoleTest {
         Jogada escolhida = decisao.decidir(contexto);
 
         assertSame(descarte, escolhida);
-        assertEquals("\u001B[2J\u001B[H", io.mensagens.get(0));
-        assertEquals("\u001B[2J\u001B[H", io.mensagens.get(1));
+        assertEquals(TelaTerminal.APAGAR_TELA_E_HISTORICO, io.mensagens.get(0));
+        assertEquals(TelaTerminal.APAGAR_TELA_E_HISTORICO, io.mensagens.get(1));
+        assertTrue(io.mensagens.get(0).contains("\u001B[3J"));
         assertTrue(io.mensagens.get(2).contains("TURNO 4 — Ana"));
         assertTrue(io.mensagens.get(3).contains("[7♥]"));
-        assertEquals("Topo do descarte: [K♠]", io.mensagens.get(4));
+        assertEquals("Topo do descarte: [K♠]\n", io.mensagens.get(4));
         assertEquals("Passe o terminal para Ana.", io.solicitacoes.get(0).mensagem());
         assertEquals("Escolha de onde comprar:", io.solicitacoes.get(1).mensagem());
         assertEquals(List.of(
@@ -95,6 +96,32 @@ class DecisaoHumanaTrincaConsoleTest {
         assertTrue(io.mensagens.subList(inicioDaSegundaDecisao, io.mensagens.size())
                 .stream()
                 .anyMatch(mensagem -> mensagem.contains("♥ Copas: [2♥] [7♥]")));
+    }
+
+    @Test
+    void deveDestacarCartaCompradaMesmoSemFormarCombinacao() {
+        EntradaSaidaFalsa io = new EntradaSaidaFalsa(0);
+        DecisaoHumanaTrincaConsole decisao = new DecisaoHumanaTrincaConsole(
+                io, CorTerminal.AZUL_CELESTE, OrdenacaoDaMao.POR_VALOR);
+        JogadorPadrao jogador = new JogadorPadrao("Bia", decisao);
+        CartaTrinca doisDeCopas = new CartaTrinca(Valor.DOIS, Naipe.COPAS);
+        CartaTrinca reiComprado = new CartaTrinca(Valor.REI, Naipe.ESPADAS);
+        var contexto = new ContextoDecisaoTrinca(
+                EtapaTrinca.DESCARTE,
+                List.of(new Descartar(reiComprado), new Descartar(doisDeCopas)),
+                jogador,
+                2,
+                List.of(doisDeCopas, reiComprado),
+                Optional.empty(),
+                Optional.of(reiComprado));
+
+        decisao.decidir(contexto);
+
+        assertTrue(io.mensagens.getFirst().contains(
+                "➜ CARTA COMPRADA NESTA JOGADA: [K♠]"));
+        assertTrue(io.mensagens.getFirst().contains("\u001B[38;5;39m"));
+        assertTrue(io.solicitacoes.getFirst().opcoes().get(1)
+                .contains("← comprada nesta jogada"));
     }
 
     @Test

@@ -25,7 +25,7 @@ subclasses publiquem eventos próprios pelo ponto protegido `publicarEvento`.
 Falta a camada de aplicação: Trinca e Blackjack ainda não existem na `main`.
 
 A suíte do framework na `main` executa 137 testes. Nesta branch, a integração com a
-Trinca executa 157 testes com sucesso, dos quais 20 pertencem ao jogo cliente.
+Trinca executa 160 testes com sucesso, dos quais 22 pertencem ao jogo cliente.
 
 ### Padrões GoF em runtime
 
@@ -81,8 +81,9 @@ Na branch `trilha-E/trinca`, execute o cliente de console com:
 java -cp target/classes br.edu.uepb.map.trinca.AplicacaoTrinca
 ```
 
-O cliente usa sequências ANSI para cores e limpeza de tela; execute-o em um terminal
-compatível, como o terminal padrão do Ubuntu.
+O cliente usa sequências ANSI para cores, reposicionamento do cursor e remoção do
+histórico de rolagem entre jogadores; execute-o em um terminal compatível com
+`CSI 3 J`, como o terminal padrão do Ubuntu.
 
 ## Documentação
 

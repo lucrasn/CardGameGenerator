@@ -17,7 +17,6 @@ import br.edu.uepb.map.cardgame.api.Jogada;
 /** Decisão humana que apresenta as informações públicas do turno da Trinca. */
 public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
 
-    private static final String LIMPAR_TERMINAL = "\u001B[2J\u001B[H";
     private static final String SEPARADOR = "═".repeat(58);
 
     private final EntradaSaida entradaSaida;
@@ -62,19 +61,22 @@ public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
                     contexto.etapa(), contexto.jogadasPermitidas());
             MaoOrganizada maoOrganizada = organizarMao(
                     contexto.mao(), contexto.cartaComprada());
-            entradaSaida.exibir(formatarMao(maoOrganizada));
+            entradaSaida.exibir(formatarMao(
+                    maoOrganizada, contexto.cartaComprada()));
             if (contexto.etapa() == EtapaTrinca.COMPRA) {
                 entradaSaida.exibir("Topo do descarte: "
                         + contexto.topoDoDescarte()
                         .map(DecisaoHumanaTrincaConsole::formatarCarta)
-                        .orElse("vazio"));
+                        .orElse("vazio")
+                        + "\n");
             }
 
             List<String> opcoes = jogadas.stream()
                     .map(jogada -> formatarOpcao(
                             jogada,
                             maoOrganizada.idsAgrupados(),
-                            maoOrganizada.idsDeGruposNovos()))
+                            maoOrganizada.idsDeGruposNovos(),
+                            contexto.cartaComprada().map(CartaTrinca::id)))
                     .collect(Collectors.toCollection(ArrayList::new));
             opcoes.add(ordenacao.opcaoDeAlternancia());
             int indice = entradaSaida.solicitarOpcao(
@@ -199,8 +201,14 @@ public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
                 Set.copyOf(idsDeGruposNovos));
     }
 
-    private String formatarMao(MaoOrganizada mao) {
-        StringBuilder texto = new StringBuilder(cor.aplicarComDestaque(
+    private String formatarMao(
+            MaoOrganizada mao, Optional<CartaTrinca> cartaComprada) {
+        StringBuilder texto = new StringBuilder();
+        cartaComprada.ifPresent(carta -> texto
+                .append(cor.aplicarComDestaque(
+                        "➜ CARTA COMPRADA NESTA JOGADA: " + formatarCarta(carta)))
+                .append('\n'));
+        texto.append(cor.aplicarComDestaque(
                 "Sua mão — " + ordenacao.descricao() + ":"));
         for (List<CartaTrinca> grupo : mao.gruposNovos()) {
             texto.append('\n').append(CorTerminal.VERMELHO.aplicarComDestaque(
@@ -256,11 +264,15 @@ public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
     private String formatarOpcao(
             Jogada jogada,
             Set<UUID> idsAgrupados,
-            Set<UUID> idsDeGruposNovos) {
+            Set<UUID> idsDeGruposNovos,
+            Optional<UUID> cartaCompradaId) {
         if (!(jogada instanceof Descartar descarte)) {
             return jogada.toString();
         }
         String opcao = "Descartar " + formatarCarta(descarte.carta());
+        if (cartaCompradaId.filter(id -> id.equals(descarte.cartaId())).isPresent()) {
+            opcao += "  ← comprada nesta jogada";
+        }
         if (idsDeGruposNovos.contains(descarte.cartaId())) {
             return CorTerminal.VERMELHO.aplicar(
                     opcao + "  ★ combinação recém-formada");
@@ -290,7 +302,7 @@ public final class DecisaoHumanaTrincaConsole implements EstrategiaDeDecisao {
     }
 
     private void limparTerminal() {
-        entradaSaida.exibir(LIMPAR_TERMINAL);
+        TelaTerminal.apagar(entradaSaida);
     }
 
     private record MaoOrganizada(
