@@ -24,7 +24,7 @@ subclasses publiquem eventos próprios pelo ponto protegido `publicarEvento`.
 
 Falta a camada de aplicação: Trinca e Blackjack ainda não existem na `main`.
 
-A suíte atual executa 137 testes com sucesso.
+A suíte atual executa 138 testes com sucesso.
 
 ### Padrões GoF em runtime
 
