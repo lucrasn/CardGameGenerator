@@ -85,7 +85,9 @@ Para validar também a documentação da API:
 - `docs/diagrama-classes.puml`: diagrama de classes em PlantUML;
 - `docs/DiagramaDeClasses.drawio.xml`: o mesmo diagrama em draw.io;
 - `docs/trilha-a.md`: decisões, evidências e limitações do motor;
-- `docs/trilha-c.md`: decisões de jogadores e estratégias de decisão.
+- `docs/trilha-c.md`: decisões de jogadores e estratégias de decisão;
+- [`docs/roteiro-apresentacao-gof-solid-grasp.md`](docs/roteiro-apresentacao-gof-solid-grasp.md):
+  divisão da apresentação, GoF, SOLID, GRASP e pontos de extensão nos dois clientes.
 
 Trinca e Blackjack serão clientes de validação, não fontes de regras codificadas no
 framework. Um mecanismo só entra no núcleo quando for reutilizável entre jogos com
