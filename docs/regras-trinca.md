@@ -215,6 +215,6 @@ tempo limite e regras regionais alternativas.
 
 ### Escopo usado para validar com Blackjack
 
-O escopo básico já foi registrado em `regras-blackjack-basico.md`: duas cartas
-iniciais, pedir/parar, Ás como 1 ou 11, casa compra até 17 e limite 21. Seguro, divisão,
-dobro, rendição e pagamentos ficam fora da primeira versão.
+O escopo do segundo cliente é mantido exclusivamente na branch `jogo/blackjack`:
+duas cartas iniciais, pedir/parar, Ás como 1 ou 11, casa compra até 17 e limite 21.
+Seguro, divisão, dobro, rendição e pagamentos ficam fora da primeira versão.
