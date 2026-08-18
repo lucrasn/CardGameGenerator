@@ -8,8 +8,8 @@ não estão implementados na `main`.
 
 Este texto reúne a justificativa técnica da Trilha C e um roteiro para sua defesa na
 apresentação. As decisões seguem `divisao-responsabilidades.md`,
-`padroes-de-projeto.md` e `regras-blackjack-basico.md`. A especificação da Trinca
-permanece na branch do cliente.
+`padroes-de-projeto.md`. As especificações dos clientes Trinca e Blackjack são
+mantidas nas branches `jogo/trinca` e `jogo/blackjack`, respectivamente.
 
 ## 1. Responsabilidade e resultado
 

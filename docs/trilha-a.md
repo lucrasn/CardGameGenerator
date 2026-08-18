@@ -12,8 +12,9 @@ ao longo do ciclo e permite que subclasses publiquem eventos específicos do jog
 Este texto reúne a justificativa técnica da Trilha A e um roteiro para sua defesa na
 apresentação. As decisões seguem `ARQUITETURA_FRAMEWORK_MAP.md`,
 `divisao-responsabilidades.md`, `especificacao_arquitetural.md`,
-`padroes-de-projeto.md` e `regras-blackjack-basico.md`, com as assinaturas conferidas
-contra o código atual. A especificação da Trinca permanece na branch do cliente.
+`padroes-de-projeto.md`, com as assinaturas conferidas contra o código atual. As
+especificações dos clientes Trinca e Blackjack são mantidas nas branches
+`jogo/trinca` e `jogo/blackjack`, respectivamente.
 
 ## 1. Responsabilidade e resultado
 
