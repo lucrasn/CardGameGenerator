@@ -22,9 +22,14 @@ durante a execução. O Observer está implementado: `MotorDePartida` cadastra
 observadores, publica os seis eventos padrão de `cardgame.api.evento` e permite que
 subclasses publiquem eventos próprios pelo ponto protegido `publicarEvento`.
 
-Falta a camada de aplicação: Trinca e Blackjack ainda não existem na `main`.
+Na `main`, os jogos continuam ausentes por decisão arquitetural. Esta branch
+`jogo/blackjack` acrescenta um cliente completo sem modificar a API ou os internals do
+engine: uma pessoa joga contra a casa automatizada, com carta fechada, Ás flexível,
+Blackjack natural, estouro, empate, placar acumulado e interface ANSI de terminal. A
+Trinca permanece isolada em `jogo/trinca`.
 
-A suíte atual executa 138 testes com sucesso.
+A suíte desta branch executa 168 testes com sucesso, incluindo 30 testes próprios do
+Blackjack e uma fronteira ArchUnit que impede o cliente de acessar internals do engine.
 
 ### Padrões GoF em runtime
 
@@ -51,13 +56,16 @@ Somente `MotorDePartida` é público em `engine`. `GerenciadorDeTurnos`,
 `SentidoDeRotacao`, `CicloDeVidaDaPartida`, `PartidaEmExecucao` e o adaptador de
 distribuição são detalhes do runtime.
 
-São dois pacotes de produção, e a fronteira entre eles é garantida pelo compilador:
-uma única classe pública em `engine` significa que nenhum jogo cliente consegue
-alcançar o gerenciador de turnos ou forçar uma transição de estado.
+O framework reutilizável ocupa os conjuntos de pacotes `api` e `engine`; o cliente
+fica no pacote independente `blackjack`. A fronteira é garantida pelo compilador: uma
+única classe pública em `engine` significa que nenhum jogo consegue alcançar o
+gerenciador de turnos ou forçar uma transição de estado.
 
 `FronteirasArquiteturaisTest` usa ArchUnit para analisar o bytecode de produção. O
 build falha se `api` depender de `engine` ou de clientes, se `engine` depender de um
 jogo concreto, ou se outro tipo público aparecer em `engine`.
+`ArquiteturaBlackjackTest` complementa a proteção: o cliente só pode alcançar a API,
+o próprio pacote e exatamente `engine.MotorDePartida`.
 
 ## Executar
 
@@ -73,6 +81,12 @@ Para validar também a documentação da API:
 ./mvnw javadoc:javadoc
 ```
 
+Para jogar Blackjack pelo terminal:
+
+```bash
+./mvnw compile && java -cp target/classes br.edu.uepb.map.blackjack.AplicacaoBlackjack
+```
+
 ## Documentação
 
 - [Manual do cliente](docs/manual-do-cliente.md): guia de uso da API e de criação de
@@ -85,11 +99,14 @@ Para validar também a documentação da API:
 - `docs/diagrama-classes.puml`: diagrama de classes em PlantUML;
 - `docs/DiagramaDeClasses.drawio.xml`: o mesmo diagrama em draw.io;
 - `docs/trilha-a.md`: decisões, evidências e limitações do motor;
-- `docs/trilha-c.md`: decisões de jogadores e estratégias de decisão.
+- `docs/trilha-c.md`: decisões de jogadores e estratégias de decisão;
+- [`docs/regras-blackjack-basico.md`](docs/regras-blackjack-basico.md): regras,
+  arquitetura do cliente e roteiro de execução do Blackjack.
 
-Trinca e Blackjack serão clientes de validação, não fontes de regras codificadas no
+Trinca e Blackjack são clientes de validação, não fontes de regras codificadas no
 framework. Um mecanismo só entra no núcleo quando for reutilizável entre jogos com
-mecânicas realmente diferentes.
+mecânicas realmente diferentes. Esta branch comprova essa separação: todo código do
+jogo está em `br.edu.uepb.map.blackjack`.
 
 ## Licença
 
